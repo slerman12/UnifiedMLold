@@ -21,8 +21,6 @@ class Environment:
         self.episode_done = False
         self.episode_step = self.last_episode_len = self.episode_reward = self.last_episode_reward = 0
         self.daybreak = None
-        print(self.env.obs_shape)
-        print(self.obs_shape)
 
     @property
     def raw_env(self):

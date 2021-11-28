@@ -31,6 +31,7 @@ seed: 1
 experiment: experiment_name
 
 environment:
+  _target_: Datasets.Environments.Environment
   suite: ${suite}
   max_episode_frames: false
   truncate_episode_frames: 1000
