@@ -2,6 +2,8 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import os
+
 import hydra
 from hydra.utils import instantiate
 
@@ -15,7 +17,8 @@ import torch
 # If input sizes consistent, will lead to better performance.
 from torch.backends import cudnn
 cudnn.benchmark = True
-
+os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
+os.environ['MUJOCO_GL'] = 'egl'
 
 # Hydra conveniently and cleanly manages sys args;
 # hyper-param cfg files located in ./Hyperparams
