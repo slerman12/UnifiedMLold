@@ -2,6 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import os
 import time
 from math import inf
 
@@ -25,6 +26,8 @@ class Environment:
     @property
     def raw_env(self):
         if self.suite.lower() == "dmc":
+            os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
+            os.environ['MUJOCO_GL'] = 'egl'
             return DMC
         elif self.suite.lower() == "atari":
             return Atari
