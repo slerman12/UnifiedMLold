@@ -3,6 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import math
+import os
 import random
 import re
 from functools import wraps
@@ -135,6 +136,8 @@ def set_seed_everywhere(seed):
         torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     random.seed(seed)
+    os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
+    os.environ['MUJOCO_GL'] = 'egl'
 
 
 # Copies parameters from one model to another

@@ -9,10 +9,6 @@ from dm_control.suite.wrappers import action_scale, pixels
 from Datasets.Environments.Raw.Wrappers import *
 
 
-os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
-os.environ['MUJOCO_GL'] = 'egl'
-
-
 def make(name, frame_stack, action_repeat, max_episode_frames, truncate_episode_frames, seed, train=True):
     os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
     os.environ['MUJOCO_GL'] = 'egl'
