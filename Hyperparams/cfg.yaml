@@ -7,13 +7,13 @@ defaults:
 suite: DMC
 frame_stack: 3
 action_repeat: 2
-discount: 0.99
 # agent
 lr: 1e-4
 feature_dim: 50
 # replay
 nstep: 3
 batch_size: 256
+discount: 0.99
 # training
 seed_steps: 4000
 # evaluating
@@ -32,12 +32,14 @@ experiment: experiment_name
 
 environment:
   _target_: Datasets.Environments.Environment.Environment
-  suite: ${suite}
-  max_episode_frames: false
-  truncate_episode_frames: 1000
+  task_name: ${task_name}
   frame_stack: ${frame_stack}
   action_repeat: ${action_repeat}
-  discount: ${discount}
+  max_episode_frames: false
+  truncate_episode_frames: 1000
+  seed: ${seed}
+  train: ??? # to be specified later
+  suite: ${suite}
 
 agent:
   _target_: Agents.DQNDPGAgent
