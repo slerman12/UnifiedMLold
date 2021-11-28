@@ -43,7 +43,7 @@ environment:
 
 agent:
   _target_: Agents.DQNDPGAgent
-  obs_shape: ${obs_spec}
+  obs_shape: ???  # To be specified later
   action_shape: ??? # To be specified later
   feature_dim: ${feature_dim}
   hidden_dim: 1024
@@ -60,7 +60,7 @@ agent:
 replay:
   _target_: Datasets.Experiences.ExperienceReplay.ExperienceReplay
   storage_dir: ???  # To be specified later
-  obs_spec: ???  # To be specified later
+  obs_spec: ${obs_spec}
   action_spec: ???  # To be specified later
   capacity: 1000000
   batch_size: ${batch_size}}
