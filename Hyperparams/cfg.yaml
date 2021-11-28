@@ -39,7 +39,7 @@ environment:
   discount: ${discount}
 
 agent:
-  _target_: agents.DQNDPGAgent
+  _target_: Agents.DQNDPGAgent
   obs_shape: ??? # to be specified later
   action_shape: ??? # to be specified later
   feature_dim: ${feature_dim}
