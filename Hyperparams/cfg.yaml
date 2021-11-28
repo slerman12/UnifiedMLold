@@ -38,7 +38,6 @@ environment:
   max_episode_frames: false
   truncate_episode_frames: 1000
   seed: ${seed}
-  train: ??? # to be specified later
   suite: ${suite}
 
 agent:
