@@ -1,0 +1,2 @@
+train_steps: 15500000
+stddev_schedule: 'linear(1.0,0.1,2000000)'

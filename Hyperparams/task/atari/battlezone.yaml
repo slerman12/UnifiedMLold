@@ -1,0 +1,6 @@
+defaults:
+  - easy
+  - _self_
+
+envs: atari  
+task_name: BattleZone
