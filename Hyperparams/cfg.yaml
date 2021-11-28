@@ -10,6 +10,8 @@ action_repeat: 2
 obs_shape: ???  # To be specified later
 action_shape: ???  # To be specified later
 discrete: ???  # To be specified later
+obs_spec: ???  # To be specified later
+action_spec: ???  # To be specified later
 # Agent
 lr: 1e-4
 feature_dim: 50
@@ -61,9 +63,9 @@ agent:
 
 replay:
   _target_: Datasets.Experiences.ExperienceReplay.ExperienceReplay
-  storage_dir: ???  # To be specified later
-  obs_spec: ???  # To be specified later
-  action_spec: ???  # To be specified later
+#  storage_dir: ???  # To be specified later
+  obs_spec: ${obs_spec}  # To be specified later
+  action_spec: ${obs_spec}  # To be specified later
   capacity: 1000000
   batch_size: ${batch_size}}
   num_workers: 4
