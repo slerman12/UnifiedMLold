@@ -210,6 +210,18 @@ class AttributesWrapper(dm_env.Environment):
     def experience(self):
         return self.exp
 
+    def observation_spec(self):
+        return self._env.observation_spec()
+
+    def action_spec(self):
+        return self._action_spec
+
+    def step(self, action):
+        self._env.step()
+
+    def reset(self):
+        self._env.reset()
+
     def __getattr__(self, name):
         return getattr(self._env, name)
 
