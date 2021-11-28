@@ -38,12 +38,17 @@ def main(args):
         agent, replay = Utils.load(root_path, 'agent', 'replay')
     else:
         # Agent
-        for arg in ("obs_shape", "action_shape", "discrete"):
+        for arg in ('obs_shape', 'action_shape', 'discrete'):
             setattr(args.agent, arg, getattr(env, arg))
+
+        args.obs_spec = env.obs_spec
 
         agent = instantiate(args.agent)  # An instance of DQNDPGAgent, for example
 
         # Experience replay
+        args.replay.storage_dir = root_path / 'buffer'
+        for arg in ('obs_spec', 'action_spec'):
+            setattr(args.replay, arg, getattr(env, arg))
         replay = instantiate(args.replay)  # An instance of PrioritizedExperienceReplay, for example
 
     # Loggers
