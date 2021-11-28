@@ -24,13 +24,13 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             next_log_pi = next_dist.log_prob(next_action).sum(-1, keepdim=True)
             next_Q = next_Q - entropy_temp.detach() * next_log_pi
             # todo I think this gets grad? or all factors are predefined temp=.03, scaling=.9, lo=-1
-            if munch_scaling is not None and munch_lo is not None:
-                # compute Munchausen_reward
-                dist = actor(obs)
-                log_pi = dist.log_prob(action).mean(-1, keepdim=True)
-                # todo might not be right for nstep (need one munch log_pi per time step)
-                reward += munch_scaling * torch.clamp(entropy_temp * log_pi, min=munch_lo, max=0)
-                # todo target gets multiplied by proba?
+            # if munch_scaling is not None and munch_lo is not None:
+            #     # compute Munchausen_reward
+            #     dist = actor(obs)
+            #     log_pi = dist.log_prob(action).mean(-1, keepdim=True)
+            #     # todo might not be right for nstep (need one munch log_pi per time step)
+            #     reward += munch_scaling * torch.clamp(entropy_temp * log_pi, min=munch_lo, max=0)
+            #     # todo target gets multiplied by proba?
         target_Q = reward + (discount * next_Q)
 
     if sub_planner is not None and planner is not None:
