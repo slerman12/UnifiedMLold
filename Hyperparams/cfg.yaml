@@ -42,6 +42,8 @@ environment:
 
 agent:
   _target_: Agents.DQNDPGAgent
+  obs_shape: ??? # To be specified later
+  action_shape: ??? # To be specified later
   feature_dim: ${feature_dim}
   hidden_dim: 1024
   target_tau: 0.01
@@ -50,6 +52,7 @@ agent:
   explore_steps: 2000
   lr: ${lr}
   update_per_steps: 2
+  discrete: ??? # To be specified later
   device: ${device}
   log_tensorboard: ${log_tensorboard}
 
