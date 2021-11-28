@@ -40,6 +40,7 @@ def main(args):
         # Agent
         map(lambda arg: setattr(args.agent, arg, getattr(env, arg)),
             ("obs_shape", "action_shape", "discrete"))
+        print(args.agent.obs_shape)
 
         agent = instantiate(args.agent)  # An instance of DQNDPGAgent, for example
 
