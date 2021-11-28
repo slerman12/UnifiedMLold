@@ -193,7 +193,7 @@ class AttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self._env = env
 
-        self.discrete = hasattr(self.env.action_spec(), 'discrete')
+        self.discrete = hasattr(self._env.action_spec(), 'discrete')
 
         self.obs_spec = self.env.observation_spec()
         self.action_spec = self.env.action_spec()
