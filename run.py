@@ -38,10 +38,8 @@ def main(args):
         agent, replay = Utils.load(root_path, 'agent', 'replay')
     else:
         # Agent
-        map(lambda arg: setattr(args.agent, arg, getattr(env, arg)),
-            ("obs_shape", "action_shape", "discrete"))
-        args.agent.obs_shape = env.obs_shape
-        print(args.agent.obs_shape)
+        for arg in ("obs_shape", "action_shape", "discrete"):
+            setattr(args.agent, arg, getattr(env, arg))
 
         agent = instantiate(args.agent)  # An instance of DQNDPGAgent, for example
 
