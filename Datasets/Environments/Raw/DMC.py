@@ -10,9 +10,6 @@ from Datasets.Environments.Raw.Wrappers import *
 
 
 def make(name, frame_stack, action_repeat, max_episode_frames, truncate_episode_frames, seed, train=True):
-    os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
-    os.environ['MUJOCO_GL'] = 'egl'
-
     domain, task = name.split('_', 1)
     # overwrite cup to ball_in_cup
     domain = dict(cup='ball_in_cup').get(domain, domain)

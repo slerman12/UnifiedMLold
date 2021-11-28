@@ -3,30 +3,30 @@ defaults:
   - task@_global_: dmc/quadruped_walk
   - override hydra/launcher: submitit_local
 
-# environment
+# Environment
 suite: DMC
 frame_stack: 3
 action_repeat: 2
-# agent
+# Agent
 lr: 1e-4
 feature_dim: 50
-# replay
+# Replay
 nstep: 3
 batch_size: 256
 discount: 0.99
-# training
+# Training
 seed_steps: 4000
-# evaluating
+# Evaluating
 evaluate_per_steps: 10000
 evaluate_episodes: 10
-# saving
+# Saving
 save_session: false
-# logging
+# Logging
 log_video: true
 log_tensorboard: true
-# misc
+# Misc
 device: cuda
-# experiment
+# Experiment
 seed: 1
 experiment: experiment_name
 
@@ -42,17 +42,17 @@ environment:
 
 agent:
   _target_: Agents.DQNDPGAgent
-  obs_shape: ??? # to be specified later
-  action_shape: ??? # to be specified later
+  obs_shape: ??? # To be specified later
+  action_shape: ??? # To be specified later
   feature_dim: ${feature_dim}
   hidden_dim: 1024
   target_tau: 0.01
-  stddev_schedule: ${stddev_schedule} # specified in task/easy,medium,hard
+  stddev_schedule: ${stddev_schedule} # Specified in task/easy,medium,hard
   stddev_clip: 0.3
   explore_per_steps: 2000
   lr: ${lr}
   update_per_steps: 2
-  discrete: ??? # to be specified later
+  discrete: ??? # To be specified later
   device: ${device}
   log_tensorboard: ${log_tensorboard}
 
@@ -79,7 +79,8 @@ hydra:
     mem_gb: 160
     nodes: 1
     submitit_folder: ./exp/${now:%Y.%m.%d}/${now:%H%M%S}_${agent_cfg.experiment}/.slurm
-  # environment variables for MuJoCo - comment out for M1 Macs
+  # Environment variables for MuJoCo - can lead to GLFW errors on M1 Macs;
+  # Comment out if you don't need MujoCo
   job:
     env_set:
       MKL_SERVICE_FORCE_INTEL: 1
