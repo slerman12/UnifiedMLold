@@ -79,6 +79,8 @@ hydra:
     mem_gb: 160
     nodes: 1
     submitit_folder: ./exp/${now:%Y.%m.%d}/${now:%H%M%S}_${agent_cfg.experiment}/.slurm
+  # environment variables for MuJoCo - comment out for M1 Macs
   job:
-    env_set: MUJOCO_GL
-    env_copy: MKL_SERVICE_FORCE_INTEL
+    env_set:
+      MKL_SERVICE_FORCE_INTEL: 1
+      MUJOCO_GL: egl
