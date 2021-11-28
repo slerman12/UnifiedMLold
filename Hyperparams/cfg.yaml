@@ -52,7 +52,7 @@ agent:
   update_per_steps: 2
   discrete: ??? # to be specified later
   device: ${device}
-  use_tensorboard: ${use_tensorboard}
+  log_tensorboard: ${log_tensorboard}
 
 replay:
   _target_: Datasets.Experiences.ExperienceReplay
