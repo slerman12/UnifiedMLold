@@ -222,11 +222,9 @@ class AttributesWrapper(dm_env.Environment):
     def experience(self):
         return self.exp
 
+    @property
     def observation_spec(self):
         return self._env.observation_spec()
-
-    def action_spec(self):
-        return self._action_spec
 
     def step(self, action):
         self._env.step()
@@ -235,6 +233,8 @@ class AttributesWrapper(dm_env.Environment):
         self._env.reset()
 
     def __getattr__(self, name):
+        if hasattr(self, name):
+            return getattr(self, name)
         return getattr(self._env, name)
 
 
