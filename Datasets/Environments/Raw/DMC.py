@@ -2,8 +2,6 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-import os
-
 from dm_control import manipulation, suite
 from dm_control.suite.wrappers import action_scale, pixels
 from Datasets.Environments.Raw.Wrappers import *

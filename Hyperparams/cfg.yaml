@@ -79,9 +79,7 @@ hydra:
     mem_gb: 160
     nodes: 1
     submitit_folder: ./exp/${now:%Y.%m.%d}/${now:%H%M%S}_${agent_cfg.experiment}/.slurm
-  # Environment variables for MuJoCo - can lead to GLFW errors on M1 Macs;
-  # Comment out if you don't need MujoCo
   job:
     env_set:
-      MKL_SERVICE_FORCE_INTEL: 1
-      MUJOCO_GL: egl
+      MKL_SERVICE_FORCE_INTEL: '1'
+      MUJOCO_GL: 'egl'
