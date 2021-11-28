@@ -193,18 +193,30 @@ class AttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self._env = env
 
-        self.discrete = hasattr(self._env.action_spec(), 'discrete')
-
-        self.obs_spec = self.env.observation_spec()
-        self.action_spec = self.env.action_spec()
-
-        self.obs_shape = self.obs_spec.shape
-        self.action_shape = (self.action_spec.num_actions,) \
-            if self.discrete else self.action_spec.shape
-
     @property
     def exp(self):
         return self.time_step
+
+    @property
+    def discrete(self):
+        return hasattr(self._env.action_spec(), 'discrete')
+
+    @property
+    def obs_spec(self):
+        return self._env.observation_spec()
+
+    @property
+    def action_spec(self):
+        return self._env.action_spec()
+
+    @property
+    def obs_shape(self):
+        return self.obs_spec.shape
+
+    @property
+    def action_shape(self):
+        return (self.action_spec.num_actions,) \
+            if self.discrete else self.action_spec.shape
 
     @property
     def experience(self):
