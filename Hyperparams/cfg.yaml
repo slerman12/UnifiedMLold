@@ -7,7 +7,7 @@ defaults:
 suite: DMC
 frame_stack: 3
 action_repeat: 2
-obs_spec: ???  # To be specified later
+obs_shape: ???  # To be specified later
 # Agent
 lr: 1e-4
 feature_dim: 50
@@ -43,7 +43,7 @@ environment:
 
 agent:
   _target_: Agents.DQNDPGAgent
-  obs_shape: ???  # To be specified later
+  obs_shape: ${obs_shape}  # To be specified later
   action_shape: ??? # To be specified later
   feature_dim: ${feature_dim}
   hidden_dim: 1024
@@ -60,7 +60,7 @@ agent:
 replay:
   _target_: Datasets.Experiences.ExperienceReplay.ExperienceReplay
   storage_dir: ???  # To be specified later
-  obs_spec: ${obs_spec}
+  obs_spec: ???  # To be specified later
   action_spec: ???  # To be specified later
   capacity: 1000000
   batch_size: ${batch_size}}
