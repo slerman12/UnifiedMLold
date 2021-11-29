@@ -34,7 +34,7 @@ class DrQV2Agent(DQNDPGAgent):
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
 
     def batch_processing(self, *batch, logs=None):
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(*batch, self.device)
+        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(batch, self.device)
 
         # Augment
         obs = self.aug(obs)
