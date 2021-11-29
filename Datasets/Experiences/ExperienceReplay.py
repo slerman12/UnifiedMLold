@@ -24,7 +24,7 @@ class ExperienceReplay:
         storage_dir.mkdir(exist_ok=True)
 
         self.num_episodes = 0
-        self.num_experiences_total = 0
+        self.num_experiences_stored = 0
 
         Spec = namedtuple("Spec", "shape dtype name")  # TODO use DataClass!
         self.specs = (obs_spec, action_spec,
@@ -98,12 +98,24 @@ class ExperienceReplay:
                 f.write(buffer.read())
 
         self.num_episodes += 1
-        self.num_experiences_total += self.episode_len
+        self.num_experiences_stored += self.episode_len
         self.episode = {spec.name: [] for spec in self.specs}
         self.episode_len = 0
 
     def __len__(self):
-        return self.num_experiences_total
+        return self.num_experiences_stored
+
+    @property
+    def replay(self):
+        if self._replay is None:
+            self._replay = iter(self.loader)
+        return self._replay
+
+    def __iter__(self):
+        return self.replay.__iter__()
+
+    def __next__(self):
+        return self.replay.__next__()
 
     def sample(self, episode_names, metrics=None):
         episode_name = random.choice(episode_names)  # Uniform sampling of experiences
@@ -133,18 +145,6 @@ class ExperienceReplay:
 
         return obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r
 
-    @property
-    def replay(self):
-        if self._replay is None:
-            self._replay = iter(self.loader)
-        return self._replay
-
-    def __iter__(self):
-        return self.replay.__iter__()
-
-    def __next__(self):
-        return self.replay.__next__()
-
 
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
 class ExperienceLoading(IterableDataset):
@@ -155,7 +155,7 @@ class ExperienceLoading(IterableDataset):
         self.episode_names = []
         self.episodes = dict()
 
-        self.num_experiences_stored = 0
+        self.num_experiences_loaded = 0
         self.capacity = capacity
 
         self.num_workers = max(1, num_workers)
@@ -175,10 +175,10 @@ class ExperienceLoading(IterableDataset):
 
         episode_len = next(iter(episode.values())).shape[0] - 1
 
-        while episode_len + self.num_experiences_stored > self.capacity:
+        while episode_len + self.num_experiences_loaded > self.capacity:
             early_episode_name = self.episode_names.pop(0)
             early_episode = self.episodes.pop(early_episode_name)
-            self.num_experiences_stored -= episode_len(early_episode)
+            self.num_experiences_loaded -= episode_len(early_episode)
             # deletes early episode file
             early_episode_name.unlink(missing_ok=True)
 
@@ -186,10 +186,11 @@ class ExperienceLoading(IterableDataset):
         # TODO Book-keep corresponding metrics for prioritized sampling
         self.episode_names.sort()
         self.episodes[episode_name] = episode
-        self.num_experiences_stored += episode_len
+        self.num_experiences_loaded += episode_len
 
         if not self.save:
             episode_name.unlink(missing_ok=True)  # deletes file
+        print(self.num_experiences_loaded)
 
         return True
 
