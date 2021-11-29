@@ -132,7 +132,6 @@ class ExperienceStorage(IterableDataset):
             for spec in self.specs:
                 if np.isscalar(exp[spec.name]):
                     exp[spec.name] = np.full(spec.shape, exp[spec.name], spec.dtype)
-                    print(exp[spec.name])
                 self.episode[spec.name].append(exp[spec.name])
                 assert spec.shape == exp[spec.name].shape
                 assert spec.dtype == exp[spec.name].dtype
