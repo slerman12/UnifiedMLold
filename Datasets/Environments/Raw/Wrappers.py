@@ -210,7 +210,11 @@ class AttributesWrapper(dm_env.Environment):
         keys = ['shape', 'dtype', 'name']
         # Spec = namedtuple('Spec', ' '.join(keys))
         # return Spec(*[getattr(obs_spec, key, None) for key in keys])
-        return {key: getattr(obs_spec, key, None) for key in keys}
+        # Convert to dict
+        spec = {key: getattr(obs_spec, key, None) for key in keys}
+        attr_dict = AttrDict()
+        attr_dict.update(spec)
+        return attr_dict
 
     @property
     def action_spec(self):
@@ -218,7 +222,11 @@ class AttributesWrapper(dm_env.Environment):
         keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
         # Spec = namedtuple('Spec', ' '.join(keys))
         # return Spec(*[getattr(action_spec, key, None) for key in keys])
-        return {key: getattr(action_spec, key, None) for key in keys}
+        # Convert to dict
+        spec = {key: getattr(action_spec, key, None) for key in keys}
+        attr_dict = AttrDict()
+        attr_dict.update(spec)
+        return attr_dict
 
     def step(self, action):
         return self.env.step(action)
@@ -228,6 +236,13 @@ class AttributesWrapper(dm_env.Environment):
 
     def __getattr__(self, name):
         return getattr(self.env, name)
+
+
+# Access a dict with attribute or key
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
 
 
 class TimeLimit(dm_env.Environment):
