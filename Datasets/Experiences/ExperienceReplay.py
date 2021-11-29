@@ -88,8 +88,8 @@ class ExperienceReplay:
             self.episode[spec.name] = np.array(self.episode[spec.name], spec.dtype)
 
         timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
-        print(timestamp)
         episode_name = f'{timestamp}_{self.num_episodes}_{self.episode_len}.npz'
+        print(episode_name)
 
         # Save episode
         save_path = self.store_path / episode_name
