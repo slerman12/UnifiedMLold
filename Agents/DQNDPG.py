@@ -79,7 +79,7 @@ class DQNDPGAgent(torch.nn.Module):
                                  logs=logs)
 
     @Utils.optimize('encoder', 'critic', clear_grads=False, backward=False)
-    @Utils.optimize('actor', step_optim=False)
+    @Utils.optimize('actor')
     def update_actor(self, obs, dist, logs=None):
         if not self.discrete:
             # Actor loss
