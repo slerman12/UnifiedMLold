@@ -144,6 +144,7 @@ class FrameStackWrapper(dm_env.Environment):
 class ActionDTypeWrapper(dm_env.Environment):
     def __init__(self, env, dtype, discrete=False):
         self._env = env
+        self.discrete = discrete
         wrapped_action_spec = env.action_spec()
         if not discrete:
             # self._action_spec = ExtendedAction(wrapped_action_spec.shape,
@@ -196,10 +197,6 @@ class AttributesWrapper(dm_env.Environment):
     @property
     def exp(self):
         return self.time_step
-
-    @property
-    def discrete(self):
-        return hasattr(self._env.action_spec(), 'discrete')
 
     @property
     def obs_spec(self):
@@ -322,124 +319,3 @@ class ExtendedTimeStepWrapper(dm_env.Environment):
 
     def __getattr__(self, name):
         return getattr(self._env, name)
-
-
-# python3
-# pylint: disable=g-bad-file-header
-# Copyright 2019 DeepMind Technologies Limited. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or  implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# https://github.com/deepmind/bsuite/blob/master/bsuite/utils/gym_wrapper.py
-
-
-def space2spec(space: gym.Space, name: Optional[str] = None):
-    """Converts an OpenAI Gym space to a dm_env spec or nested structure of specs.
-    Box, MultiBinary and MultiDiscrete Gym spaces are converted to BoundedArray
-    specs. Discrete OpenAI spaces are converted to DiscreteArray specs. Tuple and
-    Dict spaces are recursively converted to tuples and dictionaries of specs.
-    Args:
-      space: The Gym space to convert.
-      name: Optional name to apply to all return spec(s).
-    Returns:
-      A dm_env spec or nested structure of specs, corresponding to the input
-      space.
-    """
-    if isinstance(space, spaces.Discrete):
-        return specs.Array(shape=[space.n],
-                           dtype=space.dtype,
-                           name=name)
-        # return specs.DiscreteArray(num_values=space.n, dtype=space.dtype, name=name)
-
-    elif isinstance(space, spaces.Box):
-        return specs.BoundedArray(shape=space.shape, dtype=space.dtype,
-                                  minimum=space.low, maximum=space.high, name=name)
-
-    elif isinstance(space, spaces.MultiBinary):
-        return specs.BoundedArray(shape=space.shape, dtype=space.dtype, minimum=0.0,
-                                  maximum=1.0, name=name)
-
-    elif isinstance(space, spaces.MultiDiscrete):
-        return specs.BoundedArray(shape=space.shape, dtype=space.dtype,
-                                  minimum=np.zeros(space.shape),
-                                  maximum=space.nvec, name=name)
-
-    elif isinstance(space, spaces.Tuple):
-        return tuple(space2spec(s, name) for s in space.spaces)
-
-    elif isinstance(space, spaces.Dict):
-        return {key: space2spec(value, name) for key, value in space.spaces.items()}
-
-    else:
-        raise ValueError('Unexpected gym space: {}'.format(space))
-
-
-class DMEnvFromGym(dm_env.Environment):
-    """A wrapper to convert an OpenAI Gym environment to a dm_env.Environment."""
-
-    def __init__(self, gym_env):
-        self.gym_env = gym_env
-        # Convert gym action and observation spaces to dm_env specs.
-        self._observation_spec = space2spec(self.gym_env.observation_space,
-                                            name='observation')
-        self._action_spec = space2spec(self.gym_env.action_space, name='action')
-        self._reset_next_step = True
-
-    def reset(self) -> dm_env.TimeStep:
-        self._reset_next_step = False
-        observation = self.gym_env.reset()
-        return dm_env.restart(observation)
-
-    def step(self, action: int) -> dm_env.TimeStep:
-        if self._reset_next_step:
-            return self.reset()
-
-        # Convert the gym step result to a dm_env TimeStep.
-        observation, reward, done, info = self.gym_env.step(action)
-        self._reset_next_step = done
-
-        if done:
-            is_truncated = info.get('TimeLimit.truncated', False)
-            if is_truncated:
-                return dm_env.truncation(reward, observation)  # todo should set this in TimeLimit
-            else:
-                return dm_env.termination(reward, observation)
-        else:
-            return dm_env.transition(reward, observation)
-
-    def close(self):
-        self.gym_env.close()
-
-    def observation_spec(self):
-        return self._observation_spec
-
-    def action_spec(self):
-        return self._action_spec
-
-
-class ImageToPyTorch(gym.ObservationWrapper):
-    """
-    Image shape to channels x weight x height
-    """
-
-    def __init__(self, env):
-        super(ImageToPyTorch, self).__init__(env)
-        old_shape = self.observation_space.shape
-        self.observation_space = gym.spaces.Box(
-            low=0,
-            high=255,
-            shape=(old_shape[-1], old_shape[0], old_shape[1]),
-            dtype=np.uint8,
-        )
-
-    def observation(self, observation):
-        return np.transpose(observation, axes=(2, 0, 1))
