@@ -94,7 +94,7 @@ class DQNDPGAgent(torch.nn.Module):
             else None
 
         batch = replay.sample()
-        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs)
+        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
 
         # Policy
         dist = self.actor(obs, self.step)
