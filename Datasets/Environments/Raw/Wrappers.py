@@ -231,7 +231,8 @@ class AttributesWrapper(dm_env.Environment):
         self.env.reset()
 
     def __getattr__(self, name):
-        return getattr(self.env, name)
+        if not hasattr(self, name):
+            return getattr(self.env, name)
 
 
 class TimeLimit(dm_env.Environment):
