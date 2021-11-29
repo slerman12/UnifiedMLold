@@ -36,7 +36,7 @@ class ExperienceReplay:
 
         # Experience loading
 
-        load = ExperienceLoading(loading_dir=storage_dir,
+        self.loading = ExperienceLoading(loading_dir=storage_dir,
                                  capacity=capacity // max(1, num_workers),
                                  num_workers=num_workers,
                                  fetch_every=1000,
@@ -45,8 +45,8 @@ class ExperienceReplay:
         self.nstep = nstep
         self.discount = discount
 
-        load.sample = self.sample
-        load.process = self.process
+        # self.loading.sample = self._sample
+        # self.loading.process = self._process
 
         self._replay = None
 
@@ -55,7 +55,7 @@ class ExperienceReplay:
             np.random.seed(seed)
             random.seed(seed)
 
-        self.loader = torch.utils.data.DataLoader(dataset=load,
+        self.loader = torch.utils.data.DataLoader(dataset=self.loading,
                                                   batch_size=batch_size,
                                                   num_workers=num_workers,
                                                   pin_memory=True,
@@ -118,33 +118,11 @@ class ExperienceReplay:
     def __next__(self):
         return self.replay.__next__()
 
-    def sample(self, episode_names, metrics=None):  # todo super calls?
-        episode_name = random.choice(episode_names)  # Uniform sampling of experiences
-        return episode_name
+    def _sample(self, episode_names, metrics=None):  # todo super calls?
+        return self.loading.sample(episode_names, metrics)
 
-    def process(self, episode):  # todo super calls?
-        episode_len = next(iter(episode.values())).shape[0] - 1
-        idx = np.random.randint(0, episode_len - self.nstep + 1) + 1
-
-        # Transition
-        obs = episode['observation'][idx - 1]
-        action = episode['action'][idx]
-        next_obs = episode['observation'][idx + self.nstep - 1]
-        reward = np.zeros_like(episode['reward'][idx])
-        discount = np.ones_like(episode['discount'][idx])
-
-        # Trajectory
-        traj_o = episode["observation"][idx - 1:idx + self.nstep]
-        traj_a = episode["action"][idx:idx + self.nstep]
-        traj_r = episode["reward"][idx:idx + self.nstep]
-
-        # Compute cumulative discounted reward
-        for i in range(self.nstep):
-            step_reward = episode['reward'][idx + i]
-            reward += discount * step_reward
-            discount *= episode['discount'][idx + i] * self.discount
-
-        return obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r
+    def _process(self, episode):  # todo super calls?
+        return self.loading.process(episode)
 
 
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
