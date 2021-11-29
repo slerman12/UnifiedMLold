@@ -45,7 +45,7 @@ class Logger:
         logs = self.logs[name]
         counts = self.counts[name]
 
-        for k, l in log.item():
+        for k, l in log.items():
             if k in logs:
                 logs[k] += l
                 counts[k] += 1
