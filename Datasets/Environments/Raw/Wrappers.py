@@ -39,7 +39,7 @@ class ExtendedTimeStep(NamedTuple):
     def __setitem__(self, key, value):
         if isinstance(key, int):
             key = self._fields[key]
-        self[key]._replace(value)
+        self._replace(**{key: value})
 
 
 class ExtendedAction(NamedTuple):
@@ -59,7 +59,7 @@ class ExtendedAction(NamedTuple):
     def __setitem__(self, key, value):
         if isinstance(key, int):
             key = self._fields[key]
-        self[key]._replace(value)
+        self._replace(**{key: value})
 
 
 class ActionRepeatWrapper(dm_env.Environment):
