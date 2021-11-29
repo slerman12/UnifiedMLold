@@ -225,15 +225,15 @@ class AttributesWrapper(dm_env.Environment):
     @property
     def exp(self):
         time_step = self.env.time_step
-        return AttrDict(time_step.__dict__)
+        return AttrDict(time_step._asdict())
 
     def step(self, action):
         time_step = self.env.step(action)
-        return AttrDict(time_step.__dict__)
+        return AttrDict(time_step._asdict())
 
     def reset(self):
         time_step = self.env.reset()
-        return AttrDict(time_step.__dict__)
+        return AttrDict(time_step._asdict())
 
     def __getattr__(self, name):
         return getattr(self.env, name)
