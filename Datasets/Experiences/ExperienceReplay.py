@@ -26,7 +26,7 @@ class ExperienceReplay:
         self.num_episodes = 0
         self.num_experiences_stored = 0
 
-        Spec = namedtuple("Spec", "shape dtype name")  # TODO use DataClass! dtype as str, hydra
+        Spec = namedtuple("Spec", "shape dtype name")
         self.specs = (obs_spec, action_spec,
                       Spec((1,), 'float32', 'reward'),
                       Spec((1,), 'float32', 'discount'))

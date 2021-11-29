@@ -28,7 +28,7 @@ def main(args):
 
     torch.device(args.device)
 
-    root_path = Path.cwd()
+    root_path = args.root_path = Path.cwd()
 
     # Train, test environments
     env = instantiate(args.environment)  # An instance of DeepMindControl, for example
@@ -37,20 +37,17 @@ def main(args):
     if (root_path / 'Saved.pt').exists():
         agent, replay = Utils.load(root_path, 'agent', 'replay')
     else:
-        # Agent
-        for arg in ('obs_shape', 'action_shape', 'discrete'):
-            setattr(args.agent, arg, getattr(env, arg))
+        for arg in ('obs_shape', 'action_shape', 'discrete', 'obs_spec', 'action_spec'):
+            setattr(args, arg, getattr(env, arg))
 
+        # Agent
         agent = instantiate(args.agent)  # An instance of DQNDPGAgent, for example
 
         # Experience replay
-        replay = instantiate(args.replay,  # An instance of PrioritizedExperienceReplay, for example
-                             root_path=root_path,
-                             obs_spec=env.obs_spec,
-                             action_spec= env.action_spec)
+        replay = instantiate(args.replay)  # An instance of PrioritizedExperienceReplay, for example
 
     # Loggers
-    logger = Logger(root_path)  # Aggregates per step  todo hydra exp, agent, task
+    logger = instantiate(args.logger)  # Aggregates per step  todo hydra exp, agent, task
 
     # vlogger = Vlogger(root_path if args.log_video else None)
 

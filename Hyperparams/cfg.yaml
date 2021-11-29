@@ -8,9 +8,14 @@ suite: DMC
 frame_stack: 3
 action_repeat: 2
 # Agent
-lr: 1e-4
+obs_shape: ???  # To be specified later
+action_shape: ??? # To be specified later
 feature_dim: 50
+lr: 1e-4
+discrete: ??? # To be specified later
 # Replay
+obs_spec: ??? # To be specified later
+action_spec: ??? # To be specified later
 nstep: 3
 batch_size: 256
 discount: 0.99
@@ -25,6 +30,7 @@ save_session: false
 log_video: true
 log_tensorboard: true
 # Misc
+root_path: ???  # To be specified later
 device: cuda
 # Experiment
 seed: 1
@@ -42,8 +48,8 @@ environment:
 
 agent:
   _target_: Agents.DQNDPGAgent
-  obs_shape: ???  # To be specified later
-  action_shape: ??? # To be specified later
+  obs_shape: ${obs_shape}
+  action_shape: ${action_shape}
   feature_dim: ${feature_dim}
   hidden_dim: 1024
   target_tau: 0.01
@@ -52,21 +58,25 @@ agent:
   explore_steps: 2000
   lr: ${lr}
   update_per_steps: 2
-  discrete: ??? # To be specified later
+  discrete: ${discrete}
   device: ${device}
   log_tensorboard: ${log_tensorboard}
 
 replay:
   _target_: Datasets.Experiences.ExperienceReplay.ExperienceReplay
-#  storage_dir: ???  # To be specified later
-#  obs_spec: ${obs_spec}  # To be specified later
-#  action_spec: ${obs_spec}  # To be specified later
+  root_path: ${root_path}
+  obs_spec: ${obs_spec}
+  action_spec: ${action_spec}
   capacity: 1000000
   batch_size: ${batch_size}
   num_workers: 4
   nstep: ${nstep}
   discount: ${discount}
   save: false
+
+logger:
+  _target_: Logger.Logger
+  root_path: ${root_path}
 
 hydra:
   run:
