@@ -62,7 +62,7 @@ replay:
 #  obs_spec: ${obs_spec}  # To be specified later
 #  action_spec: ${obs_spec}  # To be specified later
   capacity: 1000000
-  batch_size: ${batch_size}}
+  batch_size: ${batch_size}
   num_workers: 4
   nstep: ${nstep}
   discount: ${discount}
