@@ -39,14 +39,14 @@ class ExperienceReplay:
         self.loading = ExperienceLoading(loading_dir=storage_dir,
                                          capacity=capacity // max(1, num_workers),
                                          num_workers=num_workers,
-                                         fetch_every=1000, nstep=nstep, discount=discount,
+                                         fetch_every=1000,
                                          save=save)
 
         self.nstep = nstep
         self.discount = discount
 
-        # self.loading.sample = self._sample
-        # self.loading.process = self._process
+        self.loading.sample = self._sample
+        self.loading.process = self._process
 
         self._replay = None
 
@@ -112,22 +112,48 @@ class ExperienceReplay:
             self._replay = iter(self.loader)
         return self._replay
 
+    def sample(self):
+        return next(self.replay)
+
     def __iter__(self):
-        return self.replay.__iter__()
+        return iter(self.replay)
 
     def __next__(self):
-        return self.replay.__next__()
+        return next(self.replay)
 
-    def _sample(self, episode_names, metrics=None):  # todo super calls?
-        return self.loading.sample(episode_names, metrics)
+    # Overrides methods in experience loading
+    def _sample(self, episode_names, metrics=None):
+        episode_name = random.choice(episode_names)  # Uniform sampling of experiences
+        return episode_name
 
-    def _process(self, episode):  # todo super calls?
-        return self.loading.process(episode)
+    def _process(self, episode):  # N-step cumulative discounted rewards
+        episode_len = next(iter(episode.values())).shape[0] - 1
+        idx = np.random.randint(0, episode_len - self.nstep + 1) + 1
+
+        # Transition
+        obs = episode['observation'][idx - 1]
+        action = episode['action'][idx]
+        next_obs = episode['observation'][idx + self.nstep - 1]
+        reward = np.zeros_like(episode['reward'][idx])
+        discount = np.ones_like(episode['discount'][idx])
+
+        # Trajectory
+        traj_o = episode["observation"][idx - 1:idx + self.nstep]
+        traj_a = episode["action"][idx:idx + self.nstep]
+        traj_r = episode["reward"][idx:idx + self.nstep]
+
+        # Compute cumulative discounted reward
+        for i in range(self.nstep):
+            step_reward = episode['reward'][idx + i]
+            reward += discount * step_reward
+            discount *= episode['discount'][idx + i] * self.discount
+
+        return obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r
 
 
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
 class ExperienceLoading(IterableDataset):
-    def __init__(self, loading_dir, capacity, num_workers, fetch_every, nstep, discount, save=False):
+    def __init__(self, loading_dir, capacity, num_workers, fetch_every, save=False):
 
         # Dataset construction via parallel workers
 
@@ -145,9 +171,6 @@ class ExperienceLoading(IterableDataset):
         self.samples_since_last_fetch = fetch_every
 
         self.save = save
-
-        self.nstep = nstep
-        self.discount = discount
 
     def load_episode(self, episode_name):
         try:
@@ -203,41 +226,13 @@ class ExperienceLoading(IterableDataset):
             if not self.load_episode(episode_name):
                 break  # Resolve conflicts
 
-    # def sample(self, episode_names, metrics=None):  # Can be over-ridden from ExperienceReplay
-    #     episode_name = random.choice(episode_names)  # Uniform sampling of experiences
-    #     return episode_name
-    #
-    # def process(self, episode):  # Can be over-ridden from ExperienceReplay
-    #     experience = tuple(episode[spec.name] for spec in self.specs)
-    #     return experience
-
-    def sample(self, episode_names, metrics=None):
+    def sample(self, episode_names, metrics=None):  # Can be over-ridden from ExperienceReplay
         episode_name = random.choice(episode_names)  # Uniform sampling of experiences
         return episode_name
 
-    def process(self, episode):
-        episode_len = next(iter(episode.values())).shape[0] - 1
-        idx = np.random.randint(0, episode_len - self.nstep + 1) + 1
-
-        # Transition
-        obs = episode['observation'][idx - 1]
-        action = episode['action'][idx]
-        next_obs = episode['observation'][idx + self.nstep - 1]
-        reward = np.zeros_like(episode['reward'][idx])
-        discount = np.ones_like(episode['discount'][idx])
-
-        # Trajectory
-        traj_o = episode["observation"][idx - 1:idx + self.nstep]
-        traj_a = episode["action"][idx:idx + self.nstep]
-        traj_r = episode["reward"][idx:idx + self.nstep]
-
-        # Compute cumulative discounted reward
-        for i in range(self.nstep):
-            step_reward = episode['reward'][idx + i]
-            reward += discount * step_reward
-            discount *= episode['discount'][idx + i] * self.discount
-
-        return obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r
+    def process(self, episode):  # Can be over-ridden from ExperienceReplay
+        experience = tuple(episode[spec.name] for spec in self.specs)
+        return experience
 
     def fetch_sample_process(self):
         try:

@@ -79,9 +79,9 @@ class Environment:
         logs = {'step': agent.step,
                 'frame': agent.step * self.action_repeat,
                 'episode': agent.episode,
-                'reward': self.episode_reward,
+                'time': sundown - agent.birthday,
                 'fps': frames / (sundown - self.daybreak),
-                'time': sundown - agent.birthday}
+                'reward': self.episode_reward}
 
         if self.episode_done:
             self.episode_step = self.episode_reward = 0
