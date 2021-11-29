@@ -190,7 +190,7 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def obs_spec(self):
-        return self._env.observation_spec()
+        return self.observation_spec
 
     @property
     def obs_shape(self):
@@ -205,20 +205,21 @@ class AttributesWrapper(dm_env.Environment):
     def experience(self):
         return self.exp
 
-    @property
     def observation_spec(self):
         return self.convert_to_named_tuple(self._env.observation_spec())
 
     @property
     def action_spec(self):
         action_spec = self._env.action_spec()
-        return ExtendedAction(action_spec.shape,
-                              action_spec.dtype,
-                              action_spec.minimum,
-                              action_spec.maximum,
-                              'action',
-                              False,
-                              None)
+        if not self.discrete:
+            return ExtendedAction(action_spec.shape,
+                                  action_spec.dtype,
+                                  action_spec.minimum,
+                                  action_spec.maximum,
+                                  'action',
+                                  False,
+                                  None)
+        return action_spec
 
     def convert_to_named_tuple(self, spec):
         names = "shape dtype name"
