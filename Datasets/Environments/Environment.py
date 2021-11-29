@@ -70,6 +70,8 @@ class Environment:
                 agent.episode += 1
             self.env.reset()
 
+            print(agent.episode)
+
             self.last_episode_len = self.episode_step
             self.last_episode_reward = self.episode_reward
 
