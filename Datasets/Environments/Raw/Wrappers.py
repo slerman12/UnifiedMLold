@@ -39,6 +39,8 @@ class ExtendedTimeStep(NamedTuple):
         return getattr(self, key)
 
     def __setitem__(self, key, value):
+        if isinstance(key, int):
+            key = self._fields[key]
         setattr(self, key, value)
 
 
@@ -52,9 +54,13 @@ class ExtendedAction(NamedTuple):
     num_actions: Any
 
     def __getitem__(self, key):
+        if isinstance(key, int):
+            key = self._fields[key]
         return getattr(self, key)
 
     def __setitem__(self, key, value):
+        if isinstance(key, int):
+            key = self._fields[key]
         setattr(self, key, value)
 
 
