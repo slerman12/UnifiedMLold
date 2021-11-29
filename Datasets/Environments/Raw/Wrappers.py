@@ -185,10 +185,6 @@ class AttributesWrapper(dm_env.Environment):
         self.env = env
 
     @property
-    def exp(self):
-        return self.env.time_step
-
-    @property
     def obs_spec(self):
         return self.observation_spec()
 
@@ -201,38 +197,43 @@ class AttributesWrapper(dm_env.Environment):
         return (self.action_spec.num_actions,) \
             if self.discrete else self.action_spec.shape
 
-    @property
-    def experience(self):
-        return self.exp
-
     def observation_spec(self):
         obs_spec = self.env.observation_spec()
-        keys = ['shape', 'dtype', 'name']
+        # keys = ['shape', 'dtype', 'name']
         # Spec = namedtuple('Spec', ' '.join(keys))
         # return Spec(*[getattr(obs_spec, key, None) for key in keys])
         # Convert to dict
-        spec = {key: getattr(obs_spec, key, None) for key in keys}
-        attr_dict = AttrDict()
-        attr_dict.update(spec)
-        return attr_dict
+        # return {key: getattr(obs_spec, key, None) for key in keys}
+        # spec = {key: getattr(obs_spec, key, None) for key in keys}
+        return AttrDict(obs_spec.__dict__)
 
     @property
     def action_spec(self):
         action_spec = self.env.action_spec()
-        keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
+        # keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
         # Spec = namedtuple('Spec', ' '.join(keys))
         # return Spec(*[getattr(action_spec, key, None) for key in keys])
         # Convert to dict
-        spec = {key: getattr(action_spec, key, None) for key in keys}
-        attr_dict = AttrDict()
-        attr_dict.update(spec)
-        return attr_dict
+        # return {key: getattr(action_spec, key, None) for key in keys}
+        # spec = {key: getattr(action_spec, key, None) for key in keys}
+        return AttrDict(action_spec.__dict__)
+
+    @property
+    def experience(self):
+        return self.exp
+
+    @property
+    def exp(self):
+        time_step = self.env.time_step
+        return AttrDict(time_step.__dict__)
 
     def step(self, action):
-        return self.env.step(action)
+        time_step = self.env.step(action)
+        return AttrDict(time_step.__dict__)
 
     def reset(self):
-        return self.env.reset()
+        time_step = self.env.reset()
+        return AttrDict(time_step.__dict__)
 
     def __getattr__(self, name):
         return getattr(self.env, name)
@@ -240,9 +241,10 @@ class AttributesWrapper(dm_env.Environment):
 
 # Access a dict with attribute or key
 class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
+    def __init__(self, d):
+        super(AttrDict, self).__init__()
         self.__dict__ = self
+        self.update(d)
 
 
 class TimeLimit(dm_env.Environment):
