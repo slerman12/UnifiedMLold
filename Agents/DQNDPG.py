@@ -99,6 +99,8 @@ class DQNDPGAgent(torch.nn.Module):
         self.update_actor(obs,
                           logs=logs if self.log_tensorboard else None)
 
+        print(logs["bellman_error"])
+
         # Update critic target
         self.critic.update_target_params()
 
