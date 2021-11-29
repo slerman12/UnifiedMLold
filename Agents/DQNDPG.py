@@ -7,7 +7,6 @@ import time
 import torch
 
 import Utils
-from Blocks.augmentations import RandomShiftsAug
 
 from Blocks.encoders import CNNEncoder
 from Blocks.actors import TruncatedGaussianActor, CategoricalCriticActor
@@ -46,9 +45,6 @@ class DQNDPGAgent(torch.nn.Module):
                                         stddev_schedule, stddev_clip,
                                         optim_lr=lr).to(device)  # todo maybe don't use sched/clip as default arch
 
-        # data augmentation
-        self.aug = RandomShiftsAug(pad=4)  # todo separate
-
     def act(self, obs):
         with torch.no_grad(), Utils.eval_mode(self.encoder, self.actor):
             obs = torch.as_tensor(obs, device=self.device)
@@ -79,17 +75,11 @@ class DQNDPGAgent(torch.nn.Module):
 
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step}
-        if self.step % self.update_per_steps != 0:  # TODO Could cause issues with longer rollouts
-            return logs
 
         batch = replay.sample()
         obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
             batch, self.device)
         traj_o, traj_a, traj_r = traj
-
-        # augment
-        obs = self.aug(obs.float())
-        next_obs = self.aug(next_obs.float())
 
         # Encode
         obs = self.encoder(obs)

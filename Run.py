@@ -23,7 +23,7 @@ cudnn.benchmark = True
 
 @hydra.main(config_path='Hyperparams', config_name='cfg')
 def main(args):
-    # Setup    todo dataclass, dtype str, replay hydra, logger hydra, logger csv, vlogger(?), separate drq, munch, atari
+    # Setup    todo logger hydra, logger csv, vlogger(?), munch, atari
 
     Utils.set_seed_everywhere(args.seed)
 
