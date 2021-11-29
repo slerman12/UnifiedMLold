@@ -97,7 +97,7 @@ class DQNDPGAgent(torch.nn.Module):
         obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
 
         # Policy
-        dist = self.actor(obs, self.step)
+        dist = None
 
         # Update critic
         self.update_critic(obs, action, reward, discount, next_obs, dist, logs)
