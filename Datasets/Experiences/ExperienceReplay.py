@@ -7,6 +7,7 @@ import datetime
 import io
 import traceback
 from collections import namedtuple
+from pathlib import Path
 
 import numpy as np
 
@@ -20,7 +21,7 @@ class ExperienceReplay:
 
         # Episode storage
 
-        self.store_path = root_path / 'buffer'
+        self.store_path = Path(root_path) / 'buffer'
         self.store_path.mkdir(exist_ok=True)
 
         self.num_episodes = 0

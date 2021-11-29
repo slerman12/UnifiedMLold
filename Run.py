@@ -5,6 +5,7 @@
 import hydra
 from hydra.utils import instantiate
 
+import os
 from pathlib import Path
 
 from Logger import Logger
@@ -28,7 +29,7 @@ def main(args):
 
     torch.device(args.device)
 
-    root_path = args.root_path = Path.cwd()
+    args.root_path, root_path = os.getcwd(), Path.cwd()  # Hydra doesn't support Path types
 
     # Train, test environments
     env = instantiate(args.environment)  # An instance of DeepMindControl, for example

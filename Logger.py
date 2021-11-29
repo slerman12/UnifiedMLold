@@ -5,6 +5,7 @@
 import csv
 import datetime
 from collections import defaultdict
+from pathlib import Path
 
 import torch
 from termcolor import colored
@@ -30,7 +31,7 @@ def format(log, log_name):
 
 class Logger:
     def __init__(self, root_path):
-        self.root_path = root_path
+        self.root_path = Path(root_path)
 
         self.logs = {}
         self.counts = {}
