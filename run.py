@@ -38,14 +38,16 @@ def main(args):
         agent, replay = Utils.load(root_path, 'agent', 'replay')
     else:
         # Agent
-        for arg in ('obs_shape', 'action_shape', 'discrete', 'obs_spec', 'action_spec'):
-            setattr(args, arg, getattr(env, arg))
+        for arg in ('obs_shape', 'action_shape', 'discrete'):
+            setattr(args.agent, arg, getattr(env, arg))
 
         agent = instantiate(args.agent)  # An instance of DQNDPGAgent, for example
 
         # Experience replay
-        replay = instantiate(args.replay,
-                             storage_dir=root_path / 'buffer')  # An instance of PrioritizedExperienceReplay, for example
+        replay = instantiate(args.replay,  # An instance of PrioritizedExperienceReplay, for example
+                             storage_dir=root_path / 'buffer',
+                             obs_spec=env.obs_spec,
+                             action_spec= env.action_spec)
 
     # Loggers
     logger = Logger(root_path, use_tensorboard=args.log_tensorboard)  # Aggregates per step

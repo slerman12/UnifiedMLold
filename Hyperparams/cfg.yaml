@@ -7,11 +7,6 @@ defaults:
 suite: DMC
 frame_stack: 3
 action_repeat: 2
-obs_shape: ???  # To be specified later
-action_shape: ???  # To be specified later
-discrete: ???  # To be specified later
-obs_spec: ???  # To be specified later
-action_spec: ???  # To be specified later
 # Agent
 lr: 1e-4
 feature_dim: 50
@@ -47,8 +42,8 @@ environment:
 
 agent:
   _target_: Agents.DQNDPGAgent
-  obs_shape: ${obs_shape}  # To be specified later
-  action_shape: ${action_shape} # To be specified later
+  obs_shape: ???  # To be specified later
+  action_shape: ??? # To be specified later
   feature_dim: ${feature_dim}
   hidden_dim: 1024
   target_tau: 0.01
@@ -57,15 +52,15 @@ agent:
   explore_steps: 2000
   lr: ${lr}
   update_per_steps: 2
-  discrete: ${discrete} # To be specified later
+  discrete: ??? # To be specified later
   device: ${device}
   log_tensorboard: ${log_tensorboard}
 
 replay:
   _target_: Datasets.Experiences.ExperienceReplay.ExperienceReplay
 #  storage_dir: ???  # To be specified later
-  obs_spec: ${obs_spec}  # To be specified later
-  action_spec: ${obs_spec}  # To be specified later
+#  obs_spec: ${obs_spec}  # To be specified later
+#  action_spec: ${obs_spec}  # To be specified later
   capacity: 1000000
   batch_size: ${batch_size}}
   num_workers: 4
