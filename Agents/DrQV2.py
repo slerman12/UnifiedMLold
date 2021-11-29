@@ -5,6 +5,7 @@
 import Utils
 
 from Agents import DQNDPGAgent
+from Blocks.actors import TruncatedGaussianActor
 
 from Blocks.augmentations import RandomShiftsAug, IntensityAug
 
@@ -12,21 +13,22 @@ from Blocks.augmentations import RandomShiftsAug, IntensityAug
 class DrQV2Agent(DQNDPGAgent):
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
-                 target_tau, stddev_schedule, stddev_clip,  # Models
-                 lr, update_per_steps,  # Optimization
-                 explore_steps,  # Exploration
+                 lr, update_per_steps, target_tau,  # Optimization
+                 explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
         super().__init__(
             obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
-            target_tau, stddev_schedule, stddev_clip,  # Models
-            lr, update_per_steps,  # Optimization
-            explore_steps,  # Exploration
+            lr, update_per_steps, target_tau,  # Optimization
+            explore_steps, stddev_schedule, stddev_clip,  # Exploration
             discrete, device, log_tensorboard  # On-boarding
         )
 
-        # ! Technically DrQV2 only compatible with continuous spaces but both supported here  # TODO Maybe diff encoder
+        # ! Technically DrQV2 only compatible with continuous spaces but both supported here
         # self.discrete = False  # Discrete supported
+        # self.actor = TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
+        #                                     stddev_schedule, stddev_clip,
+        #                                     optim_lr=lr).to(device)
 
         # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
