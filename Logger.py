@@ -23,7 +23,7 @@ def format(log, log_name):
     if 'time' in log_name_lower or log_name_lower == 'fps':
         log = str(datetime.timedelta(seconds=int(log)))
         return f'{l}: {log}'
-    elif log.is_integer():
+    elif float(log).is_integer():
         log = int(log)
         return f'{l}: {log}'
     else:
