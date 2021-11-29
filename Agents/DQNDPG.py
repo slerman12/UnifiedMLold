@@ -77,12 +77,12 @@ class DQNDPGAgent(torch.nn.Module):
             return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step,
                                       logs=logs if self.log_tensorboard else None)
 
-    def update(self, replay_iter):
+    def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step}
         if self.step % self.update_per_steps != 0:
             return logs
 
-        batch = next(replay_iter)
+        batch = replay.sample()
         obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
             batch, self.device)
         traj_o, traj_a, traj_r = traj
