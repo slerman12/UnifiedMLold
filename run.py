@@ -78,6 +78,8 @@ def main(args):
             if args.log_tensorboard:
                 logger.log(logs, 'Train')
 
+        step = agent.step
+
         # Evaluate
         if args.evaluate_per_steps % step == 0:
             for ep in range(args.evaluate_episodes):
@@ -87,8 +89,6 @@ def main(args):
 
                 # if args.log_video:
                 #     vlogger.vlog(vlogs)
-
-        step = agent.step
 
 
 if __name__ == "__main__":
