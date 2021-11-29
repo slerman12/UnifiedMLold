@@ -199,25 +199,24 @@ class AttributesWrapper(dm_env.Environment):
 
     def observation_spec(self):
         obs_spec = self.env.observation_spec()
-        # keys = ['shape', 'dtype', 'name']
+        keys = ['shape', 'dtype', 'name']
         # Spec = namedtuple('Spec', ' '.join(keys))
         # return Spec(*[getattr(obs_spec, key, None) for key in keys])
         # Convert to dict
         # return {key: getattr(obs_spec, key, None) for key in keys}
-        # spec = {key: getattr(obs_spec, key, None) for key in keys}
-        print(obs_spec.__dict__)
-        return AttrDict(obs_spec.__dict__)
+        spec = {key: getattr(obs_spec, key, None) for key in keys}
+        return AttrDict(obs_spec)
 
     @property
     def action_spec(self):
         action_spec = self.env.action_spec()
-        # keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
+        keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
         # Spec = namedtuple('Spec', ' '.join(keys))
         # return Spec(*[getattr(action_spec, key, None) for key in keys])
         # Convert to dict
         # return {key: getattr(action_spec, key, None) for key in keys}
-        # spec = {key: getattr(action_spec, key, None) for key in keys}
-        return AttrDict(action_spec.__dict__)
+        spec = {key: getattr(action_spec, key, None) for key in keys}
+        return AttrDict(action_spec)
 
     @property
     def experience(self):
