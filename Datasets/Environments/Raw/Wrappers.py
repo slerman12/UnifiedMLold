@@ -235,8 +235,6 @@ class AttributesWrapper(dm_env.Environment):
         self._env.reset()
 
     def __getattr__(self, name):
-        if hasattr(self, name):
-            return getattr(self, name)
         return getattr(self._env, name)
 
 
