@@ -98,7 +98,7 @@ class DQNDPGAgent(torch.nn.Module):
         obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
 
         # Policy
-        dist = N] # detaching encoder for actor...? what about discrete todo delete...
+        dist = None # detaching encoder for actor...? what about discrete todo delete...
 
         # Update critic
         self.update_critic(obs, action, reward, discount, next_obs, dist, logs)
