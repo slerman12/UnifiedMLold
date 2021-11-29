@@ -76,15 +76,15 @@ class Environment:
         sundown = time.time()
         frames = self.episode_step * self.action_repeat
 
-        logs = {'fps': frames / (sundown - self.daybreak),
-                'time': sundown - agent.birthday,
-                'reward': self.episode_reward,
+        logs = {'step': agent.step,
+                'frame': agent.step * self.action_repeat,
                 'episode': agent.episode,
-                'frames': agent.step * self.action_repeat,
-                'step': agent.step}
+                'reward': self.episode_reward,
+                'fps': frames / (sundown - self.daybreak),
+                'time': sundown - agent.birthday}
 
         if self.episode_done:
             self.episode_step = self.episode_reward = 0
-            self.daybreak = None
+            self.daybreak = sundown
 
         return experiences, logs, vlogs
