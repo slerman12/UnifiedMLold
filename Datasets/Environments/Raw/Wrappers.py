@@ -233,9 +233,12 @@ class AttributesWrapper(dm_env.Environment):
         self._env.reset()
 
     def __getattr__(self, name):
-        if name not in self.__dict__:
-            return getattr(self.env, name)
-        return getattr(self, name)
+        try:
+            if name not in self.__dict__:
+                return getattr(self.env, name)
+            return getattr(self, name)
+        except:
+            print(name)
 
 
 class TimeLimit(dm_env.Environment):
