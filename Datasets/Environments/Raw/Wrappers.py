@@ -184,7 +184,7 @@ class AttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self.env = env
         self.action_shape = (self.action_spec.num_actions,) \
-            if self.discrete else self.action_spec.shape
+            if self.discrete else self.action_spec().shape
 
     @property
     def exp(self):
