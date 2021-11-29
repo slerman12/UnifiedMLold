@@ -147,11 +147,13 @@ class ActionDTypeWrapper(dm_env.Environment):
         self.discrete = discrete
         wrapped_action_spec = env.action_spec()
         if not discrete:
-            self._action_spec = specs.BoundedArray(wrapped_action_spec.shape,
-                                                   dtype,
-                                                   wrapped_action_spec.minimum,
-                                                   wrapped_action_spec.maximum,
-                                                   'action')
+            self._action_spec = ExtendedAction(wrapped_action_spec.shape,
+                                               dtype,
+                                               wrapped_action_spec.minimum,
+                                               wrapped_action_spec.maximum,
+                                               'action',
+                                               False,
+                                               None)
         else:
             num_actions = wrapped_action_spec.shape[-1]
             self._action_spec = ExtendedAction((1,),
