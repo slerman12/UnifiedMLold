@@ -45,12 +45,12 @@ def main(args):
 
         # Experience replay
         replay = instantiate(args.replay,  # An instance of PrioritizedExperienceReplay, for example
-                             storage_dir=root_path / 'buffer',
+                             root_path=root_path,
                              obs_spec=env.obs_spec,
                              action_spec= env.action_spec)
 
     # Loggers
-    logger = Logger(root_path, use_tensorboard=args.log_tensorboard)  # Aggregates per step
+    logger = Logger(root_path, use_tensorboard=args.log_tensorboard)  # Aggregates per step  todo hydra exp, agent, task
 
     # vlogger = VideoRecorder(root_path if args.log_video else None)
 

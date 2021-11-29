@@ -15,18 +15,18 @@ from torch.utils.data import IterableDataset
 
 
 class ExperienceReplay:
-    def __init__(self, storage_dir, obs_spec, action_spec, capacity, batch_size, num_workers,
+    def __init__(self, root_path, obs_spec, action_spec, capacity, batch_size, num_workers,
                  save, nstep, discount):
 
         # Episode storage
 
-        self.storage_dir = storage_dir
-        storage_dir.mkdir(exist_ok=True)
+        self.store_path = root_path / 'buffer'
+        self.store_path.mkdir(exist_ok=True)
 
         self.num_episodes = 0
         self.num_experiences_stored = 0
 
-        Spec = namedtuple("Spec", "shape dtype name")  # TODO use DataClass!
+        Spec = namedtuple("Spec", "shape dtype name")  # TODO use DataClass! dtype as str, hydra
         self.specs = (obs_spec, action_spec,
                       Spec((1,), np.float32, 'reward'),
                       Spec((1,), np.float32, 'discount'))
@@ -36,7 +36,7 @@ class ExperienceReplay:
 
         # Experience loading
 
-        self.loading = ExperienceLoading(loading_dir=storage_dir,
+        self.loading = ExperienceLoading(load_path=self.store_path,
                                          capacity=capacity // max(1, num_workers),
                                          num_workers=num_workers,
                                          fetch_every=1000,
@@ -88,10 +88,11 @@ class ExperienceReplay:
             self.episode[spec.name] = np.array(self.episode[spec.name], spec.dtype)
 
         timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+        print(timestamp)
         episode_name = f'{timestamp}_{self.num_episodes}_{self.episode_len}.npz'
 
         # Save episode
-        save_path = self.storage_dir / episode_name
+        save_path = self.store_path / episode_name
         with io.BytesIO() as buffer:
             np.savez_compressed(buffer, **self.episode)
             buffer.seek(0)
@@ -115,11 +116,12 @@ class ExperienceReplay:
     def sample(self):
         return next(self.replay)
 
-    # def __iter__(self):
-    #     return iter(self.replay)
-    #
-    # def __next__(self):
-    #     return next(self.replay)
+    # Can iterate on self to get batches e.g. next(self)
+    def __next__(self):
+        return self.replay.__next__()
+
+    def __iter__(self):
+        return self.replay.__iter__()
 
     # Overrides methods in experience loading
     def _sample(self, episode_names, metrics=None):
@@ -153,11 +155,11 @@ class ExperienceReplay:
 
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
 class ExperienceLoading(IterableDataset):
-    def __init__(self, loading_dir, capacity, num_workers, fetch_every, save=False):
+    def __init__(self, load_path, capacity, num_workers, fetch_every, save=False):
 
         # Dataset construction via parallel workers
 
-        self.loading_dir = loading_dir
+        self.load_path = load_path
 
         self.episode_names = []
         self.episodes = dict()
@@ -212,7 +214,7 @@ class ExperienceLoading(IterableDataset):
         except Exception:
             worker_id = 0
 
-        episode_names = sorted(self.loading_dir.glob('*.npz'), reverse=True)
+        episode_names = sorted(self.load_path.glob('*.npz'), reverse=True)
         num_fetched = 0
         for episode_name in episode_names:
             episode_idx, episode_len = [int(x) for x in episode_name.stem.split('_')[1:]]
