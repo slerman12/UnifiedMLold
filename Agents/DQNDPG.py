@@ -74,38 +74,41 @@ class DQNDPGAgent(torch.nn.Module):
         return obs, action, reward, discount, next_obs, *traj
 
     @Utils.optimize('encoder', 'critic')
-    def update_critic(self, obs, action, reward, discount, next_obs, logs=None):
+    def update_critic(self, obs, action, reward, discount, next_obs, dist, logs=None):
         # Critic loss
-        return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step,
-                                 logs=logs if self.log_tensorboard else None)
+        return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step, dist,
+                                 logs=logs)
 
     @Utils.optimize('actor')
-    def update_actor(self, obs, logs=None):
+    def update_actor(self, obs, dist, logs=None):
         if not self.discrete:
             # Actor loss
-            return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step,
-                                      logs=logs if self.log_tensorboard else None)
+            return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step, dist,
+                                      logs=logs)
 
-    def update_misc(self):
+    def update_misc(self, obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r, dist, logs=None):
+        pass
+
+    def update(self, replay):
+        logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
+            else None
+
+        batch = replay.sample()
+        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs)
+
+        # Policy
+        dist = self.actor(obs, self.step)
+
+        # Update critic
+        self.update_critic(obs, action, reward, discount, next_obs, dist, logs)
+
         # Update critic target
         self.critic.update_target_params()
 
-    def update(self, replay):
-        logs = {'episode': self.episode, 'step': self.step}
-
-        batch = replay.sample()
-        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
-        traj_o, traj_a, traj_r = traj
-
-        # Update critic
-        self.update_critic(obs, action, reward, discount, next_obs,
-                           logs=logs if self.log_tensorboard else None)
-
         # Update actor
-        self.update_actor(obs,
-                          logs=logs if self.log_tensorboard else None)
+        self.update_actor(obs, dist, logs)
 
         # Any miscellaneous updates
-        self.update_misc()
+        self.update_misc(obs, action, reward, discount, next_obs, *traj, dist, logs)
 
         return logs

@@ -25,7 +25,7 @@ class DrQV2Agent(DQNDPGAgent):
             discrete, device, log_tensorboard  # On-boarding
         )
 
-        # ! Technically DrQV2 only compatible with continuous spaces but both supported here
+        # ! Technically DrQV2 only compatible with continuous spaces but both supported here  # TODO Maybe diff encoder
         # self.discrete = False  # Discrete supported
 
         # Data augmentation
