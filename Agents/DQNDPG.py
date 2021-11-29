@@ -83,8 +83,6 @@ class DQNDPGAgent(torch.nn.Module):
             batch, self.device)
         traj_o, traj_a, traj_r = traj
 
-        print(obs.shape[0])
-
         # Encode
         obs = self.encoder(obs)
         with torch.no_grad():
