@@ -307,15 +307,17 @@ class ExtendedTimeStepWrapper(dm_env.Environment):
         self.time_step = None
 
     def reset(self):
-        self.time_step = time_step = self._env.reset()
-        return self._augment_time_step(time_step)
+        time_step = self._env.reset()
+        self.time_step = self._augment_time_step(time_step)
+        return self.time_step
 
     def close(self):
         self.gym_env.close()
 
     def step(self, action):
-        self.time_step = time_step = self._env.step(action)
-        return self._augment_time_step(time_step, action)
+        time_step = self._env.step(action)
+        self.time_step = self._augment_time_step(time_step, action)
+        return self.time_step
 
     def _augment_time_step(self, time_step, action=None):
         if action is None:
