@@ -208,13 +208,15 @@ class AttributesWrapper(dm_env.Environment):
     def observation_spec(self):
         obs_spec = self.env.observation_spec()
         keys = ['shape', 'dtype', 'name']
-        return {key: getattr(obs_spec, key, None) for key in keys}
+        Spec = namedtuple('Spec', ' '.join(keys))
+        return Spec(*[getattr(obs_spec, key, None) for key in keys])
 
     @property
     def action_spec(self):
         action_spec = self.env.action_spec()
         keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
-        return {key: getattr(action_spec, key, None) for key in keys}
+        Spec = namedtuple('Spec', ' '.join(keys))
+        return Spec(*[getattr(action_spec, key, None) for key in keys])
 
     def step(self, action):
         self.env.step()
