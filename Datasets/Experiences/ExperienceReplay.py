@@ -43,7 +43,7 @@ class ExperienceReplay:
         self.discount = discount
 
     def add(self, experiences, store=True):
-        self.storage.add(experiences, store=True)
+        self.storage.add(experiences, store=store)
 
     @property
     def replay(self):
