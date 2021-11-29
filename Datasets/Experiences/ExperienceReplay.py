@@ -18,38 +18,92 @@ class ExperienceReplay:
     def __init__(self, storage_dir, obs_spec, action_spec, capacity, batch_size, num_workers,
                  save, nstep, discount):
 
-        self.storage = ExperienceStorage(storage_dir, obs_spec, action_spec,
-                                         capacity=capacity // max(1, num_workers),
-                                         num_workers=num_workers,
-                                         fetch_every=1000,
-                                         save=save)
+        # Episode storage
+
+        self.storage_dir = storage_dir
+        storage_dir.mkdir(exist_ok=True)
+
+        self.num_episodes = 0
+        self.num_experiences_total = 0
+
+        Spec = namedtuple("Spec", "shape dtype name")  # TODO use DataClass!
+        self.specs = (obs_spec, action_spec,
+                      Spec((1,), np.float32, 'reward'),
+                      Spec((1,), np.float32, 'discount'))
+
+        self.episode = {spec.name: [] for spec in self.specs}
+        self.episode_len = 0
+
+        # Experience loading
+
+        load = ExperienceLoading(capacity=capacity // max(1, num_workers),
+                                 num_workers=num_workers,
+                                 fetch_every=1000,
+                                 save=save)
+
+        self.nstep = nstep
+        self.discount = discount
+
+        load.sample = self.sample
+        load.process = self.process
 
         self._replay = None
-        self.storage.sample = self.sample
-        self.storage.process = self.process
 
         def worker_init_fn(worker_id):
             seed = np.random.get_state()[1][0] + worker_id
             np.random.seed(seed)
             random.seed(seed)
 
-        self.loading = torch.utils.data.DataLoader(dataset=self.storage,
-                                                   batch_size=batch_size,
-                                                   num_workers=num_workers,
-                                                   pin_memory=True,
-                                                   worker_init_fn=worker_init_fn)
+        self.loader = torch.utils.data.DataLoader(dataset=load,
+                                                  batch_size=batch_size,
+                                                  num_workers=num_workers,
+                                                  pin_memory=True,
+                                                  worker_init_fn=worker_init_fn)
 
-        self.nstep = nstep
-        self.discount = discount
-
+    # Tracks single episode in memory buffer
     def add(self, experiences=None, store=False):
-        self.storage.add(experiences, store=store)
+        if experiences is None:
+            experiences = []
 
-    @property
-    def replay(self):
-        if self._replay is None:
-            self._replay = iter(self.loading)
-        return self._replay
+        # An "episode" of experiences
+        assert isinstance(experiences, (list, tuple))
+
+        for exp in experiences:
+            for spec in self.specs:
+                if np.isscalar(exp[spec.name]):
+                    exp[spec.name] = np.full(spec.shape, exp[spec.name], spec.dtype)
+                self.episode[spec.name].append(exp[spec.name])
+                assert spec.shape == exp[spec.name].shape
+                assert spec.dtype == exp[spec.name].dtype
+
+        self.episode_len += len(experiences)
+
+        if store:
+            self.store_episode()
+
+    # Stores episode (to file in system)
+    def store_episode(self):
+        for spec in self.specs:
+            self.episode[spec.name] = np.array(self.episode[spec.name], spec.dtype)
+
+        timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+        episode_name = f'{timestamp}_{self.num_episodes}_{self.episode_len}.npz'
+
+        # Save episode
+        save_path = self.storage_dir / episode_name
+        with io.BytesIO() as buffer:
+            np.savez_compressed(buffer, **self.episode)
+            buffer.seek(0)
+            with save_path.open('wb') as f:
+                f.write(buffer.read())
+
+        self.num_episodes += 1
+        self.num_experiences_total += self.episode_len
+        self.episode = {spec.name: [] for spec in self.specs}
+        self.episode_len = 0
+
+    def __len__(self):
+        return self.num_experiences_total
 
     def sample(self, episode_names, metrics=None):
         episode_name = random.choice(episode_names)  # Uniform sampling of experiences
@@ -79,6 +133,12 @@ class ExperienceReplay:
 
         return obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r
 
+    @property
+    def replay(self):
+        if self._replay is None:
+            self._replay = iter(self.loader)
+        return self._replay
+
     def __iter__(self):
         return self.replay.__iter__()
 
@@ -86,25 +146,9 @@ class ExperienceReplay:
         return self.replay.__next__()
 
 
-# Stores episodes (to files in system)
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
-class ExperienceStorage(IterableDataset):
-    def __init__(self, storage_dir, obs_spec, action_spec, capacity, num_workers, fetch_every, save=False):
-        # Episode storage
-
-        self.storage_dir = storage_dir
-        storage_dir.mkdir(exist_ok=True)
-
-        self.num_episodes = 0
-        self.num_experiences_total = 0
-
-        Spec = namedtuple("Spec", "shape dtype name")
-        self.specs = (obs_spec, action_spec,
-                      Spec((1,), np.float32, 'reward'),
-                      Spec((1,), np.float32, 'discount'))
-
-        self.episode = {spec.name: [] for spec in self.specs}
-        self.episode_len = 0
+class ExperienceLoading(IterableDataset):
+    def __init__(self, capacity, num_workers, fetch_every, save=False):
 
         # Dataset construction via parallel workers
 
@@ -120,49 +164,6 @@ class ExperienceStorage(IterableDataset):
         self.samples_since_last_fetch = fetch_every
 
         self.save = save
-
-    def __len__(self):
-        return self.num_experiences_total
-
-    def add(self, experiences=None, store=False):
-        if experiences is None:
-            experiences = []
-
-        # An "episode" of experiences
-        assert isinstance(experiences, (list, tuple))
-
-        for exp in experiences:
-            for spec in self.specs:
-                if np.isscalar(exp[spec.name]):
-                    exp[spec.name] = np.full(spec.shape, exp[spec.name], spec.dtype)
-                self.episode[spec.name].append(exp[spec.name])
-                assert spec.shape == exp[spec.name].shape
-                assert spec.dtype == exp[spec.name].dtype
-
-        self.episode_len += len(experiences)
-
-        if store:
-            self.store_episode()
-
-    def store_episode(self):
-        for spec in self.specs:
-            self.episode[spec.name] = np.array(self.episode[spec.name], spec.dtype)
-
-        timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
-        episode_name = f'{timestamp}_{self.num_episodes}_{self.episode_len}.npz'
-
-        # Save episode
-        save_path = self.storage_dir / episode_name
-        with io.BytesIO() as buffer:
-            np.savez_compressed(buffer, **self.episode)
-            buffer.seek(0)
-            with save_path.open('wb') as f:
-                f.write(buffer.read())
-
-        self.num_episodes += 1
-        self.num_experiences_total += self.episode_len
-        self.episode = {spec.name: [] for spec in self.specs}
-        self.episode_len = 0
 
     def load_episode(self, episode_name):
         try:
