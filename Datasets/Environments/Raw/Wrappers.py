@@ -206,25 +206,23 @@ class AttributesWrapper(dm_env.Environment):
         return self.exp
 
     def observation_spec(self):
-        return self.convert_to_named_tuple(self._env.observation_spec())
+        obs_spec = self._env.observation_spec()
+        Spec = namedtuple("Spec", 'shape dtype name')
+        return Spec(*[getattr(obs_spec, name) for name in ['shape', 'dtype', 'name']])
 
     @property
     def action_spec(self):
         action_spec = self._env.action_spec()
         if not self.discrete:
-            return ExtendedAction(action_spec.shape,
-                                  action_spec.dtype,
-                                  action_spec.minimum,
-                                  action_spec.maximum,
-                                  'action',
-                                  False,
-                                  None)
+            Spec = namedtuple("Spec", 'shape dtype minimum maximum name discrete num_actions')
+            return Spec(action_spec.shape,
+                        action_spec.dtype,
+                        action_spec.minimum,
+                        action_spec.maximum,
+                        action_spec.name,
+                        action_spec.discrete,
+                        action_spec.num_actions)
         return action_spec
-
-    def convert_to_named_tuple(self, spec):
-        names = "shape dtype name"
-        Spec = namedtuple("Spec", names)
-        return Spec(*[getattr(spec, name) for name in names])
 
     def step(self, action):
         self._env.step()
@@ -233,12 +231,7 @@ class AttributesWrapper(dm_env.Environment):
         self._env.reset()
 
     def __getattr__(self, name):
-        try:
-            if name not in self.__dict__:
-                return getattr(self.env, name)
-            return getattr(self, name)
-        except:
-            print(name)
+        return getattr(self.env, name)
 
 
 class TimeLimit(dm_env.Environment):
