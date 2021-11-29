@@ -10,29 +10,94 @@ import torch
 from termcolor import colored
 from torch.utils.tensorboard import SummaryWriter
 
-COMMON_TRAIN_FORMAT = [('frame', 'F', 'int'), ('step', 'S', 'int'),
-                       ('episode', 'E', 'int'), ('episode_length', 'L', 'int'),
-                       ('episode_reward', 'R', 'float'),
-                       ('buffer_size', 'BS', 'int'), ('fps', 'FPS', 'float'),
-                       ('total_time', 'T', 'time')]
 
-COMMON_EVAL_FORMAT = [('frame', 'F', 'int'), ('step', 'S', 'int'),
-                      ('episode', 'E', 'int'), ('episode_length', 'L', 'int'),
-                      ('episode_reward', 'R', 'float'),
-                      ('total_time', 'T', 'time')]
+def shorthand(log_name):
+    return log_name[0].upper() if len(log_name) > 3 else log_name.upper()
 
 
-class AverageMeter(object):
-    def __init__(self):
-        self._sum = 0
-        self._count = 0
+def format(log, log_name):
+    log_name_lower = log_name.lower()
 
-    def update(self, value, n=1):
-        self._sum += value
-        self._count += n
+    l = shorthand(log_name)
 
-    def value(self):
-        return self._sum / max(1, self._count)
+    if 'time' in log_name_lower or log_name_lower == 'fps':
+        log = str(datetime.timedelta(seconds=int(log)))
+        return f'{l}: {log}'
+    elif log.is_integer():
+        log = int(log)
+        return f'{l}: {log}'
+    else:
+        return f'{l}: {log:.04f}'
+
+
+class Logger:
+    def __init__(self, file_name):
+        self.file_name = file_name
+
+        self.logs = {}
+        self.counts = {}
+
+    def log(self, log, name, dump=False):
+        if name not in self.logs:
+            self.logs[name] = {}
+            self.counts[name] = {}
+
+        logs = self.logs[name]
+        counts = self.counts[name]
+
+        for k, l in log.item():
+            if k in logs:
+                logs[k] += l
+                counts[k] += 1
+            else:
+                logs[k] = l
+                counts[k] = 1
+
+        if dump:
+            self.dump_logs(name)
+
+    def dump_logs(self, name=None):
+        if name is None:
+            for n in self.logs:
+                self.logs[n] /= self.counts[n]
+                self._dump_logs(self.logs[n], name=n)
+                del self.logs[n]
+                del self.counts[n]
+        else:
+            if name not in self.logs:
+                return
+            self._dump_logs(self.logs[name], name=name)
+            self.logs[name] = {}
+            del self.logs[name]
+            del self.counts[name]
+
+    def _dump_logs(self, logs, name):
+        # self.dump_to_csv(logs, name=name)
+        self.dump_to_console(logs, name=name)
+
+    def dump_to_csv(self, logs, name):
+        if self.csv_writer is None:
+            write_header = True
+            if self.file_name.exists():
+                self.remove_old_entries(logs, name)
+                write_header = False
+
+            file = self.file_name.open('a')
+            writer = csv.DictWriter(file,
+                                    fieldnames=sorted(logs.keys()),
+                                    restval=0.0)
+            if write_header:
+                self.csv_writer.writeheader()
+
+        self.csv_writer.writerow(logs)
+        self.csv_file.flush()
+
+    def dump_to_console(self, logs, name):
+        name = colored(name, 'yellow' if name.lower() == 'train' else 'green')
+        pieces = [f'| {name: <14}']
+        for log_name, log in logs.items():
+            pieces.append(format(log, log_name))
+        print(' | '.join(pieces))
 
 
 class MetersGroup(object):
@@ -73,23 +138,6 @@ class MetersGroup(object):
             for row in rows:
                 writer.writerow(row)
 
-    def _dump_to_csv(self, data):
-        if self._csv_writer is None:
-            should_write_header = True
-            if self._csv_file_name.exists():
-                self._remove_old_entries(data)
-                should_write_header = False
-
-            self._csv_file = self._csv_file_name.open('a')
-            self._csv_writer = csv.DictWriter(self._csv_file,
-                                              fieldnames=sorted(data.keys()),
-                                              restval=0.0)
-            if should_write_header:
-                self._csv_writer.writeheader()
-
-        self._csv_writer.writerow(data)
-        self._csv_file.flush()
-
     def _format(self, key, value, ty):
         if ty == 'int':
             value = int(value)
@@ -102,14 +150,6 @@ class MetersGroup(object):
         else:
             raise Exception(f'invalid format type: {ty}')
 
-    def _dump_to_console(self, data, prefix):
-        prefix = colored(prefix, 'yellow' if prefix == 'train' else 'green')
-        pieces = [f'| {prefix: <14}']
-        for key, disp_key, ty in self._formating:
-            value = data.get(key, 0)
-            pieces.append(self._format(disp_key, value, ty))
-        print(' | '.join(pieces))
-
     def dump(self, step, prefix):
         if len(self._meters) == 0:
             return
@@ -120,7 +160,7 @@ class MetersGroup(object):
         self._meters.clear()
 
 
-class Logger(object):
+class LoggerOld(object):
     def __init__(self, log_dir, use_tensorboard):
         self._log_dir = log_dir
         self._train_mg = MetersGroup(log_dir / 'train.csv',
