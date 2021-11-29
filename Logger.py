@@ -60,13 +60,16 @@ class Logger:
     def dump_logs(self, name=None):
         if name is None:
             for n in self.logs:
-                self.logs[n] /= self.counts[n]
+                for log_name in self.logs[n]:
+                    self.logs[n][log_name] /= self.counts[n][log_name]
                 self._dump_logs(self.logs[n], name=n)
                 del self.logs[n]
                 del self.counts[n]
         else:
             if name not in self.logs:
                 return
+            for log_name in self.logs[name]:
+                self.logs[name][log_name] /= self.counts[name][log_name]
             self._dump_logs(self.logs[name], name=name)
             self.logs[name] = {}
             del self.logs[name]
