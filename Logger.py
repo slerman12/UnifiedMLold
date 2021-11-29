@@ -12,8 +12,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 def shorthand(log_name):
-    log_name = ''.join([s[0] for s in log_name.split('_')])
-    return log_name[0].upper() if len(log_name) > 3 else log_name.upper()
+    return ''.join([s[0].upper() for s in log_name.split('_')] if len(log_name) > 3 else log_name.upper())
+    # return log_name[0].upper() if len(log_name) > 3 else log_name.upper()
 
 
 def format(log, log_name):
