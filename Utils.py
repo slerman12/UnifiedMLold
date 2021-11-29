@@ -111,6 +111,30 @@ def loop_in_chunks(num_chunks=1, grad_accumulation=False):
     return decorator
 
 
+# No grads; temporarily switches on eval() mode for a class method's specified models; then resets them
+def act_mode(*models):
+    def decorator(method):
+
+        @wraps(method)
+        def set_reset_eval(self, *args, **kwargs):
+            start_modes = []
+
+            for model in models:
+                start_modes.append(model.training)
+                getattr(self, model).eval()
+
+            with torch.no_grad():
+                output = method(self, *args, **kwargs)
+
+            for model, mode in zip(models, start_modes):
+                getattr(self, model).train(mode)
+
+            return output
+        return set_reset_eval
+
+    return decorator
+
+
 # Context manager that temporarily switches on eval() mode for specified models; then resets them
 class eval_mode:
     def __init__(self, *models):

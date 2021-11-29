@@ -82,6 +82,9 @@ class ExperienceReplay:
     def __iter__(self):
         return self.replay.__iter__()
 
+    def __next__(self):
+        return self.replay.__next__()
+
 
 # Stores episodes (to files in system)
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
