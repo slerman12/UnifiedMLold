@@ -36,7 +36,8 @@ class ExperienceReplay:
 
         # Experience loading
 
-        load = ExperienceLoading(capacity=capacity // max(1, num_workers),
+        load = ExperienceLoading(loading_dir=storage_dir,
+                                 capacity=capacity // max(1, num_workers),
                                  num_workers=num_workers,
                                  fetch_every=1000,
                                  save=save)
@@ -148,9 +149,11 @@ class ExperienceReplay:
 
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
 class ExperienceLoading(IterableDataset):
-    def __init__(self, capacity, num_workers, fetch_every, save=False):
+    def __init__(self, loading_dir, capacity, num_workers, fetch_every, save=False):
 
         # Dataset construction via parallel workers
+
+        self.loading_dir = loading_dir
 
         self.episode_names = []
         self.episodes = dict()
@@ -166,8 +169,6 @@ class ExperienceLoading(IterableDataset):
         self.save = save
 
     def load_episode(self, episode_name):
-        print(self.num_experiences_loaded)
-
         try:
             with episode_name.open('rb') as episode_file:
                 episode = np.load(episode_file)
@@ -207,7 +208,7 @@ class ExperienceLoading(IterableDataset):
         except Exception:
             worker_id = 0
 
-        episode_names = sorted(self.storage_dir.glob('*.npz'), reverse=True)
+        episode_names = sorted(self.loading_dir.glob('*.npz'), reverse=True)
         num_fetched = 0
         for episode_name in episode_names:
             episode_idx, episode_len = [int(x) for x in episode_name.stem.split('_')[1:]]
