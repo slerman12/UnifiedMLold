@@ -3,10 +3,18 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 from collections import deque
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple  
 import dm_env
 import numpy as np
 from dm_env import StepType, specs
+
+
+# Access a dict with attribute or key
+class AttrDict(dict):
+    def __init__(self, d):
+        super(AttrDict, self).__init__()
+        self.__dict__ = self
+        self.update(d)
 
 
 class ExtendedTimeStep(NamedTuple):
@@ -30,16 +38,16 @@ class ExtendedTimeStep(NamedTuple):
 
     def get_last(self):
         return self._replace(step_type=StepType.LAST)
+    
+    def to_attr_dict(self):
+        keys = ['step_type', 'reward', 'discount', 'observation', 'action',
+                'first', 'mid', 'last', 'episode_done', 'get_last']
+        return AttrDict({key: self[key] for key in keys})
 
     def __getitem__(self, key):
         if isinstance(key, int):
             key = self._fields[key]
         return getattr(self, key)
-
-    def __setitem__(self, key, value):
-        if isinstance(key, int):
-            key = self._fields[key]
-        self.__dict__.update(self._replace(**{key: value}).__dict__)
 
 
 class ExtendedAction(NamedTuple):
@@ -51,15 +59,14 @@ class ExtendedAction(NamedTuple):
     discrete: bool
     num_actions: Any
 
+    def to_attr_dict(self):
+        keys = ['shape', 'dtype', 'minimum', 'maximium', 'name', 'discrete', 'num_actions']
+        return AttrDict({key: self[key] for key in keys})
+
     def __getitem__(self, key):
         if isinstance(key, int):
             key = self._fields[key]
         return getattr(self, key)
-
-    def __setitem__(self, key, value):
-        if isinstance(key, int):
-            key = self._fields[key]
-        self.__dict__.update(self._replace(**{key: value}).__dict__)
 
 
 class ActionRepeatWrapper(dm_env.Environment):
@@ -192,70 +199,6 @@ class ActionDTypeWrapper(dm_env.Environment):
         return getattr(self._env, name)
 
 
-class AttributesWrapper(dm_env.Environment):
-    def __init__(self, env):
-        self.env = env
-
-    @property
-    def obs_spec(self):
-        return self.observation_spec()
-
-    @property
-    def obs_shape(self):
-        return self.observation_spec().shape
-
-    @property
-    def action_shape(self):
-        return (self.action_spec.num_actions,) \
-            if self.discrete else self.action_spec.shape
-
-    def observation_spec(self):
-        obs_spec = self.env.observation_spec()
-        keys = ['shape', 'dtype', 'name']
-        # Spec = namedtuple('Spec', ' '.join(keys))
-        # return Spec(*[getattr(obs_spec, key, None) for key in keys])
-        # Convert to dict
-        # return {key: getattr(obs_spec, key, None) for key in keys}
-        spec = {key: getattr(obs_spec, key, None) for key in keys}
-        return AttrDict(spec)
-
-    @property
-    def action_spec(self):
-        action_spec = self.env.action_spec()
-        keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
-        # Spec = namedtuple('Spec', ' '.join(keys))
-        # return Spec(*[getattr(action_spec, key, None) for key in keys])
-        # Convert to dict
-        # return {key: getattr(action_spec, key, None) for key in keys}
-        spec = {key: getattr(action_spec, key, None) for key in keys}
-        return AttrDict(spec)
-
-    @property
-    def experience(self):
-        return self.exp
-
-    @property
-    def exp(self):
-        return self.env.time_step
-
-    def step(self, action):
-        return self.env.step(action)
-
-    def reset(self):
-        return self.env.reset()
-
-    def __getattr__(self, name):
-        return getattr(self.env, name)
-
-
-# Access a dict with attribute or key
-class AttrDict(dict):
-    def __init__(self, d):
-        super(AttrDict, self).__init__()
-        self.__dict__ = self
-        self.update(d)
-
-
 class TimeLimit(dm_env.Environment):
     """Return done before end of episode. If resume is True,
     resume episode without reset if episode not actually done
@@ -337,3 +280,51 @@ class ExtendedTimeStepWrapper(dm_env.Environment):
 
     def __getattr__(self, name):
         return getattr(self._env, name)
+
+
+class AttributesWrapper(dm_env.Environment):
+    def __init__(self, env):
+        self.env = env
+
+    @property
+    def obs_spec(self):
+        return self.observation_spec()
+
+    @property
+    def obs_shape(self):
+        return self.observation_spec().shape
+
+    @property
+    def action_shape(self):
+        return (self.action_spec.num_actions,) \
+            if self.discrete else self.action_spec.shape
+
+    def observation_spec(self):
+        obs_spec = self.env.observation_spec()
+        keys = ['shape', 'dtype', 'name']
+        spec = {key: getattr(obs_spec, key, None) for key in keys}
+        return AttrDict(spec)
+
+    @property
+    def action_spec(self):
+        action_spec = self.env.action_spec()
+        keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
+        spec = {key: getattr(action_spec, key, None) for key in keys}
+        return AttrDict(spec)
+
+    @property
+    def experience(self):
+        return self.exp
+
+    @property
+    def exp(self):
+        return self.env.time_step.to_attr_dict()
+
+    def step(self, action):
+        return self.env.step(action).to_attr_dict()
+
+    def reset(self):
+        return self.env.reset().to_attr_dict()
+
+    def __getattr__(self, name):
+        return getattr(self.env, name)
