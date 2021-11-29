@@ -2,8 +2,6 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-from torch import nn
-
 from Agents import DQNDPGAgent
 
 from Blocks.augmentations import RandomShiftsAug, IntensityAug
@@ -30,4 +28,4 @@ class DrQV2Agent(DQNDPGAgent):
 
         # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
-        self.encoder = nn.Sequential(self.aug, self.encoder)
+        self.encoder.__call__ = lambda obs: self.aug(self.encoder(obs))
