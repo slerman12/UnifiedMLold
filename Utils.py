@@ -49,6 +49,7 @@ def optimize(*models):
                 # Update models
                 loss.backward()
                 if step_optim:
+                    print("yayaya")
                     map(lambda model: getattr(self, model).optim.step(), models)
 
         return model_loss
