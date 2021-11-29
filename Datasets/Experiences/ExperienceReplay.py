@@ -72,11 +72,11 @@ class ExperienceReplay:
 
         for exp in experiences:
             for spec in self.specs:
-                if np.isscalar(exp[spec.name]):
-                    exp[spec.name] = np.full(spec.shape, exp[spec.name], spec.dtype)
-                self.episode[spec.name].append(exp[spec.name])
-                assert spec.shape == exp[spec.name].shape
-                assert spec.dtype == exp[spec.name].dtype.name
+                if np.isscalar(exp[spec['name']]):
+                    exp[spec['name']] = np.full(spec['shape'], exp[spec['name']], spec['dtype'])
+                self.episode[spec['name']].append(exp[spec['name']])
+                assert spec['shape'] == exp[spec['name']].shape
+                assert spec['dtype'] == exp[spec['name']].dtype.name
 
         self.episode_len += len(experiences)
 
@@ -86,7 +86,7 @@ class ExperienceReplay:
     # Stores episode (to file in system)
     def store_episode(self):
         for spec in self.specs:
-            self.episode[spec.name] = np.array(self.episode[spec.name], spec.dtype)
+            self.episode[spec.name] = np.array(self.episode[spec['name']], spec['dtype'])
 
         timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
         episode_name = f'{timestamp}_{self.num_episodes}_{self.episode_len}.npz'
