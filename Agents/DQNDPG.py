@@ -19,9 +19,8 @@ from Losses.PolicyLearning import deepPolicyGradient
 class DQNDPGAgent(torch.nn.Module):
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
-                 target_tau, stddev_schedule, stddev_clip,  # Models
-                 lr, update_per_steps,  # Optimization
-                 explore_steps,  # Exploration
+                 lr, update_per_steps, target_tau,  # Optimization
+                 explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
         super().__init__()
@@ -86,8 +85,9 @@ class DQNDPGAgent(torch.nn.Module):
             return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step, dist,
                                       logs=logs)
 
+    # Update critic target
     def update_misc(self, obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r, dist, logs=None):
-        pass
+        self.critic.update_target_params()
 
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
@@ -101,9 +101,6 @@ class DQNDPGAgent(torch.nn.Module):
 
         # Update critic
         self.update_critic(obs, action, reward, discount, next_obs, dist, logs)
-
-        # Update critic target
-        self.critic.update_target_params()
 
         # Update actor
         self.update_actor(obs, dist, logs)
