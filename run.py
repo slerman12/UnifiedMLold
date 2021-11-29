@@ -81,7 +81,7 @@ def main(args):
         step = agent.step
 
         # Evaluate
-        if args.evaluate_per_steps % step == 0:
+        if step % args.evaluate_per_steps == 0:
             for ep in range(args.evaluate_episodes):
                 _, logs, vlogs = test_env.rollout(agent.eval())   # agent.eval() just sets agent.training to False
 

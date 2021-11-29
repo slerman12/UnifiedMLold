@@ -50,7 +50,6 @@ class DQNDPGAgent(torch.nn.Module):
             obs = torch.as_tensor(obs, device=self.device)
             obs = self.encoder(obs.unsqueeze(0))
             dist = self.actor(obs, self.step)
-            print(self.training)
             if self.training:
                 self.step += 1
                 action = dist.sample()
