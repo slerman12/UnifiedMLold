@@ -38,7 +38,7 @@ def optimize(*models):
         @wraps(method)
         def model_loss(self, *args, clear_grads=True, step_optim=True, **kwargs):
             # Loss
-            loss = method(*args, **kwargs)
+            loss = method(self, *args, **kwargs)
 
             # Optimize
             if loss is not None:
