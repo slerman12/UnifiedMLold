@@ -61,7 +61,7 @@ class DQNDPGAgent(torch.nn.Module):
             return action.cpu().numpy()[0]
 
     def batch_processing(self, *batch, logs=None):
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(*batch, self.device)
+        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(batch, self.device)
 
         # Encode
         obs = self.encoder(obs)
@@ -94,7 +94,7 @@ class DQNDPGAgent(torch.nn.Module):
         logs = {'episode': self.episode, 'step': self.step}
 
         batch = replay.sample()
-        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs)
+        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
         traj_o, traj_a, traj_r = traj
 
         # Update critic
