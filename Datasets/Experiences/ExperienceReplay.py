@@ -166,6 +166,8 @@ class ExperienceLoading(IterableDataset):
         self.save = save
 
     def load_episode(self, episode_name):
+        print(self.num_experiences_loaded)
+
         try:
             with episode_name.open('rb') as episode_file:
                 episode = np.load(episode_file)
@@ -190,7 +192,6 @@ class ExperienceLoading(IterableDataset):
 
         if not self.save:
             episode_name.unlink(missing_ok=True)  # deletes file
-        print(self.num_experiences_loaded)
 
         return True
 
