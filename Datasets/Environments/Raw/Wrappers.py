@@ -98,10 +98,10 @@ class FrameStackWrapper(dm_env.Environment):
             pixels_shape = pixels_shape[1:]
         self._obs_spec = specs.BoundedArray(shape=np.concatenate(
             [[pixels_shape[2] * num_frames], pixels_shape[:2]], axis=0),
-                                            dtype=np.uint8,
-                                            minimum=0,
-                                            maximum=255,
-                                            name='observation')
+            dtype=np.uint8,
+            minimum=0,
+            maximum=255,
+            name='observation')
 
     def _transform_observation(self, time_step):
         assert len(self._frames) == self._num_frames
@@ -147,13 +147,11 @@ class ActionDTypeWrapper(dm_env.Environment):
         self.discrete = discrete
         wrapped_action_spec = env.action_spec()
         if not discrete:
-            self._action_spec = ExtendedAction(wrapped_action_spec.shape,
-                                               dtype,
-                                               wrapped_action_spec.minimum,
-                                               wrapped_action_spec.maximum,
-                                               'action',
-                                               False,
-                                               None)
+            self._action_spec = specs.BoundedArray(wrapped_action_spec.shape,
+                                                   dtype,
+                                                   wrapped_action_spec.minimum,
+                                                   wrapped_action_spec.maximum,
+                                                   'action')
         else:
             num_actions = wrapped_action_spec.shape[-1]
             self._action_spec = ExtendedAction((1,),
@@ -213,7 +211,14 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def action_spec(self):
-        return self._env.action_spec()
+        action_spec = self._env.action_spec()
+        return ExtendedAction(action_spec.shape,
+                              action_spec.dtype,
+                              action_spec.minimum,
+                              action_spec.maximum,
+                              'action',
+                              False,
+                              None)
 
     def convert_to_named_tuple(self, spec):
         names = "shape dtype name"
@@ -264,8 +269,8 @@ class TimeLimit(dm_env.Environment):
             time_step = self._env.reset()
             self.time_step = time_step
         # else:
-            # no-op step to advance from terminal/lost life state  todo also don't need to turn off this stuff for eval?
-            # time_step = self._env.step(0)  # todo shouldn't take step, just return the current time_step
+        # no-op step to advance from terminal/lost life state  todo also don't need to turn off this stuff for eval?
+        # time_step = self._env.step(0)  # todo shouldn't take step, just return the current time_step
         return self.time_step
 
     def close(self):
