@@ -205,6 +205,7 @@ class AttributesWrapper(dm_env.Environment):
         # Convert to dict
         # return {key: getattr(obs_spec, key, None) for key in keys}
         # spec = {key: getattr(obs_spec, key, None) for key in keys}
+        print(obs_spec.__dict__)
         return AttrDict(obs_spec.__dict__)
 
     @property
