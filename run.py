@@ -65,7 +65,7 @@ def main(args):
         logger.log(logs, 'Train')
 
         if env.episode_done:
-            logger.dump_logs()
+            # logger.dump_logs()
 
             if env.last_episode_len >= args.nstep:
                 replay.add(store=True)  # Only store full episodes
