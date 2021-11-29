@@ -42,7 +42,7 @@ class ExperienceReplay:
         self.nstep = nstep
         self.discount = discount
 
-    def add(self, experiences=None, store=True):
+    def add(self, experiences=None, store=False):
         self.storage.add(experiences, store=store)
 
     @property
@@ -124,7 +124,7 @@ class ExperienceStorage(IterableDataset):
     def __len__(self):
         return self.num_experiences_total
 
-    def add(self, experiences=None, store=True):
+    def add(self, experiences=None, store=False):
         if experiences is None:
             experiences = []
 

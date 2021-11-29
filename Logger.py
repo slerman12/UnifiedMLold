@@ -143,11 +143,13 @@ class Logger(object):
         mg = self._train_mg if key.startswith('train') else self._eval_mg
         mg.log(key, value)
 
-    def log(self, logs, name):
+    def log(self, logs, name='Logs', dump=False):
         assert 'step' in logs
+        step = logs['step']
         for key, value in logs.items():
-            self._log(f'{name}/{key}', value, logs['step'])
-        self.dump(logs['step'], name)
+            self._log(f'{name}/{key}', value, step)
+        if dump:
+            self.dump_logs(step, name)
 
-    def dump(self, step, name=None):
+    def dump_logs(self, step, name='Logs'):
         self._train_mg.dump(step, name)

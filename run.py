@@ -60,15 +60,12 @@ def main(args):
         # Rollout
         experiences, logs, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
 
-        replay.add(experiences, store=False)
+        replay.add(experiences)
 
-        logger.log(logs, 'Train')
+        logger.log(logs, 'Train', dump=env.episode_done)
 
-        if env.episode_done:
-            # logger.dump_logs()
-
-            if env.last_episode_len >= args.nstep:
-                replay.add(store=True)  # Only store full episodes
+        if env.episode_done and env.last_episode_len >= args.nstep:  # Only store full episodes
+            replay.add(store=True)
 
         if args.save_session:
             Utils.save(root_path, agent=agent, replay=replay)
@@ -87,7 +84,7 @@ def main(args):
             for ep in range(args.evaluate_episodes):
                 _, logs, vlogs = test_env.rollout(agent.eval())   # agent.eval() just sets agent.training to False
 
-                logger.log(logs, 'Eval')
+                logger.log(logs, 'Eval', dump=True)
 
                 # if args.log_video:
                 #     vlogger.vlog(vlogs)
