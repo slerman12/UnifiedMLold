@@ -61,7 +61,7 @@ class DQNDPGAgent(torch.nn.Module):
             return action.cpu().numpy()[0]
 
     def batch_processing(self, *batch, logs=None):
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(batch, self.device)
+        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(*batch, self.device)
 
         # Encode
         obs = self.encoder(obs)
