@@ -205,7 +205,7 @@ class AttributesWrapper(dm_env.Environment):
         # Convert to dict
         # return {key: getattr(obs_spec, key, None) for key in keys}
         spec = {key: getattr(obs_spec, key, None) for key in keys}
-        return AttrDict(obs_spec)
+        return AttrDict(spec)
 
     @property
     def action_spec(self):
@@ -216,7 +216,7 @@ class AttributesWrapper(dm_env.Environment):
         # Convert to dict
         # return {key: getattr(action_spec, key, None) for key in keys}
         spec = {key: getattr(action_spec, key, None) for key in keys}
-        return AttrDict(action_spec)
+        return AttrDict(spec)
 
     @property
     def experience(self):
