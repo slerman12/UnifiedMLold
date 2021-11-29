@@ -299,22 +299,20 @@ class AttributesWrapper(dm_env.Environment):
         return (self.action_spec['num_actions'],) \
             if self.discrete else self.action_spec['shape']
 
+    def simplify_spec(self, spec):
+        keys = ['shape', 'dtype', 'name']
+        spec = {key: getattr(spec, key, None) for key in keys}
+        spec['dtype'] = spec['dtype'].name
+        return spec
+
     def observation_spec(self):
         obs_spec = self.env.observation_spec()
-        keys = ['shape', 'dtype', 'name']
-        spec = {key: getattr(obs_spec, key, None) for key in keys}
-        spec['dtype'] = spec['dtype'].name
-        # return AttrDict(spec)
-        return spec
+        return self.simplify_spec(obs_spec)
 
     @property
     def action_spec(self):
         action_spec = self.env.action_spec()
-        keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
-        spec = {key: getattr(action_spec, key, None) for key in keys}
-        spec['dtype'] = spec['dtype'].name
-        # return AttrDict(spec)
-        return spec
+        return self.simplify_spec(action_spec)
 
     @property
     def experience(self):
