@@ -43,7 +43,7 @@ class DQNDPGAgent(torch.nn.Module):
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                         stddev_schedule, stddev_clip,
-                                        optim_lr=lr).to(device)  # todo maybe don't use sched/clip as default arch
+                                        optim_lr=lr).to(device)  # TODO Maybe don't use sched/clip as default
 
     def act(self, obs):
         with torch.no_grad(), Utils.eval_mode(self.encoder, self.actor):
@@ -60,6 +60,19 @@ class DQNDPGAgent(torch.nn.Module):
                 action = dist.best if self.discrete else dist.mean
             return action.cpu().numpy()[0]
 
+    def batch_processing(self, *batch, logs=None):
+        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(batch, self.device)
+
+        # Encode
+        obs = self.encoder(obs)
+        with torch.no_grad():
+            next_obs = self.encoder(next_obs)
+
+        if self.log_tensorboard:
+            logs['batch_reward'] = reward.mean().item()
+
+        return obs, action, reward, discount, next_obs, *traj
+
     @Utils.optimize('encoder', 'critic')
     def update_critic(self, obs, action, reward, discount, next_obs, logs=None):
         # Critic loss
@@ -73,21 +86,16 @@ class DQNDPGAgent(torch.nn.Module):
             return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step,
                                       logs=logs if self.log_tensorboard else None)
 
+    def update_misc(self):
+        # Update critic target
+        self.critic.update_target_params()
+
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step}
 
         batch = replay.sample()
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
-            batch, self.device)
+        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs)
         traj_o, traj_a, traj_r = traj
-
-        # Encode
-        obs = self.encoder(obs)
-        with torch.no_grad():
-            next_obs = self.encoder(next_obs)
-
-        if self.log_tensorboard:
-            logs['batch_reward'] = reward.mean().item()
 
         # Update critic
         self.update_critic(obs, action, reward, discount, next_obs,
@@ -97,7 +105,7 @@ class DQNDPGAgent(torch.nn.Module):
         self.update_actor(obs,
                           logs=logs if self.log_tensorboard else None)
 
-        # Update critic target
-        self.critic.update_target_params()
+        # Any miscellaneous updates
+        self.update_misc()
 
         return logs
