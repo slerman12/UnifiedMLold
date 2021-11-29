@@ -72,7 +72,7 @@ class DQNDPGAgent(torch.nn.Module):
 
         return obs, action, reward, discount, next_obs, *traj
 
-    @Utils.optimize('encoder', 'critic')
+    @Utils.optimize('encoder', 'critic')  # todo retain graph?
     def update_critic(self, obs, action, reward, discount, next_obs, dist, logs=None):
         # Critic loss
         return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step, dist,
@@ -97,12 +97,12 @@ class DQNDPGAgent(torch.nn.Module):
         obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
 
         # Policy
-        dist = self.actor(obs.detach(), self.step)  # detaching encoder for actor...?
+        dist = self.actor(obs.detach(), self.step)  # detaching encoder for actor...? what about discrete todo delete...
 
         # Update critic
         self.update_critic(obs, action, reward, discount, next_obs, dist, logs)
 
-        # Update actor
+        # Update actor  todo or just detach obs which I do
         self.update_actor(obs, dist, logs)
 
         # Any miscellaneous updates
