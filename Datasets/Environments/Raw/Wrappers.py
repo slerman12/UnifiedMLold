@@ -304,7 +304,8 @@ class AttributesWrapper(dm_env.Environment):
         keys = ['shape', 'dtype', 'name']
         spec = {key: getattr(obs_spec, key, None) for key in keys}
         spec['dtype'] = spec['dtype'].name
-        return AttrDict(spec)
+        # return AttrDict(spec)
+        return spec
 
     @property
     def action_spec(self):
@@ -312,7 +313,8 @@ class AttributesWrapper(dm_env.Environment):
         keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
         spec = {key: getattr(action_spec, key, None) for key in keys}
         spec['dtype'] = spec['dtype'].name
-        return AttrDict(spec)
+        # return AttrDict(spec)
+        return spec
 
     @property
     def experience(self):
