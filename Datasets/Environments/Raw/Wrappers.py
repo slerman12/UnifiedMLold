@@ -219,7 +219,7 @@ class AttributesWrapper(dm_env.Environment):
         return Spec(*[getattr(action_spec, key, None) for key in keys])
 
     def step(self, action):
-        self.env.step()
+        self.env.step(action)
 
     def reset(self):
         self.env.reset()
