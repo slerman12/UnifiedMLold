@@ -26,7 +26,7 @@ class DrQV2Agent(DQNDPGAgent):
         )
 
         # ! Technically DrQV2 only compatible with continuous spaces but both supported here
-        # self.discrete = False  # Discrete enabled
+        # self.discrete = False  # Discrete supported
 
         # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
@@ -38,5 +38,5 @@ class DrQV2Agent(DQNDPGAgent):
         obs = self.aug(obs)
         next_obs = self.aug(next_obs)
 
-        return super().batch_processing(obs, action, reward, discount, next_obs, *traj,
+        return super().batch_processing(self, obs, action, reward, discount, next_obs, *traj,
                                         logs=logs if self.log_tensorboard else None)
