@@ -37,10 +37,10 @@ class ExperienceReplay:
         # Experience loading
 
         self.loading = ExperienceLoading(loading_dir=storage_dir,
-                                 capacity=capacity // max(1, num_workers),
-                                 num_workers=num_workers,
-                                 fetch_every=1000,
-                                 save=save)
+                                         capacity=capacity // max(1, num_workers),
+                                         num_workers=num_workers,
+                                         fetch_every=1000, nstep=nstep, discount=discount,
+                                         save=save)
 
         self.nstep = nstep
         self.discount = discount
@@ -127,7 +127,7 @@ class ExperienceReplay:
 
 # Multi-cpu workers iteratively and efficiently build batches of experience in parallel (from files)
 class ExperienceLoading(IterableDataset):
-    def __init__(self, loading_dir, capacity, num_workers, fetch_every, save=False):
+    def __init__(self, loading_dir, capacity, num_workers, fetch_every, nstep, discount, save=False):
 
         # Dataset construction via parallel workers
 
@@ -145,6 +145,9 @@ class ExperienceLoading(IterableDataset):
         self.samples_since_last_fetch = fetch_every
 
         self.save = save
+
+        self.nstep = nstep
+        self.discount = discount
 
     def load_episode(self, episode_name):
         try:
