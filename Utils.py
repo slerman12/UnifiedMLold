@@ -30,7 +30,7 @@ def load(root_path, *keys):
 
 
 # Backward pass on a class method's output; clear the grads of specified models; step their optimizers
-def optimize(*models, clear_grads=True, step_optim=True):
+def optimize(*models, clear_grads=True, backward=True, step_optim=True):
     def decorator(method):
 
         @wraps(method)
@@ -46,7 +46,8 @@ def optimize(*models, clear_grads=True, step_optim=True):
             # Optimize
             if loss is not None:
                 # Update models
-                loss.backward()
+                if backward:
+                    loss.backward()
                 if step_optim:
                     for model in models:
                         getattr(self, model).optim.step()

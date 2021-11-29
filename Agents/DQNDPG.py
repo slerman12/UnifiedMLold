@@ -78,8 +78,8 @@ class DQNDPGAgent(torch.nn.Module):
         return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step, dist,
                                  logs=logs)
 
-    @Utils.optimize('encoder', 'critic', clear_grads=False)
-    @Utils.optimize('actor', 'encoder', 'critic')
+    @Utils.optimize('encoder', 'critic', clear_grads=False, backward=False)
+    @Utils.optimize('actor')
     def update_actor(self, obs, dist, logs=None):
         if not self.discrete:
             # Actor loss
