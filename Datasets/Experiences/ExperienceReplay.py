@@ -115,11 +115,11 @@ class ExperienceReplay:
     def sample(self):
         return next(self.replay)
 
-    def __iter__(self):
-        return iter(self.replay)
-
-    def __next__(self):
-        return next(self.replay)
+    # def __iter__(self):
+    #     return iter(self.replay)
+    #
+    # def __next__(self):
+    #     return next(self.replay)
 
     # Overrides methods in experience loading
     def _sample(self, episode_names, metrics=None):
