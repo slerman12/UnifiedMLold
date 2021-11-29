@@ -77,10 +77,10 @@ class Environment:
         frames = self.episode_step * self.action_repeat
 
         logs = {'fps': frames / (sundown - self.daybreak),
-                'total_time': sundown - agent.birthday,
-                'episode_reward': self.episode_reward,
-                'episode_frames': frames,
+                'time': sundown - agent.birthday,
+                'reward': self.episode_reward,
                 'episode': agent.episode,
+                'frames': agent.step * self.action_repeat,
                 'step': agent.step}
 
         if self.episode_done:
