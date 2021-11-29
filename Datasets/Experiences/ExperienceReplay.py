@@ -129,6 +129,7 @@ class ExperienceStorage(IterableDataset):
         assert isinstance(experiences, (list, tuple))
 
         for exp in experiences:
+            print(exp)
             for spec in self.specs:
                 if np.isscalar(exp[spec.name]):
                     exp[spec.name] = np.full(spec.shape, exp[spec.name], spec.dtype)
