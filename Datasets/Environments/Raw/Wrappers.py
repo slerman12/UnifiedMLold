@@ -34,6 +34,8 @@ class ExtendedTimeStep(NamedTuple):
         return self._replace(step_type=StepType.LAST)
 
     def __getitem__(self, key):
+        if isinstance(key, int):
+            key = self._fields[key]
         return getattr(self, key)
 
     def __setitem__(self, key, value):
