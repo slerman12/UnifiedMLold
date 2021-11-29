@@ -31,8 +31,8 @@ def format(log, log_name):
 
 
 class Logger:
-    def __init__(self, file_name):
-        self.file_name = file_name
+    def __init__(self, root_path, use_tensorboard=False):
+        self.root_path = root_path
 
         self.logs = {}
         self.counts = {}
