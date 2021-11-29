@@ -61,7 +61,7 @@ class Environment:
             self.episode_done = exp.last()
             step += 1
 
-            print(step)
+            print(agent.step)
 
         self.episode_step += step
 
