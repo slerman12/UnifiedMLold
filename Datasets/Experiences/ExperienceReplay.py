@@ -31,7 +31,7 @@ class ExperienceReplay:
                       {'shape': (1,), 'dtype': 'float32', 'name': 'reward'},
                       {'shape': (1,), 'dtype': 'float32', 'name': 'discount'})
 
-        self.episode = {spec.name: [] for spec in self.specs}
+        self.episode = {spec['name']: [] for spec in self.specs}
         self.episode_len = 0
 
         # Experience loading
