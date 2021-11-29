@@ -78,7 +78,7 @@ def main(args):
             logs = agent.update(replay)  # Trains the agent
 
             # if args.log_tensorboard:
-            #     logger.log(logs, 'Train')
+            #     logger.log_tensorboard(logs, 'Train')
 
         # Evaluate
         if step % args.evaluate_per_steps == 0:
