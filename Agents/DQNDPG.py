@@ -47,7 +47,7 @@ class DQNDPGAgent(torch.nn.Module):
                                         optim_lr=lr).to(device)  # todo maybe don't use sched/clip as default arch
 
         # data augmentation
-        self.aug = RandomShiftsAug(pad=4) # todo separate
+        self.aug = RandomShiftsAug(pad=4)  # todo separate
 
     def act(self, obs):
         with torch.no_grad(), Utils.eval_mode(self.encoder, self.actor):
@@ -79,7 +79,7 @@ class DQNDPGAgent(torch.nn.Module):
 
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step}
-        if self.step % self.update_per_steps != 0:  # could cause issues with longer rollouts
+        if self.step % self.update_per_steps != 0:  # TODO Could cause issues with longer rollouts
             return logs
 
         batch = replay.sample()

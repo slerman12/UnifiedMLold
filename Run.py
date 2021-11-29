@@ -8,7 +8,7 @@ from hydra.utils import instantiate
 from pathlib import Path
 
 from Logger import Logger
-# from Vlogger import VideoRecorder  # M1 Mac: comment out freeimage imports in imageio/plugins/_init_
+# from Vlogger import Vlogger  # M1 Mac: comment out freeimage imports in imageio/plugins/_init_
 import Utils
 
 import torch
@@ -22,7 +22,7 @@ cudnn.benchmark = True
 
 @hydra.main(config_path='Hyperparams', config_name='cfg')
 def main(args):
-    # Setup
+    # Setup    todo dataclass, dtype str, replay hydra, logger hydra, logger csv, vlogger(?), separate drq, munch, atari
 
     Utils.set_seed_everywhere(args.seed)
 
@@ -52,15 +52,25 @@ def main(args):
     # Loggers
     logger = Logger(root_path)  # Aggregates per step  todo hydra exp, agent, task
 
-    # vlogger = VideoRecorder(root_path if args.log_video else None)
+    # vlogger = Vlogger(root_path if args.log_video else None)
 
     # Start training
     step = 0
     while step < args.train_steps:
+        # Evaluate
+        if step % args.evaluate_per_steps == 0:
+
+            for ep in range(args.evaluate_episodes):
+                _, logs, vlogs = test_env.rollout(agent.eval())   # agent.eval() just sets agent.training to False
+
+                logger.log(logs, 'Eval')
+            logger.dump_logs('Eval')
+
+            # if args.log_video:
+            #     vlogger.vlog(vlogs)
+
         # Rollout
         experiences, logs, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
-
-        step = agent.step
 
         replay.add(experiences)
 
@@ -73,23 +83,14 @@ def main(args):
             if args.save_session:
                 Utils.save(root_path, agent=agent, replay=replay)
 
+        step = agent.step
+
         # Update agent
         if step > args.seed_steps:
             logs = agent.update(replay)  # Trains the agent
 
-            # if args.log_tensorboard:
-            #     logger.log_tensorboard(logs, 'Train')
-
-        # Evaluate
-        if step % args.evaluate_per_steps == 0:
-            for ep in range(args.evaluate_episodes):
-                _, logs, vlogs = test_env.rollout(agent.eval())   # agent.eval() just sets agent.training to False
-
-                logger.log(logs, 'Eval')
-            logger.dump_logs('Eval')
-
-                # if args.log_video:
-                #     vlogger.vlog(vlogs)
+            if args.log_tensorboard:
+                logger.log_tensorboard(logs, 'Train')
 
 
 if __name__ == "__main__":

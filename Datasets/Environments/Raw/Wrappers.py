@@ -303,6 +303,7 @@ class AttributesWrapper(dm_env.Environment):
         obs_spec = self.env.observation_spec()
         keys = ['shape', 'dtype', 'name']
         spec = {key: getattr(obs_spec, key, None) for key in keys}
+        spec['dtype'] = spec['dtype'].name
         return AttrDict(spec)
 
     @property
@@ -310,6 +311,7 @@ class AttributesWrapper(dm_env.Environment):
         action_spec = self.env.action_spec()
         keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
         spec = {key: getattr(action_spec, key, None) for key in keys}
+        spec['dtype'] = spec['dtype'].name
         return AttrDict(spec)
 
     @property

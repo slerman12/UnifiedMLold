@@ -2,7 +2,6 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-import math
 import random
 import re
 from functools import wraps
@@ -10,7 +9,6 @@ from functools import wraps
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch import distributions as pyd
 from torch.distributions.utils import _standard_normal
 
@@ -54,86 +52,6 @@ def optimize(*models):
                         getattr(self, model).optim.step()
 
         return model_loss
-    return decorator
-
-
-# Divides a method's batch inputs into a specified number of batch chunks and iterates the method on each chunk
-# This can be used for handling large batches with less compute
-def loop_in_chunks(num_chunks=1, grad_accumulation=False):
-    def decorator(method):
-
-        @wraps(method)
-        def chunker(*args, **kwargs):
-            chunked_args = []
-            chunked_kwargs = {}
-            batch_size = None
-            ind = chunk_size = 0
-            done = False
-
-            # Iterate per chunk
-            while not done:
-                # Chunk args
-                for arg in args:
-                    if torch.is_tensor(arg) and hasattr(arg, 'shape'):
-                        size = arg.shape[0]
-                        if batch_size is None:
-                            batch_size = size
-                            chunk_size = batch_size // num_chunks
-                            assert chunk_size > 0
-                        if size == batch_size:
-                            chunked_args.append(arg[ind:ind + chunk_size])
-                        else:
-                            chunked_args.append(arg)
-                    else:
-                        chunked_args.append(arg)
-                # Chunk kwargs
-                for k in kwargs:
-                    if torch.is_tensor(kwargs[k]) and hasattr(kwargs[k], 'shape'):
-                        size = kwargs[k].shape[0]
-                        if batch_size is None:
-                            batch_size = size
-                            chunk_size = batch_size // num_chunks
-                            assert chunk_size > 0
-                        if size == batch_size:
-                            chunked_kwargs[k] = kwargs[k][ind:ind + chunk_size]
-                        else:
-                            chunked_kwargs[k] = kwargs[k]
-                    else:
-                        chunked_kwargs[k] = kwargs[k]
-
-                ind += chunk_size
-                done = batch_size is None or ind + chunk_size >= batch_size
-                # Call method on chunk
-                if grad_accumulation:  # Optionally accumulates gradients if combined with @Utils.optimize decorator
-                    method(*chunked_args, clear_grads=ind == 0, step_optim=done, **chunked_kwargs)
-                else:
-                    method(*chunked_args, **chunked_kwargs)
-
-        return chunker
-    return decorator
-
-
-# No grads; temporarily switches on eval() mode for a class method's specified models; then resets them
-def act_mode(*models):
-    def decorator(method):
-
-        @wraps(method)
-        def set_reset_eval(self, *args, **kwargs):
-            start_modes = []
-
-            for model in models:
-                start_modes.append(model.training)
-                getattr(self, model).eval()
-
-            with torch.no_grad():
-                output = method(self, *args, **kwargs)
-
-            for model, mode in zip(models, start_modes):
-                getattr(self, model).train(mode)
-
-            return output
-        return set_reset_eval
-
     return decorator
 
 
@@ -219,63 +137,16 @@ class TruncatedNormal(pyd.Normal):
         return self._clamp(x)
 
 
-class TanhTransform(pyd.transforms.Transform):
-    domain = pyd.constraints.real
-    codomain = pyd.constraints.interval(-1.0, 1.0)
-    bijective = True
-    sign = +1
-
-    def __init__(self, cache_size=1):
-        super().__init__(cache_size=cache_size)
-
-    @staticmethod
-    def atanh(x):
-        return 0.5 * (x.log1p() - (-x).log1p())
-
-    def __eq__(self, other):
-        return isinstance(other, TanhTransform)
-
-    def _call(self, x):
-        return x.tanh()
-
-    def _inverse(self, y):
-        # We do not clamp to the boundary here as it may degrade the performance of certain algorithms.
-        # one should use `cache_size=1` instead
-        return self.atanh(y)
-
-    def log_abs_det_jacobian(self, x, y):
-        # We use a formula that is more numerically stable, see details in the following link
-        # https://github.com/tensorflow/probability/commit/ef6bb176e0ebd1cf6e25c6b5cecdd2428c22963f#diff-e120f70e92e6741bca649f04fcd907b7
-        return 2. * (math.log(2.) - x - F.softplus(-2. * x))
-
-
-class SquashedNormal(pyd.transformed_distribution.TransformedDistribution):
-    def __init__(self, loc, scale):
-        self.loc = loc
-        self.scale = scale
-
-        self.base_dist = pyd.Normal(loc, scale)
-        transforms = [TanhTransform()]
-        super().__init__(self.base_dist, transforms)
-
-    @property
-    def mean(self):
-        mu = self.loc
-        for tr in self.transforms:
-            mu = tr(mu)
-        return mu
-
-
-def schedule(schdl, step):
+def schedule(sched, step):
     try:
-        return float(schdl)
+        return float(sched)
     except ValueError:
-        match = re.match(r'linear\((.+),(.+),(.+)\)', schdl)
+        match = re.match(r'linear\((.+),(.+),(.+)\)', sched)
         if match:
             init, final, duration = [float(g) for g in match.groups()]
             mix = np.clip(step / duration, 0.0, 1.0)
             return (1.0 - mix) * init + mix * final
-        match = re.match(r'step_linear\((.+),(.+),(.+),(.+),(.+)\)', schdl)
+        match = re.match(r'step_linear\((.+),(.+),(.+),(.+),(.+)\)', sched)
         if match:
             init, final1, duration1, final2, duration2 = [
                 float(g) for g in match.groups()
@@ -286,5 +157,5 @@ def schedule(schdl, step):
             else:
                 mix = np.clip((step - duration1) / duration2, 0.0, 1.0)
                 return (1.0 - mix) * final1 + mix * final2
-    raise NotImplementedError(schdl)
+    raise NotImplementedError(sched)
 

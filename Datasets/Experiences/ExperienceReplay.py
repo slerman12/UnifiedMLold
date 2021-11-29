@@ -28,15 +28,15 @@ class ExperienceReplay:
 
         Spec = namedtuple("Spec", "shape dtype name")  # TODO use DataClass! dtype as str, hydra
         self.specs = (obs_spec, action_spec,
-                      Spec((1,), np.float32, 'reward'),
-                      Spec((1,), np.float32, 'discount'))
+                      Spec((1,), np.float32.name, 'reward'),
+                      Spec((1,), np.float32.name, 'discount'))
 
         self.episode = {spec.name: [] for spec in self.specs}
         self.episode_len = 0
 
         # Experience loading
 
-        # Can override 
+        # Can override
         self.loading = ExperienceLoading(load_path=self.store_path,
                                          capacity=capacity // max(1, num_workers),
                                          num_workers=num_workers,
@@ -76,7 +76,7 @@ class ExperienceReplay:
                     exp[spec.name] = np.full(spec.shape, exp[spec.name], spec.dtype)
                 self.episode[spec.name].append(exp[spec.name])
                 assert spec.shape == exp[spec.name].shape
-                assert spec.dtype == exp[spec.name].dtype
+                assert spec.dtype == exp[spec.name].dtype.name
 
         self.episode_len += len(experiences)
 

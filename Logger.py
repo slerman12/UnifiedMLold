@@ -102,6 +102,9 @@ class Logger:
             pieces.append(format(log, log_name))
         print(' | '.join(pieces))
 
+    def log_tensorboard(self, logs, name):
+        pass
+
 
 class MetersGroup(object):
     def __init__(self, csv_file_name, formating):
