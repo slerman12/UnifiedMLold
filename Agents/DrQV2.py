@@ -15,7 +15,6 @@ class DrQV2Agent(DQNDPGAgent):
                  explore_steps,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
-        print(locals())
         super().__init__(self, **locals())
 
         # ! Technically DrQV2 only compatible with continuous spaces but both supported here
