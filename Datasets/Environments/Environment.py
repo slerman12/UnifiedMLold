@@ -30,8 +30,7 @@ class Environment:
             return Atari
 
     def __getattr__(self, item):
-        if item not in self.__dict__:
-            return getattr(self.env, item)
+        return getattr(self.env, item)
 
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
