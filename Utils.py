@@ -39,7 +39,8 @@ def optimize(*models):
         def model_loss(self, *args, clear_grads=True, step_optim=True, **kwargs):
             # Clear grads
             if clear_grads:
-                map(lambda model: getattr(self, model).optim.zero_grad(set_to_none=True), models)
+                for model in models:
+                    getattr(self, model).optim.zero_grad(set_to_none=True)
 
             # Loss
             loss = method(self, *args, **kwargs)
@@ -48,8 +49,9 @@ def optimize(*models):
             if loss is not None:
                 # Update models
                 loss.backward()
-                # if step_optim:
-                #     map(lambda model: getattr(self, model).optim.step(), models)
+                if step_optim:
+                    for model in models:
+                        getattr(self, model).optim.step()
 
         return model_loss
     return decorator
