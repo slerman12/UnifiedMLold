@@ -2,14 +2,14 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-from collections import deque, namedtuple
-from typing import Any, Optional
+from collections import deque
+from typing import Any, NamedTuple
 import dm_env
 import numpy as np
 from dm_env import StepType, specs
 
 
-class ExtendedTimeStep(namedtuple):
+class ExtendedTimeStep(NamedTuple):
     step_type: Any
     reward: Any
     discount: Any
@@ -42,7 +42,7 @@ class ExtendedTimeStep(namedtuple):
         setattr(self, key, value)
 
 
-class ExtendedAction(namedtuple):
+class ExtendedAction(NamedTuple):
     shape: Any
     dtype: Any
     minimum: Any
