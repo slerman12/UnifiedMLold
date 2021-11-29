@@ -182,11 +182,11 @@ class ActionDTypeWrapper(dm_env.Environment):
 
 class AttributesWrapper(dm_env.Environment):
     def __init__(self, env):
-        self._env = env
+        self.env = env
 
     @property
     def exp(self):
-        return self.time_step
+        return self.env.time_step
 
     @property
     def obs_spec(self):
@@ -206,13 +206,13 @@ class AttributesWrapper(dm_env.Environment):
         return self.exp
 
     def observation_spec(self):
-        obs_spec = self._env.observation_spec()
+        obs_spec = self.env.observation_spec()
         Spec = namedtuple("Spec", 'shape dtype name')
         return Spec(*[getattr(obs_spec, name) for name in ['shape', 'dtype', 'name']])
 
     @property
     def action_spec(self):
-        action_spec = self._env.action_spec()
+        action_spec = self.env.action_spec()
         if not self.discrete:
             Spec = namedtuple("Spec", 'shape dtype minimum maximum name discrete num_actions')
             return Spec(action_spec.shape,
@@ -225,10 +225,10 @@ class AttributesWrapper(dm_env.Environment):
         return action_spec
 
     def step(self, action):
-        self._env.step()
+        self.env.step()
 
     def reset(self):
-        self._env.reset()
+        self.env.reset()
 
     def __getattr__(self, name):
         return getattr(self.env, name)
