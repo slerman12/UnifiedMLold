@@ -230,7 +230,6 @@ class ExperienceStorage(IterableDataset):
         try:
             self.worker_fetch_episodes()  # Populate workers with up-to-date data
         except Exception:
-            print("YAAAAA")
             traceback.print_exc()
 
         self.samples_since_last_fetch += 1
