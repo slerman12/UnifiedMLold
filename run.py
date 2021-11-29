@@ -60,15 +60,18 @@ def main(args):
         # Rollout
         experiences, logs, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
 
+        step = agent.step
+        episode_done = env.episode_done
+
         replay.add(experiences)
 
-        logger.log(logs, 'Train', dump=env.episode_done)
+        logger.log(logs, 'Train', dump=episode_done)
 
-        if env.episode_done and env.last_episode_len >= args.nstep:  # Only store full episodes
-            replay.add(store=True)
+        if episode_done:
+            replay.add(store=env.last_episode_len >= args.nstep)  # Only store full episodes
 
-        if args.save_session:
-            Utils.save(root_path, agent=agent, replay=replay)
+            if args.save_session:
+                Utils.save(root_path, agent=agent, replay=replay)
 
         # Update agent
         if step > args.seed_steps:
@@ -76,8 +79,6 @@ def main(args):
 
             if args.log_tensorboard:
                 logger.log(logs, 'Train')
-
-        step = agent.step
 
         # Evaluate
         if step % args.evaluate_per_steps == 0:
