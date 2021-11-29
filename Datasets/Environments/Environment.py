@@ -30,6 +30,7 @@ class Environment:
             return Atari
 
     def __getattr__(self, item):
+        print(item)
         return getattr(self.env, item)
 
     def rollout(self, agent, steps=inf, vlog=False):
@@ -69,8 +70,6 @@ class Environment:
             if agent.training:
                 agent.episode += 1
             self.env.reset()
-
-            print(agent.episode)
 
             self.last_episode_len = self.episode_step
             self.last_episode_reward = self.episode_reward
