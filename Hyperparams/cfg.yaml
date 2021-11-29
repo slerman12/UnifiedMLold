@@ -15,9 +15,9 @@ nstep: 3
 batch_size: 256
 discount: 0.99
 # Training
-seed_steps: 4000
+seed_steps: 2000
 # Evaluating
-evaluate_per_steps: 10000
+evaluate_per_steps: 5000
 evaluate_episodes: 10
 # Saving
 save_session: false
