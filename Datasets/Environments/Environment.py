@@ -30,7 +30,6 @@ class Environment:
             return Atari
 
     def __getattr__(self, item):
-        print(item)
         return getattr(self.env, item)
 
     def rollout(self, agent, steps=inf, vlog=False):
@@ -86,6 +85,7 @@ class Environment:
                 'step': agent.step}
 
         if self.episode_done:
+            self.episode_done = False
             self.episode_step = self.episode_reward = 0
             self.daybreak = None
 
