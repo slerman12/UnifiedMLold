@@ -190,7 +190,7 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def obs_spec(self):
-        return self.observation_spec
+        return self.observation_spec()
 
     @property
     def obs_shape(self):
