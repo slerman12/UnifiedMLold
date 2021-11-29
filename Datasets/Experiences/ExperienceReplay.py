@@ -89,7 +89,6 @@ class ExperienceReplay:
 
         timestamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
         episode_name = f'{timestamp}_{self.num_episodes}_{self.episode_len}.npz'
-        print(episode_name)
 
         # Save episode
         save_path = self.store_path / episode_name
@@ -105,7 +104,8 @@ class ExperienceReplay:
         self.episode_len = 0
 
     def __len__(self):
-        return self.num_experiences_stored
+        # return self.num_experiences_stored
+        return self.loading.num_experiences_loaded
 
     @property
     def replay(self):
@@ -116,7 +116,7 @@ class ExperienceReplay:
     def sample(self):
         return next(self.replay)
 
-    # Can iterate on self to get batches e.g. next(self)
+    # Can iterate on self to get batches e.g. next(self) <=> self.sample()
     def __next__(self):
         return self.replay.__next__()
 
@@ -233,7 +233,7 @@ class ExperienceLoading(IterableDataset):
         return episode_name
 
     def process(self, episode):  # Can be over-ridden from ExperienceReplay
-        experience = tuple(episode[spec.name] for spec in self.specs)
+        experience = tuple(episode[key] for key in episode)
         return experience
 
     def fetch_sample_process(self):

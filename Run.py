@@ -68,6 +68,7 @@ def main(args):
             logger.log(logs, 'Train', dump=True)
 
             if env.last_episode_len >= args.nstep:
+                print("gahhh")
                 replay.add(store=True)  # Only store full episodes
 
             if args.save_session:
