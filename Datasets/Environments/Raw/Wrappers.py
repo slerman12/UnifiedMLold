@@ -183,6 +183,8 @@ class ActionDTypeWrapper(dm_env.Environment):
 class AttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self.env = env
+        self.action_shape = (self.action_spec.num_actions,) \
+            if self.discrete else self.action_spec().shape
 
     @property
     def exp(self):
@@ -197,32 +199,19 @@ class AttributesWrapper(dm_env.Environment):
         return self.observation_spec().shape
 
     @property
-    def action_spec(self):
-        return (self.action_spec.num_actions,) \
-            if self.discrete else self.action_spec().shape
-
-    @property
     def experience(self):
         return self.exp
 
     def observation_spec(self):
         obs_spec = self.env.observation_spec()
-        Spec = namedtuple("Spec", 'shape dtype name')
-        return Spec(*[getattr(obs_spec, name) for name in ['shape', 'dtype', 'name']])
+        keys = ['shape', 'dtype', 'name']
+        return {key: getattr(obs_spec, key, None) for key in keys}
 
     @property
     def action_spec(self):
         action_spec = self.env.action_spec()
-        if not self.discrete:
-            Spec = namedtuple("Spec", 'shape dtype minimum maximum name discrete num_actions')
-            return Spec(action_spec.shape,
-                        action_spec.dtype,
-                        action_spec.minimum,
-                        action_spec.maximum,
-                        action_spec.name,
-                        action_spec.discrete,
-                        action_spec.num_actions)
-        return action_spec
+        keys = ['shape', 'dtype', 'minimum', 'maximum', 'name', 'discrete', 'num_actions']
+        return {key: getattr(action_spec, key, None) for key in keys}
 
     def step(self, action):
         self.env.step()
