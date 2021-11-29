@@ -33,8 +33,11 @@ class ExtendedTimeStep(NamedTuple):
     def get_last(self):
         return self._replace(step_type=StepType.LAST)
 
-    def __getitem__(self, attr):
-        return getattr(self, attr)
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
 
 class ExtendedAction(NamedTuple):
@@ -46,8 +49,11 @@ class ExtendedAction(NamedTuple):
     discrete: bool
     num_actions: Any
 
-    def __getitem__(self, attr):
-        return getattr(self, attr)
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
 
 class ActionRepeatWrapper(dm_env.Environment):
@@ -224,16 +230,13 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def exp(self):
-        time_step = self.env.time_step
-        return AttrDict(time_step._asdict())
+        return self.env.time_step
 
     def step(self, action):
-        time_step = self.env.step(action)
-        return AttrDict(time_step._asdict())
+        return self.env.step(action)
 
     def reset(self):
-        time_step = self.env.reset()
-        return AttrDict(time_step._asdict())
+        return self.env.reset()
 
     def __getattr__(self, name):
         return getattr(self.env, name)
