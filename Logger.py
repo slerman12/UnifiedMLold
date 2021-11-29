@@ -17,11 +17,9 @@ def shorthand(log_name):
 
 
 def format(log, log_name):
-    log_name_lower = log_name.lower()
-
     l = shorthand(log_name)
 
-    if 'time' in log_name_lower or log_name_lower == 'fps':
+    if 'time' in log_name.lower():
         log = str(datetime.timedelta(seconds=int(log)))
         return f'{l}: {log}'
     elif float(log).is_integer():
