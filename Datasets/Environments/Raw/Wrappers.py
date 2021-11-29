@@ -228,6 +228,7 @@ class AttributesWrapper(dm_env.Environment):
         # Convert to dict
         # return {key: getattr(action_spec, key, None) for key in keys}
         spec = {key: getattr(action_spec, key, None) for key in keys}
+        print(AttrDict(spec).shape)
         return AttrDict(spec)
 
     @property
