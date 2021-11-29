@@ -16,7 +16,7 @@ class RandomShiftsAug(nn.Module):
         # operates on last 3 dims of x, preserves leading dims
         shape = x.shape
         x = x.view(-1, *shape[-3:])
-        n, c, h, w = x.num_experiences()
+        n, c, h, w = x.size()
         assert h == w
         padding = tuple([self.pad] * 4)
         x = F.pad(x, padding, 'replicate')
@@ -52,5 +52,5 @@ class IntensityAug(nn.Module):
 
     def forward(self, x):
         noise = 1.0 + (self.scale * torch.randn(
-            (x.num_experiences(0), 1, 1, 1), device=x.device).clamp_(-2.0, 2.0))
+            (x.size(0), 1, 1, 1), device=x.device).clamp_(-2.0, 2.0))
         return x * noise
