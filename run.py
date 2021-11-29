@@ -61,14 +61,14 @@ def main(args):
         experiences, logs, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
 
         step = agent.step
-        episode_done = env.episode_done
 
         replay.add(experiences)
 
-        logger.log(logs, 'Train', dump=episode_done)
+        if env.episode_done:
+            logger.log(logs, 'Train', dump=True)
 
-        if episode_done:
-            replay.add(store=env.last_episode_len >= args.nstep)  # Only store full episodes
+            if env.last_episode_len >= args.nstep:
+                replay.add(store=True)  # Only store full episodes
 
             if args.save_session:
                 Utils.save(root_path, agent=agent, replay=replay)
