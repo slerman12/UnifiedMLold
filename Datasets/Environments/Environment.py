@@ -18,7 +18,6 @@ class Environment:
 
         self.env.reset()
 
-        self.episode_done = False
         self.episode_step = self.last_episode_len = self.episode_reward = self.last_episode_reward = 0
         self.daybreak = None
 
@@ -38,6 +37,8 @@ class Environment:
 
         exp = self.exp
         experiences = [exp]
+
+        self.episode_done = False
 
         vlogs = []
 
@@ -61,8 +62,6 @@ class Environment:
             self.episode_done = exp.last()
             step += 1
 
-            print(agent.step)
-
         self.episode_step += step
 
         if self.episode_done:
@@ -85,7 +84,6 @@ class Environment:
                 'step': agent.step}
 
         if self.episode_done:
-            self.episode_done = False
             self.episode_step = self.episode_reward = 0
             self.daybreak = None
 
