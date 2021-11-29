@@ -101,7 +101,7 @@ class ExperienceReplay:
 
         self.num_episodes += 1
         self.num_experiences_stored += self.episode_len
-        self.episode = {spec.name: [] for spec in self.specs}
+        self.episode = {spec['name']: [] for spec in self.specs}
         self.episode_len = 0
 
     def __len__(self):
