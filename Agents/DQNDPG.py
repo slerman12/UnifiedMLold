@@ -65,9 +65,9 @@ class DQNDPGAgent(torch.nn.Module):
             return action.cpu().numpy()[0]
 
     @Utils.optimize('encoder', 'critic')
-    def update_critic(self, obs, action, reward, discount, next_obs, dist=None, logs=None):
+    def update_critic(self, obs, action, reward, discount, next_obs, logs=None):
         # Critic loss
-        return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step, dist,
+        return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step,
                                  logs=logs if self.log_tensorboard else None)
 
     @Utils.optimize('actor')
@@ -79,7 +79,7 @@ class DQNDPGAgent(torch.nn.Module):
 
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step}
-        if self.step % self.update_per_steps != 0:
+        if self.step % self.update_per_steps != 0:  # could cause issues with longer rollouts
             return logs
 
         batch = replay.sample()

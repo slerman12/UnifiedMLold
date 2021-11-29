@@ -36,6 +36,7 @@ class ExperienceReplay:
 
         # Experience loading
 
+        # Can override 
         self.loading = ExperienceLoading(load_path=self.store_path,
                                          capacity=capacity // max(1, num_workers),
                                          num_workers=num_workers,
@@ -216,6 +217,7 @@ class ExperienceLoading(IterableDataset):
 
         episode_names = sorted(self.load_path.glob('*.npz'), reverse=True)
         num_fetched = 0
+        # Find one new episode
         for episode_name in episode_names:
             episode_idx, episode_len = [int(x) for x in episode_name.stem.split('_')[1:]]
             if episode_idx % self.num_workers != worker_id:  # Each worker stores their own dedicated data
@@ -251,5 +253,6 @@ class ExperienceLoading(IterableDataset):
         return self.process(episode)  # Process episode into an experience
 
     def __iter__(self):
+        # Keep fetching, sampling, and building batches
         while True:
             yield self.fetch_sample_process()

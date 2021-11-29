@@ -29,27 +29,29 @@ def format(log, log_name):
 
 
 class Logger:
-    def __init__(self, root_path, use_tensorboard=False):
+    def __init__(self, root_path):
         self.root_path = root_path
 
         self.logs = {}
         self.counts = {}
 
-    def log(self, log, name, dump=False):
-        if name not in self.logs:
-            self.logs[name] = {}
-            self.counts[name] = {}
+    def log(self, log=None, name="Logs", dump=False):
+        if log is not None:
 
-        logs = self.logs[name]
-        counts = self.counts[name]
+            if name not in self.logs:
+                self.logs[name] = {}
+                self.counts[name] = {}
 
-        for k, l in log.items():
-            if k in logs:
-                logs[k] += l
-                counts[k] += 1
-            else:
-                logs[k] = l
-                counts[k] = 1
+            logs = self.logs[name]
+            counts = self.counts[name]
+
+            for k, l in log.items():
+                if k in logs:
+                    logs[k] += l
+                    counts[k] += 1
+                else:
+                    logs[k] = l
+                    counts[k] = 1
 
         if dump:
             self.dump_logs(name)

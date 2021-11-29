@@ -37,14 +37,16 @@ def optimize(*models):
 
         @wraps(method)
         def model_loss(self, *args, clear_grads=True, step_optim=True, **kwargs):
+            if clear_grads:
+                map(lambda model: getattr(self, model).optim.zero_grad(set_to_none=True), models)
             # Loss
             loss = method(self, *args, **kwargs)
 
             # Optimize
             if loss is not None:
-                # Clear grads
-                if clear_grads:
-                    map(lambda model: getattr(self, model).optim.zero_grad(set_to_none=True), models)
+                # # Clear grads
+                # if clear_grads:
+                #     map(lambda model: getattr(self, model).optim.zero_grad(set_to_none=True), models)
 
                 # Update models
                 loss.backward()

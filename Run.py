@@ -50,7 +50,7 @@ def main(args):
                              action_spec= env.action_spec)
 
     # Loggers
-    logger = Logger(root_path, use_tensorboard=args.log_tensorboard)  # Aggregates per step  todo hydra exp, agent, task
+    logger = Logger(root_path)  # Aggregates per step  todo hydra exp, agent, task
 
     # vlogger = VideoRecorder(root_path if args.log_video else None)
 
@@ -68,7 +68,6 @@ def main(args):
             logger.log(logs, 'Train', dump=True)
 
             if env.last_episode_len >= args.nstep:
-                print("gahhh")
                 replay.add(store=True)  # Only store full episodes
 
             if args.save_session:
@@ -76,7 +75,7 @@ def main(args):
 
         # Update agent
         if step > args.seed_steps:
-            logs = agent.train().update(replay)  # Trains the agent
+            logs = agent.update(replay)  # Trains the agent
 
             # if args.log_tensorboard:
             #     logger.log_tensorboard(logs, 'Train')
