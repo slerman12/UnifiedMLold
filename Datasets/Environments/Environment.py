@@ -61,6 +61,8 @@ class Environment:
             self.episode_done = exp.last()
             step += 1
 
+            print(step)
+
         self.episode_step += step
 
         if self.episode_done:
