@@ -194,12 +194,12 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def obs_shape(self):
-        return self.observation_spec()['shape']
+        return self.observation_spec().shape
 
     @property
     def action_shape(self):
-        return (self.action_spec['num_actions'],) \
-            if self.discrete else self.action_spec['shape']
+        return (self.action_spec.num_actions,) \
+            if self.discrete else self.action_spec.shape
 
     @property
     def experience(self):
