@@ -147,13 +147,6 @@ class ActionDTypeWrapper(dm_env.Environment):
         self.discrete = discrete
         wrapped_action_spec = env.action_spec()
         if not discrete:
-            # self._action_spec = ExtendedAction(wrapped_action_spec.shape,
-            #                                    dtype,
-            #                                    wrapped_action_spec.minimum,
-            #                                    wrapped_action_spec.maximum,
-            #                                    'action',
-            #                                    False,
-            #                                    None)
             self._action_spec = specs.BoundedArray(wrapped_action_spec.shape,
                                                    dtype,
                                                    wrapped_action_spec.minimum,
@@ -168,9 +161,6 @@ class ActionDTypeWrapper(dm_env.Environment):
                                                'action',
                                                True,
                                                num_actions)
-            # self._action_spec = specs.Array(wrapped_action_spec.shape,
-            #                                 dtype,
-            #                                 'action')
 
     def step(self, action):
         if hasattr(action, 'astype'):
@@ -221,7 +211,7 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def action_spec(self):
-        return self.convert_to_named_tuple(self._env.action_spec())
+        return self._env.action_spec()
 
     def convert_to_named_tuple(self, spec):
         names = "shape dtype name"
