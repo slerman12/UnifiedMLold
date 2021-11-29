@@ -6,13 +6,12 @@ import random
 import datetime
 import io
 import traceback
+from collections import namedtuple
 
 import numpy as np
 
 import torch
 from torch.utils.data import IterableDataset
-
-from dm_env import specs
 
 
 class ExperienceReplay:
@@ -96,9 +95,10 @@ class ExperienceStorage(IterableDataset):
         self.num_episodes = 0
         self.num_experiences_total = 0
 
+        Spec = namedtuple("Spec", "shape dtype name")
         self.specs = (obs_spec, action_spec,
-                      specs.Array((1,), np.float32, 'reward'),
-                      specs.Array((1,), np.float32, 'discount'))
+                      Spec((1,), np.float32, 'reward'),
+                      Spec((1,), np.float32, 'discount'))
 
         self.episode = {spec.name: [] for spec in self.specs}
         self.episode_len = 0

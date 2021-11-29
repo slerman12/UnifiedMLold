@@ -2,7 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-from collections import deque
+from collections import deque, namedtuple
 from typing import Any, NamedTuple, Optional
 import gym
 from gym import spaces
@@ -206,10 +206,6 @@ class AttributesWrapper(dm_env.Environment):
         return self._env.observation_spec()
 
     @property
-    def action_spec(self):
-        return self._env.action_spec()
-
-    @property
     def obs_shape(self):
         return self.obs_spec.shape
 
@@ -224,7 +220,16 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def observation_spec(self):
-        return self._env.observation_spec()
+        return self.convert_to_named_tuple(self._env.observation_spec())
+
+    @property
+    def action_spec(self):
+        return self.convert_to_named_tuple(self._env.action_spec())
+
+    def convert_to_named_tuple(self, spec):
+        names = "shape dtype name"
+        Spec = namedtuple("Spec", names)
+        return Spec(*[getattr(spec, name) for name in names])
 
     def step(self, action):
         self._env.step()
