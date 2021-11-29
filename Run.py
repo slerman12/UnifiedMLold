@@ -69,6 +69,7 @@ def main(args):
 
             if env.last_episode_len >= args.nstep:
                 replay.add(store=True)  # Only store full episodes
+                print(len(replay))
 
             if args.save_session:
                 Utils.save(root_path, agent=agent, replay=replay)
