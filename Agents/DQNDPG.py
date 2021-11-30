@@ -25,7 +25,6 @@ class DQNDPGAgent(torch.nn.Module):
                  ):
         super().__init__()
 
-        self.update_per_steps = update_per_steps
         self.explore_steps = explore_steps
         self.discrete = discrete
         self.device = device
