@@ -27,6 +27,7 @@ class DrQV2Agent(DQNDPGAgent):
             stddev_schedule, stddev_clip,  # Exploration
             discrete, device, log_tensorboard  # On-boarding
         )
+        self.explore_steps = explore_steps
 
         # ! Technically DrQV2 only compatible with continuous spaces but both supported here
         # self.discrete = False  # Discrete supported
