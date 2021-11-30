@@ -24,7 +24,7 @@ class DrQV2Agent(DQNDPGAgent):
         super().__init__(
             obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
             lr, target_tau,  # Optimization
-            explore_steps, stddev_schedule, stddev_clip,  # Exploration
+            stddev_schedule, stddev_clip,  # Exploration
             discrete, device, log_tensorboard  # On-boarding
         )
 
@@ -32,6 +32,16 @@ class DrQV2Agent(DQNDPGAgent):
         # self.discrete = False  # Discrete supported
 
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
+
+    def act(self, obs):
+        action = super().act(obs)
+
+        # Explore phase
+        if self.step < self.explore_steps:
+            action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
+                else action.uniform_(-1, 1)
+
+        return action
 
     # Data augmentation
     def see_augmented(self, obs):

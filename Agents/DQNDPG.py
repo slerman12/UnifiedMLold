@@ -20,7 +20,7 @@ class DQNDPGAgent(torch.nn.Module):
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
-                 explore_steps, stddev_schedule, stddev_clip,  # Exploration
+                 stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
         super().__init__()
@@ -30,7 +30,6 @@ class DQNDPGAgent(torch.nn.Module):
         self.log_tensorboard = log_tensorboard
         self.birthday = time.time()
         self.step = self.episode = 0
-        self.explore_steps = explore_steps
 
         # Models
         self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
@@ -41,7 +40,7 @@ class DQNDPGAgent(torch.nn.Module):
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                         stddev_schedule, stddev_clip,
-                                        optim_lr=lr).to(device)  # TODO Maybe don't use sched/clip as default
+                                        optim_lr=lr).to(device)
 
     def act(self, obs):
         with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
