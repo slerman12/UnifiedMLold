@@ -57,7 +57,8 @@ class TruncatedGaussianActor(BaseActor):
         self.stddev_clip = stddev_clip
 
     def forward(self, obs, step=None):
-        stddev = 0 if step is None or self.stddev_schedule is None else Utils.schedule(self.stddev_schedule, step)
+        # stddev = 0 if step is None or self.stddev_schedule is None else Utils.schedule(self.stddev_schedule, step)
+        stddev = torch.log(self.stddev_schedule)  # explore_temp
 
         h = self.trunk(obs)
 

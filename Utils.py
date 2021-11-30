@@ -104,6 +104,7 @@ def weight_init(m):
             m.bias.data.fill_(0.0)
 
 
+# A Normal distribution with its variance clipped TODO clip via differentiable re-param trick
 class TruncatedNormal(pyd.Normal):
     def __init__(self, loc, scale, low=-1.0, high=1.0, eps=1e-6, clip=None):
         super().__init__(loc, scale, validate_args=False)
@@ -117,20 +118,21 @@ class TruncatedNormal(pyd.Normal):
         x = x - x.detach() + clamped_x.detach()
         return x
 
-    # defaults to no clip, no grad
+    # Defaults to no clip, no grad
     def sample(self, clip=False, sample_shape=torch.Size()):
         return self.rsample(clip=clip, sample_shape=sample_shape).detach()
 
-    # defaults to clip, grad
+    # Defaults to clip, grad
     def rsample(self, clip=True, sample_shape=torch.Size()):
         clip = self.clip if clip else None
         shape = self._extended_shape(sample_shape)
         eps = _standard_normal(shape,
                                dtype=self.loc.dtype,
                                device=self.loc.device)
-        eps = eps * self.scale
+        # eps = eps * self.scale  # TODO ...by multiplying scale (st.dev) /after/ clipping)
         if clip is not None:
-            eps = torch.clamp(eps, -clip, clip)
+            eps = torch.clamp(eps, -clip, clip)  # Don't explore /too/ much
+        eps = eps * self.scale
         x = self.loc + eps
         return self._clamp(x)
 
