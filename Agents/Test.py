@@ -49,19 +49,17 @@ class Test(torch.nn.Module):
 
     def act(self, obs):
         with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
-            obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
-
-            obs = self.encoder(obs)
+            obs = torch.as_tensor(obs, device=self.device)
+            obs = self.encoder(obs.unsqueeze(0))
             dist = self.actor(obs, self.step)
-
-            action = dist.sample() if self.training \
-                else dist.best if self.discrete \
-                else dist.mean  # TODO test always just sampling... or also if <explore_steps
-
             if self.training:
-                self.step += 1
-
-            return action
+                action = dist.sample()
+                if self.step < self.num_expl_steps:
+                    action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
+                        else action.uniform_(-1, 1)
+            else:
+                action = dist.best if self.discrete else dist.mean
+            return action.cpu().numpy()[0]
 
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
