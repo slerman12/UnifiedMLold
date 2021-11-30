@@ -7,3 +7,9 @@ lr: 8e-5
 feature_dim: 100
 
 suite: dmc
+hydra:
+  job:
+    env_set:
+      # Environment variables for MuJoCo
+      MKL_SERVICE_FORCE_INTEL: '1'
+      MUJOCO_GL: 'egl'

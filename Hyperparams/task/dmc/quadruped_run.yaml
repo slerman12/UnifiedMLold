@@ -5,3 +5,9 @@ defaults:
 task_name: quadruped_run
 replay_buffer_size: 100000
 suite: dmc
+hydra:
+  job:
+    env_set:
+      # Environment variables for MuJoCo
+      MKL_SERVICE_FORCE_INTEL: '1'
+      MUJOCO_GL: 'egl'

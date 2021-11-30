@@ -7,3 +7,9 @@ nstep: 1
 batch_size: 512
 
 suite: dmc
+hydra:
+  job:
+    env_set:
+      # Environment variables for MuJoCo
+      MKL_SERVICE_FORCE_INTEL: '1'
+      MUJOCO_GL: 'egl'
