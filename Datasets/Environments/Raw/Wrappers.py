@@ -300,7 +300,7 @@ class AttributesWrapper(dm_env.Environment):
             if self.discrete else self.action_spec['shape']
 
     def simplify_spec(self, spec):
-        keys = ['shape', 'dtype', 'name']
+        keys = ['shape', 'dtype', 'name', 'num_actions']
         spec = {key: getattr(spec, key, None) for key in keys}
         spec['dtype'] = spec['dtype'].name
         return spec

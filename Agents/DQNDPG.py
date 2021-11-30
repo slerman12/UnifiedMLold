@@ -25,12 +25,12 @@ class DQNDPGAgent(torch.nn.Module):
                  ):
         super().__init__()
 
-        self.explore_steps = explore_steps
         self.discrete = discrete
         self.device = device
         self.log_tensorboard = log_tensorboard
         self.birthday = time.time()
         self.step = self.episode = 0
+        self.explore_steps = explore_steps
 
         # Models
         self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
@@ -85,7 +85,7 @@ class DQNDPGAgent(torch.nn.Module):
             return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step,
                                       logs=logs)
 
-    def update_misc(self, obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r, dist, logs=None):
+    def update_misc(self, obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r, logs=None):
         pass
 
     def update(self, replay):
@@ -105,6 +105,7 @@ class DQNDPGAgent(torch.nn.Module):
         self.update_actor(obs, logs)
 
         # Any miscellaneous updates
-        self.update_misc(obs, action, reward, discount, next_obs, *traj, logs)
+        self.update_misc(obs, action, reward, discount, next_obs, *traj,
+                         logs)
 
         return logs
