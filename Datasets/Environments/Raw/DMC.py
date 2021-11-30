@@ -224,6 +224,14 @@ class TruncateWrapper(dm_env.Environment):
         return getattr(self.env, name)
 
 
+# Access a dict with attribute or key
+class AttrDict(dict):
+    def __init__(self, d):
+        super(AttrDict, self).__init__()
+        self.__dict__ = self
+        self.update(d)
+
+
 class AugmentAttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self.env = env
@@ -234,13 +242,13 @@ class AugmentAttributesWrapper(dm_env.Environment):
         time_step = self.env.step(action)
         # Augment time_step with extra functionality
         self.time_step = self.augment_time_step(time_step, action)
-        return self.time_step
+        return self.to_attr_dict(self.time_step)
 
     def reset(self):
         time_step = self.env.reset()
         # Augment time_step with extra functionality
         self.time_step = self.augment_time_step(time_step)
-        return self.time_step
+        return self.to_attr_dict(self.time_step)
 
     def close(self):
         self.gym_env.close()
@@ -256,7 +264,12 @@ class AugmentAttributesWrapper(dm_env.Environment):
 
     @property
     def exp(self):
-        return self.time_step
+        return self.to_attr_dict(self.time_step)
+
+    def to_attr_dict(self, exp):
+        keys = ['step_type', 'reward', 'discount', 'observation', 'action',
+                'first', 'mid', 'last', 'episode_done', 'get_last']
+        return AttrDict({key: exp[key] for key in keys})
 
     @property
     def experience(self):
