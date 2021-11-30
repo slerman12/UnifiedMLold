@@ -40,11 +40,11 @@ class DQNDPGAgent(torch.nn.Module):
 
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-                                        None, stddev_clip,
+                                        stddev_schedule, stddev_clip,
                                         optim_lr=lr).to(device)  # TODO Maybe don't use sched/clip as default
 
     def act(self, obs):
-        with Utils.act_mode(self.encoder, self.actor):
+        with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
             obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
 
             obs = self.encoder(obs)
