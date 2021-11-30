@@ -60,17 +60,18 @@ class DrQV2Agent(DQNDPGAgent):
                                         obs, action, reward, discount, next_obs,
                                         self.step, logs=logs)
 
-        # Actor loss
-        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                        self.step, logs=logs)
-
-        # Update models
+        # Update critic
         Utils.optimize(critic_loss,
                        self.encoder,
                        self.critic)
 
         self.critic.update_target_params()
 
+        # Actor loss
+        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                        self.step, logs=logs)
+
+        # Update actor
         Utils.optimize(actor_loss,
                        self.actor)
 

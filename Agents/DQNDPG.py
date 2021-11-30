@@ -68,6 +68,7 @@ class DQNDPGAgent(torch.nn.Module):
         batch = replay.sample()  # Can also write 'batch = next(replay)'
         obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
             batch, self.device)
+        traj_o, traj_a, traj_r = traj
 
         # "See"
         obs = self.encoder(obs)
@@ -82,17 +83,18 @@ class DQNDPGAgent(torch.nn.Module):
                                         obs, action, reward, discount, next_obs,
                                         self.step, logs=logs)
 
-        # Actor loss
-        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                        self.step, logs=logs)
-
-        # Update models
+        # Update critic
         Utils.optimize(critic_loss,
                        self.encoder,
                        self.critic)
 
         self.critic.update_target_params()
 
+        # Actor loss
+        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                        self.step, logs=logs)
+
+        # Update actor
         Utils.optimize(actor_loss,
                        self.actor)
 
