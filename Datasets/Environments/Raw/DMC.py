@@ -67,8 +67,6 @@ class ActionWrapper(dm_env.Environment):
                                                    wrapped_action_spec.maximum,
                                                    'action')
 
-        self.time_step = None
-
     def step(self, action):
         if hasattr(action, 'astype'):
             action = action.astype(self.env.action_spec().dtype)
@@ -93,8 +91,6 @@ class ActionRepeatWrapper(dm_env.Environment):
     def __init__(self, env, action_repeat):
         self.env = env
         self.action_repeat = action_repeat
-
-        self.time_step = None
 
     def step(self, action):
         reward = 0.0
@@ -129,8 +125,6 @@ class FrameStackWrapper(dm_env.Environment):
         self._num_frames = num_frames
         self._frames = deque([], maxlen=num_frames)
         self._pixels_key = pixels_key
-
-        self.time_step = None
 
         wrapped_obs_spec = env.observation_spec()
         if pixels_key is not None:
@@ -191,7 +185,6 @@ class FrameStackWrapper(dm_env.Environment):
 class TruncateWrapper(dm_env.Environment):
     def __init__(self, env, max_episode_steps=np.inf, truncate_episode_steps=np.inf, train=True):
         self.env = env
-        self.time_step = None
 
         self.train = train
 
@@ -207,7 +200,7 @@ class TruncateWrapper(dm_env.Environment):
         self.elapsed_steps += 1
         self.was_not_truncated = time_step.last() or self.elapsed_steps >= self.max_episode_steps
         if self.elapsed_steps >= self.truncate_episode_steps or self.elapsed_steps >= self.max_episode_steps:
-            # No truncation for training environments
+            # No truncation for eval environments
             if self.train or self.elapsed_steps >= self.max_episode_steps:
                 time_step = dm_env.truncation(time_step.reward, time_step.observation, time_step.discount)
         self.time_step = time_step
