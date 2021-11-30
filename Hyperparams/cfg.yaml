@@ -34,7 +34,7 @@ log_tensorboard: true
 root_path: ???  # To be specified later
 device: cuda
 # Experiment
-_agent_: DQNDPGAgent
+Agent: DQNDPGAgent
 seed: 1
 experiment: experiment_name
 
@@ -49,7 +49,7 @@ environment:
   suite: ${suite}
 
 agent:
-  _target_: ${_agent_}
+  _target_: ${Agent}
   obs_shape: ${obs_shape}
   action_shape: ${action_shape}
   feature_dim: ${feature_dim}
