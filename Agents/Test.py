@@ -22,7 +22,7 @@ class Test(torch.nn.Module):
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
-                 stddev_schedule, stddev_clip,  # Exploration
+                 explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
         super().__init__()
@@ -32,6 +32,7 @@ class Test(torch.nn.Module):
         self.log_tensorboard = log_tensorboard
         self.birthday = time.time()
         self.step = self.episode = 0
+        self.explore_steps = explore_steps
 
         # Models
         self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
@@ -54,7 +55,7 @@ class Test(torch.nn.Module):
             dist = self.actor(obs, self.step)
             if self.training:
                 action = dist.sample()
-                if self.step < self.num_expl_steps:
+                if self.step < self.explore_steps:
                     action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
                         else action.uniform_(-1, 1)
             else:
