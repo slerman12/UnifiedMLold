@@ -41,16 +41,17 @@ def optimize(*models, clear_grads=True, backward=True, step_optim=True):
                     getattr(self, model).optim.zero_grad(set_to_none=True)
 
             # Loss
-            loss = method(self, *args, **kwargs)
+            if backward:
+                loss = method(self, *args, **kwargs)
+
+                if loss is not None:
+                    # Backward
+                    loss.backward()
 
             # Optimize
-            if loss is not None:
-                # Update models
-                if backward:
-                    loss.backward()
-                if step_optim:
-                    for model in models:
-                        getattr(self, model).optim.step()
+            if step_optim:
+                for model in models:
+                    getattr(self, model).optim.step()
 
         return model_loss
     return decorator
