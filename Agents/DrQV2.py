@@ -2,8 +2,6 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-import functools
-
 import torch
 
 from Agents.DQNDPG import DQNDPGAgent
@@ -35,6 +33,7 @@ class DrQV2Agent(DQNDPGAgent):
 
         # "See" augmented
         def see_augmented(obs):
+            print(self.encoder.training)
             if self.encoder.training:
                 obs = aug(obs)
             obs = encode(obs)
