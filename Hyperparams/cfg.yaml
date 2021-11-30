@@ -33,7 +33,7 @@ log_tensorboard: true
 root_path: ???  # To be specified later
 device: cuda
 # Experiment
-Agent: DQNDPGAgent
+Agent: Agents.DQNDPGAgent
 seed: 1
 experiment: experiment_name
 
