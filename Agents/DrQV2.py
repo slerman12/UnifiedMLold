@@ -6,7 +6,7 @@ import torch
 
 import Utils
 
-from Agents import DQNDPGAgent
+from Agents.DQNDPG import DQNDPGAgent
 
 from Blocks.augmentations import RandomShiftsAug, IntensityAug
 

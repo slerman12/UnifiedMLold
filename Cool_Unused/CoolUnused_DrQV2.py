@@ -5,7 +5,6 @@
 import Utils
 
 from Agents import DQNDPGAgent
-from Blocks.actors import TruncatedGaussianActor
 
 from Blocks.augmentations import RandomShiftsAug, IntensityAug
 
