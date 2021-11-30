@@ -10,6 +10,7 @@ from Blocks.augmentations import RandomShiftsAug, IntensityAug
 
 
 class DrQV2Agent(DQNDPGAgent):
+    """Data-Regularized Q-Network V2"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
@@ -25,7 +26,7 @@ class DrQV2Agent(DQNDPGAgent):
         self.explore_steps = explore_steps  # 2000
 
         # ! Technically DrQV2 only compatible with continuous spaces but both supported here
-        # Optionally, trainable variance for policy supported here as well if stddev_schedule=None
+        # Optionally, trainable variance for policy supported here as well if stddev_schedule=null
 
         aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
 

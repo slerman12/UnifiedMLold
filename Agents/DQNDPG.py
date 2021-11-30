@@ -17,6 +17,7 @@ from Losses.PolicyLearning import deepPolicyGradient
 
 
 class DQNDPGAgent(torch.nn.Module):
+    """Deep Q-Network, Deep Policy Gradient"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization

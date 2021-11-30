@@ -5,8 +5,8 @@
 import torch
 
 
-def deepPolicyGradient(actor, critic, obs, step, entropy_scale=0.1, dist=None,
-                       sub_planner=None, planner=None, logs=None):
+def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0.1, dist=None,
+                       sub_planner=None, planner=None, trust_region_scale=0, logs=None):
     if dist is None:
         dist = actor(obs, step)
     action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample"
@@ -18,38 +18,23 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_scale=0.1, dist=None,
     Qs = critic(obs, action)
     Q = torch.min(*Qs)
 
-    entropy = dist.entropy().mean()
+    log_proba = dist.log_probs(action)
 
-    policy_loss = -Q.mean() - entropy_scale * entropy
+    entropy = dist.entropy().mean()  # TODO or use -log_proba.mean() ?
+
+    trust_region = torch.kl_div(log_proba, log_proba.detach()).mean()
+
+    policy_loss = -Q.mean() - entropy_temp * entropy + trust_region_scale * trust_region
 
     if logs is not None:
         assert isinstance(logs, dict)
         logs['policy_loss'] = policy_loss.item()
-        logs['action_proba'] = torch.exp(dist.log_prob(action)).mean().item()
-        logs['policy_entropy'] = entropy.item()
+        logs['avg_action_proba'] = torch.exp(dist.log_prob(action)).mean().item()
+        logs['avg_policy_entropy'] = entropy.item()
+        logs['avg_trust_region'] = trust_region.item()
 
     # TODO DEBUGGING delete
     if step % 1000 == 0:
         print('avg action proba', logs['action_proba'])
 
     return policy_loss
-
-
-def entropyMaxim(actor, obs, step, entropy_temp, dist=None, logs=None):
-    if dist is None:
-        dist = actor(obs, step)
-    action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample"
-
-    log_pi = dist.log_prob(action).sum(-1, keepdim=True)
-
-    entropy = entropy_temp.detach() * log_pi
-
-    entropy_loss = entropy.mean()
-
-    if logs is not None:
-        assert isinstance(logs, dict)
-        logs['entropy_loss'] = entropy_loss.item()
-        logs['action_probs'] = torch.exp(dist.log_prob(action)).mean().item()
-        logs['policy_ent'] = dist.entropy().sum(dim=-1).mean().item()
-
-    return entropy_loss
