@@ -47,18 +47,20 @@ def optimize(loss=None, *models, clear_grads=True, backward=True, step_optim=Tru
 
 
 # Context manager that temporarily switches on torch.no_grad() and eval() mode for specified models; then resets them
-class act_mode(torch.no_grad):
+class act_mode:
     def __init__(self, *models):
         super().__init__()
         self.models = models
 
     def __enter__(self):
+        torch.no_grad().__enter__()
         self.start_modes = []
         for model in self.models:
             self.start_modes.append(model.training)
             model.eval()
 
     def __exit__(self, *args):
+        torch.no_grad().__exit__(*args)
         for model, mode in zip(self.models, self.start_modes):
             model.train(mode)
         return False

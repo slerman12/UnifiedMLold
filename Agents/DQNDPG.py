@@ -44,25 +44,32 @@ class DQNDPGAgent(torch.nn.Module):
                                         optim_lr=lr).to(device)  # TODO Maybe don't use sched/clip as default
 
     def act(self, obs):
-        with torch.no_grad(), Utils.eval_mode(self.encoder, self.actor):
-            obs = torch.as_tensor(obs, device=self.device)
-            obs = self.encoder(obs.unsqueeze(0))
+        with Utils.act_mode(self.encoder, self.actor):
+            obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
+
+            obs = self.encoder(obs)
             dist = self.actor(obs, self.step)
             if self.training:
                 self.step += 1
                 action = dist.sample()
+
+                # Explore
                 if self.step < self.explore_steps:
                     action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
                         else action.uniform_(-1, 1)
             else:
                 action = dist.best if self.discrete else dist.mean
-            return action.cpu().numpy()[0]
+            return action
 
-    def batch_processing(self, *batch, logs=None):
+    def update(self, replay):
+        logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
+            else None
+
+        batch = replay.sample()  # Can also write 'batch = next(replay)'
         obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
             batch, self.device)
 
-        # Encode
+        # "See"
         obs = self.encoder(obs)
         with torch.no_grad():
             next_obs = self.encoder(next_obs)
@@ -70,42 +77,23 @@ class DQNDPGAgent(torch.nn.Module):
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()
 
-        return obs, action, reward, discount, next_obs, *traj
-
-    @Utils.optimize('encoder', 'critic')
-    def update_critic(self, obs, action, reward, discount, next_obs, logs=None):
         # Critic loss
-        return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step,
-                                 logs=logs)
+        critic_loss = ensembleQLearning(self.actor, self.critic,
+                                        obs, action, reward, discount, next_obs,
+                                        self.step, logs=logs)
 
-    @Utils.optimize('actor')
-    def update_actor(self, obs, logs=None):
-        if not self.discrete:
-            # Actor loss
-            return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step,
-                                      logs=logs)
+        # Actor loss
+        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                        self.step, logs=logs)
 
-    def update_misc(self, obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r, logs=None):
-        pass
+        # Update models
+        Utils.optimize(critic_loss,
+                       self.encoder,
+                       self.critic)
 
-    def update(self, replay):
-        logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
-            else None
-
-        batch = replay.sample()
-        obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
-
-        # Update critic
-        self.update_critic(obs, action, reward, discount, next_obs, logs)
-
-        # Update critic target
         self.critic.update_target_params()
 
-        # Update actor
-        self.update_actor(obs, logs)
-
-        # Any miscellaneous updates
-        self.update_misc(obs, action, reward, discount, next_obs, *traj,
-                         logs)
+        Utils.optimize(actor_loss,
+                       self.actor)
 
         return logs

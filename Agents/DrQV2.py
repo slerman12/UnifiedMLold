@@ -2,12 +2,16 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import torch
+
 import Utils
 
 from Agents import DQNDPGAgent
-from Blocks.actors import TruncatedGaussianActor
 
 from Blocks.augmentations import RandomShiftsAug, IntensityAug
+
+from Losses.PolicyLearning import deepPolicyGradient
+from Losses.QLearning import ensembleQLearning
 
 
 class DrQV2Agent(DQNDPGAgent):
@@ -26,19 +30,48 @@ class DrQV2Agent(DQNDPGAgent):
 
         # ! Technically DrQV2 only compatible with continuous spaces but both supported here
         # self.discrete = False  # Discrete supported
-        # self.actor = TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-        #                                     stddev_schedule, stddev_clip,
-        #                                     optim_lr=lr).to(device)
 
-        # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
 
-    def batch_processing(self, *batch, logs=None):
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(batch, self.device)
-
-        # Augment
+    # Data augmentation
+    def see_augmented(self, obs):
         obs = self.aug(obs)
-        next_obs = self.aug(next_obs)
+        obs = self.encoder(obs)
+        return obs
 
-        return super().batch_processing(obs, action, reward, discount, next_obs, *traj,
-                                        logs=logs)
+    def update(self, replay):
+        logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
+            else None
+
+        batch = replay.sample()  # Can also write 'batch = next(replay)'
+        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
+            batch, self.device)
+
+        # "See" augmented
+        obs = self.see_augmented(obs)
+        with torch.no_grad():
+            next_obs = self.see_augmented(next_obs)
+
+        if self.log_tensorboard:
+            logs['batch_reward'] = reward.mean().item()
+
+        # Critic loss
+        critic_loss = ensembleQLearning(self.actor, self.critic,
+                                        obs, action, reward, discount, next_obs,
+                                        self.step, logs=logs)
+
+        # Actor loss
+        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                        self.step, logs=logs)
+
+        # Update models
+        Utils.optimize(critic_loss,
+                       self.encoder,
+                       self.critic)
+
+        self.critic.update_target_params()
+
+        Utils.optimize(actor_loss,
+                       self.actor)
+
+        return logs
