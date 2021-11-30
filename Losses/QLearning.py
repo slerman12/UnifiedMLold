@@ -6,8 +6,8 @@ import torch
 import torch.nn.functional as F
 
 
-def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, dist=None, entropy_temp=0.03,
-                      sub_planner=None, planner=None, munchausen_scaling=0.9, logs=None):
+def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, dist=None, entropy_temp=0,  # 0.03
+                      sub_planner=None, planner=None, munchausen_scaling=0, logs=None):  # 0.9
     with torch.no_grad():
         next_dist = actor(next_obs, step)
         next_action = next_dist.rsample()
@@ -26,14 +26,13 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         # Future uncertainty maximization in reward  TODO consider N-step entropy... +actor(traj_o).entropy(traj_a)
         # next_action_log_proba = next_dist.log_prob(next_action).sum(-1, keepdim=True)
         # Entropy in future decisions means exploring the uncertain, the lesser-explored
-        entropy = next_dist.entropy().mean(-1, keepdim=True)
+        next_entropy = next_dist.entropy().mean(-1, keepdim=True)
         # TODO each Q target gets multiplied by proba in expectation
         # target_Q = reward + (discount * next_Q - entropy_temp * next_action_log_proba)
         # TODO the above version would go well with differentiable next_dist, otherwise below is fine
-        target_Q = reward + (discount * next_Q + entropy_temp * entropy)
-        # target_Q = reward + discount * next_Q + entropy_temp * entropy
+        # target_Q = reward + (discount * next_Q + entropy_temp * next_entropy)
+        target_Q = reward + discount * next_Q + entropy_temp * next_entropy
 
-        # (temp=.03, scaling=.9, lo=-1)
         # "Munchausen reward":
         # Current certainty maximization in reward, thereby increasing so-called "action-gap"
         # Furthermore, off-policy sampling of outdated rewards might be mitigated to a degree by on-policy estimate

@@ -5,8 +5,8 @@
 import torch
 
 
-def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0.1, dist=None,
-                       sub_planner=None, planner=None, trust_region_scale=0, logs=None):
+def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, trust_region_scale=0, dist=None,
+                       sub_planner=None, planner=None, logs=None):
     if dist is None:
         dist = actor(obs, step)
     action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample"
