@@ -37,12 +37,12 @@ def make(name, frame_stack, action_repeat, max_episode_frames, truncate_episode_
     # Stack several frames
     env = FrameStackWrapper(env, frame_stack, pixels_key)
     if max_episode_frames and action_repeat:
-        max_episode_frames = max_episode_frames // action_repeat
-    env = TimeLimit(env, max_episode_len=max_episode_frames)
+        max_episode_steps = max_episode_frames // action_repeat
+        env = TimeLimit(env, max_episode_len=max_episode_steps)
     if train:
         if truncate_episode_frames and action_repeat:
-            truncate_episode_frames = truncate_episode_frames // action_repeat
-        env = TimeLimit(env, max_episode_len=truncate_episode_frames, resume=True)
+            truncate_episode_steps = truncate_episode_frames // action_repeat
+            env = TimeLimit(env, max_episode_len=truncate_episode_steps, resume=True)
     env = ExtendedTimeStepWrapper(env)
     env = AttributesWrapper(env)
     return env

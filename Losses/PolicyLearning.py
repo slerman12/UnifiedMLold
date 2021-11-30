@@ -5,6 +5,7 @@
 import torch
 
 
+# TODO entropy could be more strongly enforced at the beginning (scheduled)
 def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
                        sub_planner=None, planner=None, logs=None):
     if dist is None:

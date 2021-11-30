@@ -199,7 +199,7 @@ def make(env_id, frame_stack=4, action_repeat=1, max_episode_frames=27000, trunc
     env = AtariPreprocessing(env, frame_skip=action_repeat,
                              terminal_on_life_loss=False, screen_size=84)
     # env = FrameStackWrapper(env, frame_stack)
-    # env = ActionDTypeWrapper(env, np.int64, discrete=True)
+    env = ActionDTypeWrapper(env, np.int64, discrete=True)
     if train:
         if max_episode_frames and action_repeat:
             max_episode_frames = max_episode_frames // action_repeat

@@ -201,7 +201,7 @@ class ActionDTypeWrapper(dm_env.Environment):
 
 class TimeLimit(dm_env.Environment):
     """Return done before end of episode. If resume is True,
-    resume episode without reset if episode not actually done
+    resume episode without reset of episode not actually done
     """
     def __init__(self, env, max_episode_len=None, resume=False):
         self._env = env

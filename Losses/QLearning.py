@@ -31,14 +31,15 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         # target_Q = reward + (discount * next_Q - entropy_temp * next_action_log_proba)
         # TODO the above version would go well with differentiable next_dist, otherwise below is fine
         # target_Q = reward + (discount * next_Q + entropy_temp * next_entropy)
-        target_Q = reward + discount * next_Q + entropy_temp * next_entropy
+        target_Q = reward + (discount * next_Q) + (entropy_temp * next_entropy)
 
         # "Munchausen reward":
         # Current certainty maximization in reward, thereby increasing so-called "action-gap"
         # Furthermore, off-policy sampling of outdated rewards might be mitigated to a degree by on-policy estimate
         if munchausen_scaling != 0:
             if dist is None:
-                dist = actor(obs)
+                dist = actor(obs, step)
+            # TODO logsumexp trick
             action_log_proba = dist.log_prob(action).mean(-1, keepdim=True)
             # entropy = dist.entropy().mean(-1, keepdim=True)
             lo = -1
@@ -54,7 +55,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
 
     Q_ensemble = critic(obs, action, dist)
 
-    # Temporal difference error (via MSE)  TODO huber loss?
+    # Temporal difference error (via MSE)  TODO Huber loss?
     td_error = sum([F.mse_loss(Q, target_Q) for Q in Q_ensemble])
 
     if logs is not None:

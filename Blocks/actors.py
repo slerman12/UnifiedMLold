@@ -52,12 +52,13 @@ class TruncatedGaussianActor(BaseActor):
                  target_tau=None, optim_lr=None, **kwargs):
         super().__init__(repr_dim, feature_dim, hidden_dim, action_dim,
                          target_tau=target_tau, optim_lr=optim_lr)
-        dim = kwargs.get("dim", action_dim)
+        dim = kwargs.get("dim", action_dim)  # (To make sure target has the same action_dim)
 
         num_outputs = 2 if stddev_schedule is None else 1
 
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
                          hidden_dim=hidden_dim, action_dim=dim * num_outputs,
+                         stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
                          target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 
         self.action_dim = dim
@@ -87,12 +88,13 @@ class DiagonalGaussianActor(BaseActor):
     def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim,
                  stddev_schedule=None, log_std_bounds=None,
                  target_tau=None, optim_lr=None, **kwargs):
-        dim = kwargs.get("dim", action_dim)
+        dim = kwargs.get("dim", action_dim)  # (To make sure target has the same action_dim)
 
         num_outputs = 2 if stddev_schedule is None else 1
 
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
                          hidden_dim=hidden_dim, action_dim=dim * num_outputs,
+                         stddev_schedule=stddev_schedule, log_std_bounds=log_std_bounds,
                          target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 
         self.tanh_transform = Utils.TanhTransform()
@@ -144,12 +146,16 @@ class CategoricalCriticActor(nn.Module):
             self.optim = critic.optim
 
     def forward(self, obs, step=None):
-        temp = 1 if step is None else Utils.schedule(self.stddev_schedule, step)
+        # TODO learnable temp
+        temp = 1 if step is None else Utils.schedule(self.stddev_schedule, step)  # todo should also schedule continuous
 
         Qs = self.critic(obs)
         # Q = torch.min(*Qs)  # min-reduced
         Q = sum(*Qs) / self.ensemble_size  # mean-reduced
 
+        # TODO clip with Munchausen-style lo for stability? (otherwise, exp vanishes with high logits I think)
+        # TODO logits/logprob via subtracting max_q first for stability? (otherwise, exp explodes for low temps I think)
+        # TODO torch.logsumexp !! example of both: https://github.com/BY571/Munchausen-RL/blob/master/M-DQN.ipynb
         dist = Categorical(logits=Q / temp)
 
         # set dist.Qs (Q1, Q2, ...)
@@ -163,6 +169,8 @@ class CategoricalCriticActor(nn.Module):
 
         # set dist.best_action
         setattr(dist, "best", torch.argmax(Q, -1))
+
+        # TODO dist.expected_Q : or dist.expected_V : Q * dist.log_prob (Q min-reduced?) - for continuous scatter sample
 
         return dist
 

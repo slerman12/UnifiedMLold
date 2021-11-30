@@ -91,6 +91,10 @@ class EnsemblePROCritic(EnsembleQCritic):
         A = AV[:self.ensemble_size]
         V = AV[self.ensemble_size:]
 
+        # TODO consider clipping log_pi like in Munchausen
+        # TODO consider the log-sum-exp trick (for discrete only?) : log_pi = q - max_q - log clipped exp (q-max_q)/temp
+        # TODO I think above can be done in actor
+        # TODO torch.logsumexp !!
         if self.discrete:
             log_pi = dist.logits
 

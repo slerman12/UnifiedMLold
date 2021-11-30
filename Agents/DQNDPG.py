@@ -83,8 +83,10 @@ class DQNDPGAgent(torch.nn.Module):
 
         # Update critic
         Utils.optimize(critic_loss,
-                       self.critic,
-                       self.encoder)
+                       self.encoder,
+                       self.critic)
+
+        self.critic.update_target_params()
 
         # Actor loss
         actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
@@ -93,7 +95,5 @@ class DQNDPGAgent(torch.nn.Module):
         # Update actor
         Utils.optimize(actor_loss,
                        self.actor)
-
-        self.critic.update_target_params()
 
         return logs
