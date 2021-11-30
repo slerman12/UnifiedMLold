@@ -296,7 +296,8 @@ class AttributesWrapper(dm_env.Environment):
 
     @property
     def action_shape(self):
-        return (self.action_spec().num_actions,) \
+        a = self.simplify_spec(self.env.action_spec())
+        return (a['num_actions'],) \
             if self.discrete else self.action_spec['shape']
 
     def simplify_spec(self, spec):
