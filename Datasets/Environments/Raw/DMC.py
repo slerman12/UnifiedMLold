@@ -210,6 +210,7 @@ class TruncateWrapper(dm_env.Environment):
         if self.was_not_truncated:
             self.time_step = self.env.reset()
         self.elapsed_steps = 0
+        self.was_not_truncated = True
         return self.time_step
 
     def close(self):
