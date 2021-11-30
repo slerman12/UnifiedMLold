@@ -281,9 +281,8 @@ class AugmentAttributesWrapper(dm_env.Environment):
 
     @property
     def action_shape(self):
-        a = self.simplify_spec(self.action_spec)
-        return (a['num_actions'],) if self.discrete \
-            else a['shape']
+        a = self.action_spec
+        return (a['num_actions'],) if self.discrete else a['shape']
 
     def simplify_spec(self, spec):
         # Return spec as a dict of basic primitives (that can be passed into Hydra)
