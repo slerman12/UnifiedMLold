@@ -32,12 +32,10 @@ class DrQV2Agent(DQNDPGAgent):
         aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
 
         # "See" augmented
-        @functools.wraps(self.encoder, 'self')
         def see_augmented(obs):
             if self.training:
                 obs = aug(obs)
-            print(self)
-            obs = self(obs)
+            obs = self.encoder(obs)
             return obs
 
         # Data augmentation
