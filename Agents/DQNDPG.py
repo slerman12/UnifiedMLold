@@ -53,7 +53,7 @@ class DQNDPGAgent(torch.nn.Module):
 
             action = dist.sample() if self.training \
                 else dist.best if self.discrete \
-                else dist.mean
+                else dist.mean  # TODO test always just sampling... or also if <explore_steps
 
             if self.training:
                 self.step += 1
