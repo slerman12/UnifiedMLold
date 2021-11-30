@@ -256,7 +256,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
 
     @property
     def exp(self):
-        return self.time_step.to_attr_dict()
+        return self.time_step
 
     @property
     def experience(self):
