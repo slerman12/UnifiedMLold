@@ -18,7 +18,7 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, trust_region_sc
     Qs = critic(obs, action)
     Q = torch.min(*Qs)
 
-    log_proba = dist.log_probs(action)
+    log_proba = dist.log_prob(action)
 
     entropy = dist.entropy().mean()  # TODO or use -log_proba.mean() ?
 
