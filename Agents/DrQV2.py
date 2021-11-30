@@ -27,7 +27,7 @@ class DrQV2Agent(DQNDPGAgent):
             stddev_schedule, stddev_clip,  # Exploration
             discrete, device, log_tensorboard  # On-boarding
         )
-        self.explore_steps = explore_steps
+        self.explore_steps = explore_steps  # 2000
 
         # ! Technically DrQV2 only compatible with continuous spaces but both supported here
         # self.discrete = False  # Discrete supported
@@ -38,7 +38,7 @@ class DrQV2Agent(DQNDPGAgent):
         action = super().act(obs)
 
         # Explore phase
-        if self.step < self.explore_steps:
+        if self.step < self.explore_steps and self.training:
             action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
                 else action.uniform_(-1, 1)
 
