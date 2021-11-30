@@ -14,7 +14,7 @@ class Environment:
         self.suite = suite
 
         self.env = self.raw_env.make(task_name, frame_stack, action_repeat, max_episode_frames,
-                                     truncate_episode_frames, seed, train)
+                                     truncate_episode_frames, train, seed)
 
         self.env.reset()
 

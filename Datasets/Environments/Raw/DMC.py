@@ -308,7 +308,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
         return getattr(self.env, name)
 
 
-def make(task, frame_stack, max_episode_frames=None, truncate_episode_frames=None, seed=0, action_repeat=1, train=True):
+def make(task, frame_stack, action_repeat=1, max_episode_frames=None, truncate_episode_frames=None, train=True, seed=0):
     # Load suite and task
     domain, task = task.split('_', 1)
     # Overwrite cup to ball_in_cup
