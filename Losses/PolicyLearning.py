@@ -25,12 +25,12 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_scale=0.1, dist=None,
     if logs is not None:
         assert isinstance(logs, dict)
         logs['policy_loss'] = policy_loss.item()
-        logs['action_probs'] = torch.exp(dist.log_prob(action)).mean().item()
+        logs['action_proba'] = torch.exp(dist.log_prob(action)).mean().item()
         logs['policy_ent'] = entropy.item()
 
     # TODO DEBUGGING delete
     if step % 1000 == 0:
-        print('entropy', entropy.item())
+        print('avg action proba', logs['action_proba'])
 
     return policy_loss
 
