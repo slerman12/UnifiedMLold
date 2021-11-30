@@ -48,8 +48,8 @@ environment:
   seed: ${seed}
   suite: ${suite}
 
-agent: ${_agent_}
-  _target_: Agents.DQNDPGAgent
+agent:
+  _target_: ${_agent_}
   obs_shape: ${obs_shape}
   action_shape: ${action_shape}
   feature_dim: ${feature_dim}
