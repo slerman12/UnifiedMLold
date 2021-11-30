@@ -48,7 +48,7 @@ class ExtendedAction(NamedTuple):
 
 class ActionWrapper(dm_env.Environment):
     def __init__(self, env, dtype, discrete=False):
-        self._env = env
+        self.env = env
         self.discrete = discrete
         wrapped_action_spec = env.action_spec()
         if discrete:
@@ -69,20 +69,22 @@ class ActionWrapper(dm_env.Environment):
 
     def step(self, action):
         if hasattr(action, 'astype'):
-            action = action.astype(self._env.action_spec().dtype)
-        return self._env.step(action)
+            action = action.astype(self.env.action_spec().dtype)
+        self.time_step = self.env.step(action)
+        return self.time_step
 
     def observation_spec(self):
-        return self._env.observation_spec()
+        return self.env.observation_spec()
 
     def action_spec(self):
         return self._action_spec
 
     def reset(self):
-        return self._env.reset()
+        self.time_step = self.env.reset()
+        return self.time_step
 
     def __getattr__(self, name):
-        return getattr(self._env, name)
+        return getattr(self.env, name)
 
 
 class ActionRepeatWrapper(dm_env.Environment):
@@ -100,7 +102,8 @@ class ActionRepeatWrapper(dm_env.Environment):
             if time_step.last():
                 break
 
-        return time_step._replace(reward=reward, discount=discount)
+        self.time_step = time_step._replace(reward=reward, discount=discount)
+        return self.time_step
 
     def observation_spec(self):
         return self.env.observation_spec()
@@ -109,7 +112,8 @@ class ActionRepeatWrapper(dm_env.Environment):
         return self.env.action_spec()
 
     def reset(self):
-        return self.env.reset()
+        self.time_step = self.env.reset()
+        return self.time_step
 
     def __getattr__(self, name):
         return getattr(self.env, name)
@@ -117,7 +121,7 @@ class ActionRepeatWrapper(dm_env.Environment):
 
 class FrameStackWrapper(dm_env.Environment):
     def __init__(self, env, num_frames, pixels_key=None):
-        self._env = env
+        self.env = env
         self._num_frames = num_frames
         self._frames = deque([], maxlen=num_frames)
         self._pixels_key = pixels_key
@@ -151,29 +155,31 @@ class FrameStackWrapper(dm_env.Environment):
         return pixels.transpose(2, 0, 1).copy()
 
     def reset(self):
-        time_step = self._env.reset()
+        time_step = self.env.reset()
         pixels = self._extract_pixels(time_step)
         for _ in range(self._num_frames):
             self._frames.append(pixels)
-        return self._transform_observation(time_step)
+        self.time_step = self._transform_observation(time_step)
+        return self.time_step
 
     def step(self, action):
-        time_step = self._env.step(action)
+        self.time_step = time_step = self.env.step(action)
         pixels = self._extract_pixels(time_step)
         self._frames.append(pixels)
+        self.time_step = self._transform_observation(time_step)
         return self._transform_observation(time_step)
 
     def observation_spec(self):
         return self._obs_spec
 
     def action_spec(self):
-        return self._env.action_spec()
+        return self.env.action_spec()
 
     def close(self):
         self.gym_env.close()
 
     def __getattr__(self, name):
-        return getattr(self._env, name)
+        return getattr(self.env, name)
 
 
 class TruncateWrapper(dm_env.Environment):
@@ -190,7 +196,7 @@ class TruncateWrapper(dm_env.Environment):
         self.was_not_truncated = False
 
     def step(self, action):
-        time_step = self.env.step(action)
+        self.time_step = time_step = self.env.step(action)
         # Truncate or cut episodes
         self.elapsed_steps += 1
         self.was_not_truncated = time_step.last() or self.elapsed_steps >= self.max_episode_steps
