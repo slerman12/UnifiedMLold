@@ -60,7 +60,8 @@ class DQNDPGAgent(torch.nn.Module):
             return action.cpu().numpy()[0]
 
     def batch_processing(self, *batch, logs=None):
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(batch, self.device)
+        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
+            batch, self.device)
 
         # Encode
         obs = self.encoder(obs)
@@ -72,24 +73,21 @@ class DQNDPGAgent(torch.nn.Module):
 
         return obs, action, reward, discount, next_obs, *traj
 
-    @Utils.optimize('encoder', 'critic', clear_grads=False, step_optim=False)
-    def update_critic(self, obs, action, reward, discount, next_obs, dist, logs=None):
+    @Utils.optimize('encoder', 'critic')
+    def update_critic(self, obs, action, reward, discount, next_obs, logs=None):
         # Critic loss
-        return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step, dist,
+        return ensembleQLearning(self.actor, self.critic, obs, action, reward, discount, next_obs, self.step,
                                  logs=logs)
 
-    @Utils.optimize('encoder', 'critic', backward=False, step_optim=False)
-    @Utils.optimize('encoder', 'critic', clear_grads=False, backward=False)
     @Utils.optimize('actor')
-    def update_actor(self, obs, dist, logs=None):
+    def update_actor(self, obs, logs=None):
         if not self.discrete:
             # Actor loss
-            return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step, dist,
+            return deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step,
                                       logs=logs)
 
-    # Update critic target
     def update_misc(self, obs, action, reward, discount, next_obs, traj_o, traj_a, traj_r, dist, logs=None):
-        self.critic.update_target_params()
+        pass
 
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
@@ -98,16 +96,16 @@ class DQNDPGAgent(torch.nn.Module):
         batch = replay.sample()
         obs, action, reward, discount, next_obs, *traj = self.batch_processing(*batch, logs=logs)
 
-        # Policy
-        dist = None # detaching encoder for actor...? what about discrete todo delete...
-
         # Update critic
-        self.update_critic(obs, action, reward, discount, next_obs, dist, logs)
+        self.update_critic(obs, action, reward, discount, next_obs, logs)
 
-        # Update actor  todo or just detach obs which I do
-        self.update_actor(obs, dist, logs)
+        # Update critic target
+        self.critic.update_target_params()
+
+        # Update actor
+        self.update_actor(obs, logs)
 
         # Any miscellaneous updates
-        self.update_misc(obs, action, reward, discount, next_obs, *traj, dist, logs)
+        self.update_misc(obs, action, reward, discount, next_obs, *traj, logs)
 
         return logs
