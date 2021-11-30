@@ -27,7 +27,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         # next_action_log_proba = next_dist.log_prob(next_action).sum(-1, keepdim=True)
         # Entropy in future decisions means exploring the uncertain, the lesser-explored
         next_entropy = next_dist.entropy().mean(-1, keepdim=True)
-        # TODO each Q target gets multiplied by proba in expectation
+        # TODO value expectation: each Q target /per action/ (e.g. discrete) gets weighed by proba
         # target_Q = reward + (discount * next_Q - entropy_temp * next_action_log_proba)
         # TODO the above version would go well with differentiable next_dist, otherwise below is fine
         # target_Q = reward + (discount * next_Q + entropy_temp * next_entropy)
