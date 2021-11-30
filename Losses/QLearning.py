@@ -31,7 +31,8 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             #     # todo might not be right for nstep (need one munch log_pi per time step)
             #     reward += munch_scaling * torch.clamp(entropy_temp * log_pi, min=munch_lo, max=0)
             #     # todo target gets multiplied by proba?
-        target_Q = reward + (discount * next_Q) - .1 * next_dist.entropy()
+        target_Q = reward + (discount * next_Q) \
+                   # - .1 * next_dist.entropy()
 
     if sub_planner is not None and planner is not None:
         obs = sub_planner(obs, action)  # state-action based planner
