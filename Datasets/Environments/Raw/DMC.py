@@ -67,6 +67,8 @@ class ActionWrapper(dm_env.Environment):
                                                    wrapped_action_spec.maximum,
                                                    'action')
 
+        self.time_step = None
+
     def step(self, action):
         if hasattr(action, 'astype'):
             action = action.astype(self.env.action_spec().dtype)
@@ -91,6 +93,8 @@ class ActionRepeatWrapper(dm_env.Environment):
     def __init__(self, env, action_repeat):
         self.env = env
         self.action_repeat = action_repeat
+
+        self.time_step = None
 
     def step(self, action):
         reward = 0.0
@@ -125,6 +129,8 @@ class FrameStackWrapper(dm_env.Environment):
         self._num_frames = num_frames
         self._frames = deque([], maxlen=num_frames)
         self._pixels_key = pixels_key
+
+        self.time_step = None
 
         wrapped_obs_spec = env.observation_spec()
         if pixels_key is not None:
