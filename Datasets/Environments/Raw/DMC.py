@@ -269,7 +269,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
     def to_attr_dict(self, exp):
         keys = ['step_type', 'reward', 'discount', 'observation', 'action',
                 'first', 'mid', 'last', 'episode_done', 'get_last']
-        return AttrDict({key: exp[key] for key in keys})
+        return AttrDict({key: getattr(exp, key, None) for key in keys})
 
     @property
     def experience(self):
