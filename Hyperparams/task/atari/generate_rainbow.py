@@ -13,7 +13,7 @@ for env in RAINBOW_ENVS:
   - easy
   - _self_
 
-envs: atari  
+suite: atari
 task_name: {}""".format(env))
     f.close()
     out += ' "' + env.lower() + '"'

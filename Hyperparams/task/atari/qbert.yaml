@@ -2,5 +2,5 @@ defaults:
   - easy
   - _self_
 
-envs: atari  
+suite: atari
 task_name: Qbert

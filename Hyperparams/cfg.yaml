@@ -4,7 +4,6 @@ defaults:
   - override hydra/launcher: submitit_local
 
 # Environment
-suite: DMC
 frame_stack: 3
 action_repeat: 2
 # Agent

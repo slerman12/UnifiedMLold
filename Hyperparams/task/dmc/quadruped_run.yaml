@@ -4,3 +4,4 @@ defaults:
 
 task_name: quadruped_run
 replay_buffer_size: 100000
+suite: dmc
