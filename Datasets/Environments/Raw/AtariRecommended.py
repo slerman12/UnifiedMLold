@@ -189,10 +189,10 @@ class AtariPreprocessing(dm_env.Environment):
         return np.expand_dims(int_image, axis=2)
 
 
-def make(env_id, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncate_episode_frames=1000,
+def make(task, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncate_episode_frames=1000,
          train=True, seed=0):
-    env_id = f'ALE/{env_id}-v5'
-    env = gym.make(env_id)
+    task = f'ALE/{task}-v5'
+    env = gym.make(task)
     # minimal_action_set = env.getMinimalActionSet()
     # full_action_set = env.getLegalActionSet()
     env.seed(seed)
