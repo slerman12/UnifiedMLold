@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 
 def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, dist=None, entropy_temp=0,  # 0.03
-                      sub_planner=None, planner=None, munchausen_scaling=0, logs=None):  # 0.9
+                      munchausen_scaling=0, sub_planner=None, planner=None, logs=None):  # 0.9
     with torch.no_grad():
         next_dist = actor(next_obs, step)
         next_action = next_dist.rsample()
