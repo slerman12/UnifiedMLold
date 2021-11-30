@@ -5,7 +5,7 @@
 import torch
 
 
-def deepPolicyGradient(actor, critic, obs, step, dist=None,
+def deepPolicyGradient(actor, critic, obs, step, entropy_scale=0.1, dist=None,
                        sub_planner=None, planner=None, logs=None):
     if dist is None:
         dist = actor(obs, step)
@@ -14,16 +14,23 @@ def deepPolicyGradient(actor, critic, obs, step, dist=None,
         obs = sub_planner(obs, action)
         obs = planner(obs)
         # obs = torch.layer_norm(obs, obs.shape)
+
     Qs = critic(obs, action)
     Q = torch.min(*Qs)
 
-    policy_loss = -Q.mean() - .1 * dist.entropy().mean()
+    entropy = dist.entropy().mean()
+
+    policy_loss = -Q.mean() - entropy_scale * entropy
 
     if logs is not None:
         assert isinstance(logs, dict)
         logs['policy_loss'] = policy_loss.item()
         logs['action_probs'] = torch.exp(dist.log_prob(action)).mean().item()
-        logs['policy_ent'] = dist.entropy().sum(dim=-1).mean().item()
+        logs['policy_ent'] = entropy.item()
+
+    # TODO DEBUGGING delete
+    if step % 1000 == 0:
+        print('entropy', entropy.item())
 
     return policy_loss
 

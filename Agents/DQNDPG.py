@@ -5,7 +5,6 @@
 import time
 
 import torch
-from torch.nn import Parameter
 
 import Utils
 
@@ -45,7 +44,7 @@ class DQNDPGAgent(torch.nn.Module):
                                         optim_lr=lr).to(device)  # TODO Maybe don't use sched/clip as default
 
     def act(self, obs):
-        with Utils.act_mode(self.encoder, self.actor):
+        with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
             obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
 
             obs = self.encoder(obs)

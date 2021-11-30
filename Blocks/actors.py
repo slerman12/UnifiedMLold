@@ -4,7 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import torch
 from torch import nn
-from torch.distributions import Categorical
+from torch.distributions import Categorical, Normal, TransformedDistribution
 
 import Utils
 
@@ -49,22 +49,33 @@ class BaseActor(nn.Module):
 class TruncatedGaussianActor(BaseActor):
     def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim,
                  stddev_schedule=None, stddev_clip=None,
-                 target_tau=None, optim_lr=None):
+                 target_tau=None, optim_lr=None, **kwargs):
         super().__init__(repr_dim, feature_dim, hidden_dim, action_dim,
                          target_tau=target_tau, optim_lr=optim_lr)
+        dim = kwargs.get("dim", action_dim)
 
-        self.stddev_schedule = nn.Parameter(torch.tensor(.1)) if stddev_schedule is None else stddev_schedule
+        num_outputs = 2 if stddev_schedule is None else 1
+
+        super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
+                         hidden_dim=hidden_dim, action_dim=dim * num_outputs,
+                         target_tau=target_tau, optim_lr=optim_lr, dim=dim)
+
+        self.action_dim = dim
+        self.stddev_schedule = stddev_schedule
         self.stddev_clip = stddev_clip
 
     def forward(self, obs, step=None):
-        # stddev = 0 if step is None or self.stddev_schedule is None else Utils.schedule(self.stddev_schedule, step)
-        stddev = torch.log(self.stddev_schedule)  # explore_temp
-
         h = self.trunk(obs)
 
-        mu = self.policy(h)
+        if self.stddev_schedule is None or step is None:
+            mu, log_std = self.policy(h).chunk(2, dim=-1)
+            std = log_std.exp()
+        else:
+            mu = self.policy(h)
+            std = Utils.schedule(self.stddev_schedule, step)
+            std = torch.full_like(mu, std)
+
         mu = torch.tanh(mu)
-        std = torch.ones_like(mu) * stddev
 
         dist = Utils.TruncatedNormal(mu, std, clip=self.stddev_clip)
 
@@ -73,29 +84,42 @@ class TruncatedGaussianActor(BaseActor):
 
 class DiagonalGaussianActor(BaseActor):
     """torch.distributions implementation of an diagonal Gaussian policy."""
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, log_std_bounds,
+    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim,
+                 stddev_schedule=None, log_std_bounds=None,
                  target_tau=None, optim_lr=None, **kwargs):
         dim = kwargs.get("dim", action_dim)
 
+        num_outputs = 2 if stddev_schedule is None else 1
+
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
-                         hidden_dim=hidden_dim, action_dim=dim * 2,
+                         hidden_dim=hidden_dim, action_dim=dim * num_outputs,
                          target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 
+        self.tanh_transform = Utils.TanhTransform()
+
         self.action_dim = dim
+        self.stddev_schedule = stddev_schedule
         self.log_std_bounds = log_std_bounds
 
     def forward(self, obs, step=None):
         h = self.trunk(obs)
 
-        mu, log_std = self.policy(h).chunk(2, dim=-1)
+        if self.stddev_schedule is None or step is None:
+            mu, log_std = self.policy(h).chunk(2, dim=-1)
 
-        # constrain log_std inside [log_std_min, log_std_max]
-        log_std = torch.tanh(log_std)
-        log_std_min, log_std_max = self.log_std_bounds
-        log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
-        std = log_std.exp()
+            # Constrain log_std inside [log_std_min, log_std_max]
+            log_std = torch.tanh(log_std)
+            log_std_min, log_std_max = self.log_std_bounds
+            log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
+            std = log_std.exp()
+        else:
+            mu = self.policy(h)
+            std = Utils.schedule(self.stddev_schedule, step)
+            std = torch.full_like(mu, std)
 
-        dist = Utils.SquashedNormal(mu, std)
+        dist = TransformedDistribution(Normal(mu, std), [self.tanh_transform])
+
+        setattr(dist, 'mean', self.tanh_transform(dist.mean))
 
         return dist
 

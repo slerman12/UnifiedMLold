@@ -2,6 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import math
 import random
 import re
 from functools import wraps
@@ -9,6 +10,7 @@ from functools import wraps
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import distributions as pyd
 from torch.distributions.utils import _standard_normal
 
@@ -131,10 +133,41 @@ class TruncatedNormal(pyd.Normal):
                                device=self.loc.device)
         eps = eps * self.scale
         if clip is not None:
-            eps_ = torch.clamp(eps, -clip, clip)  # Don't explore /too/ much
-            eps = eps + (eps_ - eps).detach()  # TODO ...by multiplying scale (st.dev) /after/ clipping)
+            eps = torch.clamp(eps, -clip, clip)  # Don't explore /too/ much
+            # eps_ = torch.clamp(eps, -clip, clip)
+            # eps = eps + (eps_ - eps).detach()  # TODO ...by multiplying scale (st.dev) /after/ clipping)
         x = self.loc + eps
         return self._clamp(x)
+
+
+class TanhTransform(pyd.transforms.Transform):
+    domain = pyd.constraints.real
+    codomain = pyd.constraints.interval(-1.0, 1.0)
+    bijective = True
+    sign = +1
+
+    def __init__(self, cache_size=1):
+        super().__init__(cache_size=cache_size)
+
+    @staticmethod
+    def atanh(x):
+        return 0.5 * (x.log1p() - (-x).log1p())
+
+    def __eq__(self, other):
+        return isinstance(other, TanhTransform)
+
+    def _call(self, x):
+        return x.tanh()
+
+    def _inverse(self, y):
+        # We do not clamp to the boundary here as it may degrade the performance of certain algorithms.
+        # One should use `cache_size=1` instead
+        return self.atanh(y)
+
+    def log_abs_det_jacobian(self, x, y):
+        # We use a formula that is more numerically stable, see details in the following link
+        # https://github.com/tensorflow/probability/commit/ef6bb176e0ebd1cf6e25c6b5cecdd2428c22963f#diff-e120f70e92e6741bca649f04fcd907b7
+        return 2. * (math.log(2.) - x - F.softplus(-2. * x))
 
 
 def schedule(sched, step):
