@@ -36,7 +36,7 @@ class DrQV2Agent(DQNDPGAgent):
             if self.training:
                 obs = aug(obs)
                 print(self)
-                obs = self(obs)
+                obs = self(self, obs)
                 return obs
 
         # Data augmentation
