@@ -17,7 +17,7 @@ def deepPolicyGradient(actor, critic, obs, step, dist=None,
     Qs = critic(obs, action)
     Q = torch.min(*Qs)
 
-    policy_loss = -Q.mean() - dist.entropy()
+    policy_loss = -Q.mean() - dist.entropy().mean()
 
     if logs is not None:
         assert isinstance(logs, dict)
