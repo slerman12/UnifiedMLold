@@ -53,7 +53,7 @@ agent:
   action_shape: ${action_shape}
   feature_dim: ${feature_dim}
   hidden_dim: 1024
-  stddev_schedule: null # Specified in task/easy,medium,hard
+  stddev_schedule: ${stddev_schedule} # Specified in task/easy,medium,hard
   stddev_clip: 0.3
   lr: ${lr}
   target_tau: 0.01
