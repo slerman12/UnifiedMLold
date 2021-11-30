@@ -46,6 +46,45 @@ class ExtendedAction(NamedTuple):
     num_actions: Any
 
 
+class ActionWrapper(dm_env.Environment):
+    def __init__(self, env, dtype, discrete=False):
+        self._env = env
+        self.discrete = discrete
+        wrapped_action_spec = env.action_spec()
+        if discrete:
+            num_actions = wrapped_action_spec.shape[-1]
+            self._action_spec = ExtendedAction((1,),
+                                               dtype,
+                                               0,
+                                               num_actions,
+                                               'action',
+                                               True,
+                                               num_actions)
+        else:
+            self._action_spec = specs.BoundedArray(wrapped_action_spec.shape,
+                                                   dtype,
+                                                   wrapped_action_spec.minimum,
+                                                   wrapped_action_spec.maximum,
+                                                   'action')
+
+    def step(self, action):
+        if hasattr(action, 'astype'):
+            action = action.astype(self._env.action_spec().dtype)
+        return self._env.step(action)
+
+    def observation_spec(self):
+        return self._env.observation_spec()
+
+    def action_spec(self):
+        return self._action_spec
+
+    def reset(self):
+        return self._env.reset()
+
+    def __getattr__(self, name):
+        return getattr(self._env, name)
+
+
 class ActionRepeatWrapper(dm_env.Environment):
     def __init__(self, env, action_repeat):
         self.env = env
@@ -137,45 +176,6 @@ class FrameStackWrapper(dm_env.Environment):
         return getattr(self._env, name)
 
 
-class ActionWrapper(dm_env.Environment):
-    def __init__(self, env, dtype, discrete=False):
-        self._env = env
-        self.discrete = discrete
-        wrapped_action_spec = env.action_spec()
-        if discrete:
-            num_actions = wrapped_action_spec.shape[-1]
-            self._action_spec = ExtendedAction((1,),
-                                               dtype,
-                                               0,
-                                               num_actions,
-                                               'action',
-                                               True,
-                                               num_actions)
-        else:
-            self._action_spec = specs.BoundedArray(wrapped_action_spec.shape,
-                                                   dtype,
-                                                   wrapped_action_spec.minimum,
-                                                   wrapped_action_spec.maximum,
-                                                   'action')
-
-    def step(self, action):
-        if hasattr(action, 'astype'):
-            action = action.astype(self._env.action_spec().dtype)
-        return self._env.step(action)
-
-    def observation_spec(self):
-        return self._env.observation_spec()
-
-    def action_spec(self):
-        return self._action_spec
-
-    def reset(self):
-        return self._env.reset()
-
-    def __getattr__(self, name):
-        return getattr(self._env, name)
-
-
 class TruncateWrapper(dm_env.Environment):
     def __init__(self, env, max_episode_steps=np.inf, truncate_episode_steps=np.inf, train=True):
         self.env = env
@@ -205,6 +205,8 @@ class TruncateWrapper(dm_env.Environment):
         # Truncate and resume, or reset
         if self.was_not_truncated:
             self.time_step = self.env.reset()
+        else:
+            self.time_step = self.env.time_step
         self.elapsed_steps = 0
         return self.time_step
 
@@ -224,7 +226,7 @@ class TruncateWrapper(dm_env.Environment):
 class AugmentAttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self.env = env
-        self.time_step = None
+        self.time_step = self.env.time_step
 
     def step(self, action):
         time_step = self.env.step(action)
