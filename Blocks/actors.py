@@ -53,7 +53,7 @@ class TruncatedGaussianActor(BaseActor):
         super().__init__(repr_dim, feature_dim, hidden_dim, action_dim,
                          target_tau=target_tau, optim_lr=optim_lr)
 
-        self.stddev_schedule = stddev_schedule
+        self.stddev_schedule = nn.Parameter(torch.tensor(.1)) if stddev_schedule is None else stddev_schedule
         self.stddev_clip = stddev_clip
 
     def forward(self, obs, step=None):

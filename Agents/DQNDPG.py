@@ -39,10 +39,9 @@ class DQNDPGAgent(torch.nn.Module):
         self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                       target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
-        log_explore_temp = Parameter(torch.tensor(.1))  # init_temperature=0.1
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-                                        log_explore_temp, stddev_clip,
+                                        None, stddev_clip,
                                         optim_lr=lr).to(device)  # TODO Maybe don't use sched/clip as default
 
     def act(self, obs):
@@ -59,10 +58,6 @@ class DQNDPGAgent(torch.nn.Module):
             if self.training:
                 self.step += 1
 
-                # Explore  TODO start entropy / stdev high instead, compute stdev from explore_steps?
-                if self.step < self.explore_steps:
-                    action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
-                        else action.uniform_(-1, 1)
             return action
 
     def update(self, replay):
