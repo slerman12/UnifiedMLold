@@ -191,7 +191,7 @@ class TruncateWrapper(dm_env.Environment):
         self.max_episode_steps = max_episode_steps
         self.truncate_episode_steps = truncate_episode_steps
         self.elapsed_steps = 0
-        self.was_not_truncated = False
+        self.was_not_truncated = True
 
     def step(self, action):
         time_step = self.env.step(action)
@@ -207,11 +207,9 @@ class TruncateWrapper(dm_env.Environment):
     def reset(self):
         # Truncate and resume, or reset
         if self.was_not_truncated:
-            time_step = self.env.reset()
-        else:
-            time_step = self.env.time_step
+            self.time_step = self.env.reset()
         self.elapsed_steps = 0
-        return time_step
+        return self.time_step
 
     def close(self):
         self.gym_env.close()
