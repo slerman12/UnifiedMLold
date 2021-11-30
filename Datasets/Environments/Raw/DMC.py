@@ -199,8 +199,6 @@ class TruncateWrapper(dm_env.Environment):
         self.elapsed_steps += 1
         self.was_not_truncated = time_step.last() or self.elapsed_steps >= self.max_episode_steps
         if self.elapsed_steps >= self.truncate_episode_steps or self.elapsed_steps >= self.max_episode_steps:
-
-            print(self.elapsed_steps, self.truncate_episode_steps, self.max_episode_steps)
             # No truncation for eval environments
             if self.train or self.elapsed_steps >= self.max_episode_steps:
                 time_step = dm_env.truncation(time_step.reward, time_step.observation, time_step.discount)
@@ -349,8 +347,8 @@ def make(task, frame_stack, action_repeat=1, max_episode_frames=None, truncate_e
     env = FrameStackWrapper(env, frame_stack, pixels_key)
 
     # Truncate-resume or cut epsisodes short
-    max_episode_steps = max_episode_frames // action_repeat if max_episode_frames is not None else np.inf
-    truncate_episode_steps = truncate_episode_frames // action_repeat if truncate_episode_frames is not None else np.inf
+    max_episode_steps = max_episode_frames // action_repeat if max_episode_frames else np.inf
+    truncate_episode_steps = truncate_episode_frames // action_repeat if truncate_episode_frames else np.inf
     env = TruncateWrapper(env,
                           max_episode_steps=max_episode_steps,
                           truncate_episode_steps=truncate_episode_steps,
