@@ -33,8 +33,8 @@ class DrQV2Agent(DQNDPGAgent):
 
         # "See" augmented
         def see_augmented(obs):
-            print(self.encoder.training)
             if self.encoder.training:
+                assert False, 'yayay'
                 obs = aug(obs)
             obs = encode(obs)
             return obs
