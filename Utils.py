@@ -52,15 +52,17 @@ class act_mode:
         super().__init__()
         self.models = models
 
+        self.with_no_grad = torch.no_grad()
+
     def __enter__(self):
-        torch.no_grad().__enter__()
+        self.with_no_grad.__enter__()
         self.start_modes = []
         for model in self.models:
             self.start_modes.append(model.training)
             model.eval()
 
     def __exit__(self, *args):
-        torch.no_grad().__exit__(*args)
+        self.with_no_grad.__exit__(*args)
         for model, mode in zip(self.models, self.start_modes):
             model.train(mode)
         return False
