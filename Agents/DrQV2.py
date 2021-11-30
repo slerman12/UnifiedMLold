@@ -35,8 +35,8 @@ class DrQV2Agent(DQNDPGAgent):
         def see_augmented(obs):
             if self.training:
                 obs = aug(obs)
-                print(self)
-                obs = self(obs)
+            print(self)
+            obs = self(obs)
             return obs
 
         # Data augmentation
