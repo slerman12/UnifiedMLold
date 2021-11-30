@@ -44,7 +44,7 @@ class DQNDPGAgent(torch.nn.Module):
                                         optim_lr=lr).to(device)  # TODO Maybe don't use sched/clip as default
 
     def act(self, obs):
-        with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
+        with Utils.act_mode(self.encoder, self.actor):
             obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
 
             obs = self.encoder(obs)
