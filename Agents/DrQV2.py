@@ -39,7 +39,7 @@ class DrQV2Agent(DQNDPGAgent):
                 return obs
 
         # Data augmentation
-        self.encoder.forward = see_augmented
+        self.encoder.__call__ = see_augmented
 
     def act(self, obs):
         action = super().act(obs)
