@@ -226,16 +226,15 @@ class TruncateWrapper(dm_env.Environment):
 class AugmentAttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self.env = env
-        self.time_step = self.env.time_step
 
     def step(self, action):
-        time_step = self.env.step(action)
+        self.time_step = time_step = self.env.step(action)
         # Augment time_step with extra functionality
         self.time_step = self.augment_time_step(time_step, action)
         return self.time_step
 
     def reset(self):
-        time_step = self.env.reset()
+        self.time_step = time_step = self.env.reset()
         # Augment time_step with extra functionality
         self.time_step = self.augment_time_step(time_step)
         return self.time_step
