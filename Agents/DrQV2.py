@@ -41,4 +41,4 @@ class DrQV2Agent(DQNDPGAgent):
         next_obs = self.aug(next_obs)
 
         return super().batch_processing(obs, action, reward, discount, next_obs, *traj,
-                                        logs=logs if self.log_tensorboard else None)
+                                        logs=logs)

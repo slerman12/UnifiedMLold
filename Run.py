@@ -84,7 +84,7 @@ def main(args):
         step = agent.step
 
         # Update agent
-        if step > args.seed_steps:
+        if step > args.seed_steps and step % args.update_per_steps == 0:
             logs = agent.update(replay)  # Trains the agent
 
             if args.log_tensorboard:
