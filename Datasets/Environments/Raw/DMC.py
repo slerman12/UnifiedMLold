@@ -233,6 +233,8 @@ class AugmentAttributesWrapper(dm_env.Environment):
     def __init__(self, env):
         self.env = env
 
+        self.time_step = None
+
     def step(self, action):
         self.time_step = time_step = self.env.step(action)
         # Augment time_step with extra functionality
