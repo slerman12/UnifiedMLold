@@ -132,8 +132,7 @@ class TruncatedNormal(pyd.Normal):
         eps = eps * self.scale
         if clip is not None:
             eps_ = torch.clamp(eps, -clip, clip)  # Don't explore /too/ much
-            eps[eps < -clip] = (eps + eps_ - eps.detach())[eps < -clip]  # TODO ...by multiplying scale (st.dev) /after/ clipping)
-            eps[eps > clip] = (eps + eps_ - eps.detach())[eps > clip]
+            eps[eps < -clip] = eps + (eps_ - eps).detach()  # TODO ...by multiplying scale (st.dev) /after/ clipping)
         x = self.loc + eps
         return self._clamp(x)
 
