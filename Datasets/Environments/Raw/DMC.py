@@ -201,6 +201,7 @@ class TruncateWrapper(dm_env.Environment):
         if self.elapsed_steps >= self.truncate_episode_steps or self.elapsed_steps >= self.max_episode_steps:
             # No truncation for eval environments
             if self.train or self.elapsed_steps >= self.max_episode_steps:
+                print("huh")
                 time_step = dm_env.truncation(time_step.reward, time_step.observation, time_step.discount)
         self.time_step = time_step
         return time_step
@@ -210,7 +211,6 @@ class TruncateWrapper(dm_env.Environment):
         if self.was_not_truncated:
             self.time_step = self.env.reset()
         self.elapsed_steps = 0
-        self.was_not_truncated = True
         return self.time_step
 
     def close(self):
