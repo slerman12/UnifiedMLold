@@ -56,6 +56,7 @@ class act_mode:
 
     def __enter__(self):
         self.with_no_grad.__enter__()
+
         self.start_modes = []
         for model in self.models:
             self.start_modes.append(model.training)
@@ -63,51 +64,7 @@ class act_mode:
 
     def __exit__(self, *args):
         self.with_no_grad.__exit__(*args)
-        for model, mode in zip(self.models, self.start_modes):
-            model.train(mode)
-        return False
 
-
-# Backward pass on a class method's output; clear the grads of specified models; step their optimizers
-def optimize(*models, clear_grads=True, backward=True, step_optim=True):
-    def decorator(method):
-
-        @wraps(method)
-        def model_loss(self, *args, clear_grads=clear_grads, step_optim=step_optim, **kwargs):
-            # Clear grads
-            if clear_grads:
-                for model in models:
-                    getattr(self, model).optim.zero_grad(set_to_none=True)
-
-            # Loss
-            if backward:
-                loss = method(self, *args, **kwargs)
-
-                if loss is not None:
-                    # Backward
-                    loss.backward()
-
-            # Optimize
-            if step_optim:
-                for model in models:
-                    getattr(self, model).optim.step()
-
-        return model_loss
-    return decorator
-
-
-# Context manager that temporarily switches on eval() mode for specified models; then resets them
-class eval_mode:
-    def __init__(self, *models):
-        self.models = models
-
-    def __enter__(self):
-        self.start_modes = []
-        for model in self.models:
-            self.start_modes.append(model.training)
-            model.eval()
-
-    def __exit__(self, *args):
         for model, mode in zip(self.models, self.start_modes):
             model.train(mode)
         return False
