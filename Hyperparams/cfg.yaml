@@ -53,7 +53,6 @@ agent:
   action_shape: ${action_shape}
   feature_dim: ${feature_dim}
   hidden_dim: 1024
-  explore_steps: optional
   stddev_schedule: ${stddev_schedule} # Specified in task/easy,medium,hard
   stddev_clip: 0.3
   lr: ${lr}
