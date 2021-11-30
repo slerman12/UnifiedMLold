@@ -165,13 +165,7 @@ class ActionDTypeWrapper(dm_env.Environment):
         self._env = env
         self.discrete = discrete
         wrapped_action_spec = env.action_spec()
-        if not discrete:
-            self._action_spec = specs.BoundedArray(wrapped_action_spec.shape,
-                                                   dtype,
-                                                   wrapped_action_spec.minimum,
-                                                   wrapped_action_spec.maximum,
-                                                   'action')
-        else:
+        if discrete:
             num_actions = wrapped_action_spec.shape[-1]
             self._action_spec = ExtendedAction((1,),
                                                dtype,
@@ -180,6 +174,12 @@ class ActionDTypeWrapper(dm_env.Environment):
                                                'action',
                                                True,
                                                num_actions)
+        else:
+            self._action_spec = specs.BoundedArray(wrapped_action_spec.shape,
+                                                   dtype,
+                                                   wrapped_action_spec.minimum,
+                                                   wrapped_action_spec.maximum,
+                                                   'action')
 
     def step(self, action):
         if hasattr(action, 'astype'):
@@ -294,11 +294,6 @@ class AttributesWrapper(dm_env.Environment):
     def obs_shape(self):
         return self.observation_spec()['shape']
 
-    @property
-    def action_shape(self):
-        return (self.action_spec['num_actions'],) \
-            if self.discrete else self.action_spec['shape']
-
     def simplify_spec(self, spec):
         keys = ['shape', 'dtype', 'name', 'num_actions']
         spec = {key: getattr(spec, key, None) for key in keys}
@@ -313,6 +308,11 @@ class AttributesWrapper(dm_env.Environment):
     def action_spec(self):
         action_spec = self.env.action_spec()
         return self.simplify_spec(action_spec)
+
+    @property
+    def action_shape(self):
+        return (self.action_spec['num_actions'],) \
+            if self.discrete else self.action_spec['shape']
 
     @property
     def experience(self):
