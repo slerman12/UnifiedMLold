@@ -73,7 +73,7 @@ class act_mode:
         self.start_modes = []
         for model in self.models:
             self.start_modes.append(model.training)
-            model.eval()
+            model.train(False)
 
     def __exit__(self, *args):
         # self.with_no_grad.__exit__(*args)

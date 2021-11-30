@@ -54,6 +54,7 @@ class Test(torch.nn.Module):
             obs = self.encoder(obs.unsqueeze(0))
             dist = self.actor(obs, self.step)
             if self.training:
+                self.step += 1
                 action = dist.sample()
                 if self.step < self.explore_steps:
                     action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
