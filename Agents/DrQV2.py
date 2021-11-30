@@ -2,6 +2,8 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import functools
+
 import torch
 
 from Agents.DQNDPG import DQNDPGAgent
@@ -37,7 +39,7 @@ class DrQV2Agent(DQNDPGAgent):
                 return obs
 
         # Data augmentation
-        self.encoder.forward = see_augmented
+        self.encoder.forward = functools.wraps(self.encoder.forward)(see_augmented)
 
     def act(self, obs):
         action = super().act(obs)
