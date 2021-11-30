@@ -171,7 +171,7 @@ class AtariPreprocessing(dm_env.Environment):
         self.gym_env.ale.getScreenGrayscale(output)
         return output
 
-    def _pool_and_resize(self):
+    def _pool_and_resize(self):  # todo don't pool if using frame stack
         """Transforms two frames into a Nature DQN observation.
         For efficiency, the transformation is done in-place in self.screen_buffer.
         Returns:
@@ -207,6 +207,6 @@ def make(env_id, frame_stack=4, action_repeat=1, max_episode_frames=27000, trunc
         if truncate_episode_frames and action_repeat:
             truncate_episode_frames = truncate_episode_frames // action_repeat
         env = TimeLimit(env, max_episode_len=truncate_episode_frames, resume=True)
-    # env = ExtendedTimeStepWrapper(env)
+    env = ExtendedTimeStepWrapper(env)
     env = AttributesWrapper(env)
     return env

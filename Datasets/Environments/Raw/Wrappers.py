@@ -246,11 +246,11 @@ class TimeLimit(dm_env.Environment):
 
 class ExtendedTimeStepWrapper(dm_env.Environment):
     def __init__(self, env):
-        self._env = env
+        self.env = env
         self.time_step = None
 
     def reset(self):
-        time_step = self._env.reset()
+        time_step = self.env.reset()
         self.time_step = self._augment_time_step(time_step)
         return self.time_step
 
@@ -258,7 +258,7 @@ class ExtendedTimeStepWrapper(dm_env.Environment):
         self.gym_env.close()
 
     def step(self, action):
-        time_step = self._env.step(action)
+        time_step = self.env.step(action)
         self.time_step = self._augment_time_step(time_step, action)
         return self.time_step
 
@@ -273,13 +273,13 @@ class ExtendedTimeStepWrapper(dm_env.Environment):
                                 discount=time_step.discount or 1.0)
 
     def observation_spec(self):
-        return self._env.observation_spec()
+        return self.env.observation_spec()
 
     def action_spec(self):
-        return self._env.action_spec()
+        return self.env.action_spec()
 
     def __getattr__(self, name):
-        return getattr(self._env, name)
+        return getattr(self.env, name)
 
 
 class AttributesWrapper(dm_env.Environment):

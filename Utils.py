@@ -29,6 +29,41 @@ def load(root_path, *keys):
     return tuple(loaded[k] for k in keys)
 
 
+# Backward pass on a loss; clear the grads of models; step their optimizers
+def optimize(loss=None, *models, clear_grads=True, backward=True, step_optim=True):
+    # Clear grads
+    if clear_grads:
+        for model in models:
+            model.optim.zero_grad(set_to_none=True)
+
+    # Backward
+    if backward and loss is not None:
+        loss.backward()
+
+    # Optimize
+    if step_optim:
+        for model in models:
+            model.optim.step()
+
+
+# Context manager that temporarily switches on torch.no_grad() and eval() mode for specified models; then resets them
+class act_mode(torch.no_grad):
+    def __init__(self, *models):
+        super().__init__()
+        self.models = models
+
+    def __enter__(self):
+        self.start_modes = []
+        for model in self.models:
+            self.start_modes.append(model.training)
+            model.eval()
+
+    def __exit__(self, *args):
+        for model, mode in zip(self.models, self.start_modes):
+            model.train(mode)
+        return False
+
+
 # Backward pass on a class method's output; clear the grads of specified models; step their optimizers
 def optimize(*models, clear_grads=True, backward=True, step_optim=True):
     def decorator(method):
