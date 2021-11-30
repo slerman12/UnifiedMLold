@@ -70,18 +70,18 @@ class ActionWrapper(dm_env.Environment):
     def step(self, action):
         if hasattr(action, 'astype'):
             action = action.astype(self.env.action_spec().dtype)
-        self.time_step = self.env.step(action)
-        return self.time_step
+        time_step = self.env.step(action)
+        return time_step
+
+    def reset(self):
+        time_step = self.env.reset()
+        return time_step
 
     def observation_spec(self):
         return self.env.observation_spec()
 
     def action_spec(self):
         return self._action_spec
-
-    def reset(self):
-        self.time_step = self.env.reset()
-        return self.time_step
 
     def __getattr__(self, name):
         return getattr(self.env, name)
@@ -102,8 +102,8 @@ class ActionRepeatWrapper(dm_env.Environment):
             if time_step.last():
                 break
 
-        self.time_step = time_step._replace(reward=reward, discount=discount)
-        return self.time_step
+        time_step = time_step._replace(reward=reward, discount=discount)
+        return time_step
 
     def observation_spec(self):
         return self.env.observation_spec()
@@ -112,8 +112,8 @@ class ActionRepeatWrapper(dm_env.Environment):
         return self.env.action_spec()
 
     def reset(self):
-        self.time_step = self.env.reset()
-        return self.time_step
+        time_step = self.env.reset()
+        return time_step
 
     def __getattr__(self, name):
         return getattr(self.env, name)
@@ -159,14 +159,13 @@ class FrameStackWrapper(dm_env.Environment):
         pixels = self._extract_pixels(time_step)
         for _ in range(self._num_frames):
             self._frames.append(pixels)
-        self.time_step = self._transform_observation(time_step)
-        return self.time_step
+        time_step = self._transform_observation(time_step)
+        return time_step
 
     def step(self, action):
-        self.time_step = time_step = self.env.step(action)
+        time_step = self.env.step(action)
         pixels = self._extract_pixels(time_step)
         self._frames.append(pixels)
-        self.time_step = self._transform_observation(time_step)
         return self._transform_observation(time_step)
 
     def observation_spec(self):
@@ -195,7 +194,7 @@ class TruncateWrapper(dm_env.Environment):
         self.was_not_truncated = False
 
     def step(self, action):
-        self.time_step = time_step = self.env.step(action)
+        time_step = self.env.step(action)
         # Truncate or cut episodes
         self.elapsed_steps += 1
         self.was_not_truncated = time_step.last() or self.elapsed_steps >= self.max_episode_steps
@@ -203,17 +202,16 @@ class TruncateWrapper(dm_env.Environment):
             # No truncation for eval environments
             if self.train or self.elapsed_steps >= self.max_episode_steps:
                 time_step = dm_env.truncation(time_step.reward, time_step.observation, time_step.discount)
-        self.time_step = time_step
         return time_step
 
     def reset(self):
         # Truncate and resume, or reset
         if self.was_not_truncated:
-            self.time_step = self.env.reset()
+            time_step = self.env.reset()
         else:
-            self.time_step = self.env.time_step
+            time_step = self.env.time_step
         self.elapsed_steps = 0
-        return self.time_step
+        return time_step
 
     def close(self):
         self.gym_env.close()
@@ -235,13 +233,13 @@ class AugmentAttributesWrapper(dm_env.Environment):
         self.time_step = None
 
     def step(self, action):
-        self.time_step = time_step = self.env.step(action)
+        time_step = self.env.step(action)
         # Augment time_step with extra functionality
         self.time_step = self.augment_time_step(time_step, action)
         return self.time_step
 
     def reset(self):
-        self.time_step = time_step = self.env.reset()
+        time_step = self.env.reset()
         # Augment time_step with extra functionality
         self.time_step = self.augment_time_step(time_step)
         return self.time_step
