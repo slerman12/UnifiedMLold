@@ -33,7 +33,7 @@ class DrQV2Agent(DQNDPGAgent):
 
         # "See" augmented
         @functools.wraps(self.encoder, 'self')
-        def see_augmented(self, obs):
+        def see_augmented(obs):
             if self.training:
                 obs = aug(obs)
             print(self)
