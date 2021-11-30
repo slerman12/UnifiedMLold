@@ -19,7 +19,7 @@ from Losses.PolicyLearning import deepPolicyGradient
 class DQNDPGAgent(torch.nn.Module):
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
-                 lr, update_per_steps, target_tau,  # Optimization
+                 lr, target_tau,  # Optimization
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
