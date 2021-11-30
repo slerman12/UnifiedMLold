@@ -36,8 +36,8 @@ class DrQV2Agent(DQNDPGAgent):
             if self.training:
                 obs = aug(obs)
                 print(self)
-                obs = self(self, obs)
-                return obs
+                obs = self(obs)
+            return obs
 
         # Data augmentation
         self.encoder.forward = see_augmented
