@@ -31,8 +31,11 @@ class DrQV2Agent(DQNDPGAgent):
 
         # ! Technically DrQV2 only compatible with continuous spaces but both supported here
         # self.discrete = False  # Discrete supported
+        setattr(self.encoder, 'aug',
+                IntensityAug(0.05) if self.discrete
+                else RandomShiftsAug(pad=4))
 
-        self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
+        self.encoder.__call__ = self.see_augmented
 
     def act(self, obs):
         action = super().act(obs)
@@ -44,46 +47,10 @@ class DrQV2Agent(DQNDPGAgent):
 
         return action
 
-    # Data augmentation
+    # "See" augmented
+    @staticmethod
     def see_augmented(self, obs):
-        obs = self.aug(obs)
-        obs = self.encoder(obs)
-        return obs
-
-    def update(self, replay):
-        logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
-            else None
-
-        batch = replay.sample()  # Can also write 'batch = next(replay)'
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
-            batch, self.device)
-
-        # "See" augmented
-        obs = self.see_augmented(obs)
-        with torch.no_grad():
-            next_obs = self.see_augmented(next_obs)
-
-        if self.log_tensorboard:
-            logs['batch_reward'] = reward.mean().item()
-
-        # Critic loss
-        critic_loss = ensembleQLearning(self.actor, self.critic,
-                                        obs, action, reward, discount, next_obs,
-                                        self.step, logs=logs)
-
-        # Update critic
-        Utils.optimize(critic_loss,
-                       self.encoder,
-                       self.critic)
-
-        self.critic.update_target_params()
-
-        # Actor loss
-        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                        self.step, logs=logs)
-
-        # Update actor
-        Utils.optimize(actor_loss,
-                       self.actor)
-
-        return logs
+        if self.training:
+            obs = self.aug(obs)
+            obs = self(obs)
+            return obs
