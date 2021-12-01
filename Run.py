@@ -21,7 +21,7 @@ cudnn.benchmark = True
 
 @hydra.main(config_path='Hyperparams', config_name='cfg')
 def main(args):
-    # Setup    todo vlogger(?), atari, plotting, munch
+    # Setup    todo vlogger(?), atari, auto-plotting in logger, munch
 
     Utils.set_seed_everywhere(args.seed)
 
