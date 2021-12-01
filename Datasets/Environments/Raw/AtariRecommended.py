@@ -217,7 +217,7 @@ def make(task, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncat
     # See: https://github.com/mgbellemare/Arcade-Learning-Environment/issues/441#issuecomment-983878228
 
     # Add extra info to action specs
-    env = ActionSpecWrapper(env, np.int64, discrete=True)
+    env = ActionSpecWrapper(env, 'int64', discrete=True)
 
     # Truncate-resume or cut episodes short
     max_episode_steps = max_episode_frames // action_repeat if max_episode_frames else np.inf

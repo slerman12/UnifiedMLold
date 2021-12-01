@@ -31,7 +31,7 @@ def make(task, frame_stack, action_repeat=1, max_episode_frames=None, truncate_e
     # Add extra info to action specs
     env = ActionSpecWrapper(env, np.float32)
 
-    # Repeats actions n times
+    # Repeats actions n times  (frame skip)
     env = ActionRepeatWrapper(env, action_repeat)
 
     # Rescales actions to range

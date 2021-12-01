@@ -296,9 +296,8 @@ class AugmentAttributesWrapper(dm_env.Environment):
         # Return spec as a dict of basic primitives (that can be passed into Hydra)
         keys = ['shape', 'dtype', 'name', 'num_actions']
         spec = {key: getattr(spec, key, None) for key in keys}
-        print(spec['dtype'])
-        print(spec['dtype'].__dict__)
-        spec['dtype'] = spec['dtype'].name
+        if not isinstance(spec['dtype'], str):
+            spec['dtype'] = spec['dtype'].name
         return spec
 
     def __getattr__(self, name):
