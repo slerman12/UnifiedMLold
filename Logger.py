@@ -31,7 +31,7 @@ def format(log, log_name):
 class Logger:
     def __init__(self, root_path='.', experiment='Experiment', agent='Agent', task='Task', seed=-1):
         self.log_path = f'{root_path}/Benchmarking/{experiment}/{agent}/{task.replace("/", "_")}/Seed_{seed}'
-        os.mkdir(self.log_path)
+        os.mkdirs(self.log_path)
 
         self.logs = {}
         self.counts = {}
