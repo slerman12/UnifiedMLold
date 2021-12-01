@@ -298,6 +298,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
         spec = {key: getattr(spec, key, None) for key in keys}
         print(spec)
         spec['dtype'] = spec['dtype'].name
+        print("yaaaaa", spec)
         return spec
 
     def __getattr__(self, name):
