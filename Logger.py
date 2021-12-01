@@ -34,7 +34,7 @@ class Logger:
         self.logs = {}
         self.counts = {}
 
-        self.tensorboard_writer = SummaryWriter(root_path / 'TensorBoard')
+        self.tensorboard_writer = SummaryWriter(self.root_path / 'TensorBoard')
 
     def log(self, log=None, name="Logs", dump=False):
         if log is not None:
