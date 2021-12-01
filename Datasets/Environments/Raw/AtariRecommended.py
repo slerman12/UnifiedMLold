@@ -2,17 +2,19 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-# https://github.com/google/dopamine/blob/df97ba1b0d4edf90824534efcdda20d6549c37a9/dopamine/discrete_domains/atari_lib.py#L329-L515
-import cv2
 import gym
-import numpy as np
+
 import dm_env
 from dm_env import specs
 
-from Datasets.Environments.Raw.Wrappers import ActionDTypeWrapper, TimeLimit, ExtendedTimeStepWrapper, FrameStackWrapper, \
-    AttributesWrapper
+import cv2
+
+import numpy as np
+
+from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, TruncateWrapper, AugmentAttributesWrapper
 
 
+# https://github.com/google/dopamine/blob/df97ba1b0d4edf90824534efcdda20d6549c37a9/dopamine/discrete_domains/atari_lib.py#L329-L515
 class AtariPreprocessing(dm_env.Environment):
     """A dm_env wrapper implementing image preprocessing for Atari 2600 agents.
     Specifically, this provides the following subset from the JAIR paper
@@ -52,8 +54,8 @@ class AtariPreprocessing(dm_env.Environment):
         self.screen_size = screen_size
 
         obs_dims = self.gym_env.observation_space
-        # Stores temporary observations used for pooling over two successive
-        # frames.
+
+        # Stores temporary observations used for pooling over two successive frames
         self.screen_buffer = [
             np.empty((obs_dims.shape[0], obs_dims.shape[1]), dtype=np.uint8),
             np.empty((obs_dims.shape[0], obs_dims.shape[1]), dtype=np.uint8)
@@ -198,15 +200,21 @@ def make(task, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncat
     env.seed(seed)
     env = AtariPreprocessing(env, frame_skip=action_repeat,
                              terminal_on_life_loss=False, screen_size=84)
-    # env = FrameStackWrapper(env, frame_stack)
-    env = ActionDTypeWrapper(env, np.int64, discrete=True)
-    if train:
-        if max_episode_frames and action_repeat:
-            max_episode_frames = max_episode_frames // action_repeat
-        env = TimeLimit(env, max_episode_len=max_episode_frames)
-        if truncate_episode_frames and action_repeat:
-            truncate_episode_frames = truncate_episode_frames // action_repeat
-        env = TimeLimit(env, max_episode_len=truncate_episode_frames, resume=True)
-    env = ExtendedTimeStepWrapper(env)
-    env = AttributesWrapper(env)
+
+    # Stack several frames
+    # env = FrameStackWrapper(env, frame_stack)  TODO frame pool (n=2) above or here (n=frame_stack)?
+
+    # Add extra info to action specs
+    env = ActionSpecWrapper(env, np.int64, discrete=True)
+
+    # Truncate-resume or cut episodes short
+    max_episode_steps = max_episode_frames // action_repeat if max_episode_frames else np.inf
+    truncate_episode_steps = truncate_episode_frames // action_repeat if truncate_episode_frames else np.inf
+    env = TruncateWrapper(env,
+                          max_episode_steps=max_episode_steps,
+                          truncate_episode_steps=truncate_episode_steps,
+                          train=train)
+
+    # Augment attributes to env and time step, prepare specs for loading by Hydra
+    env = AugmentAttributesWrapper(env)
     return env

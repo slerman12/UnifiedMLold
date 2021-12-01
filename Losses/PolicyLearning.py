@@ -38,7 +38,7 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
         # logs['avg_trust_region'] = trust_region.item()
 
     # TODO DEBUGGING delete
-    if step % 1000 == 0:
-        print('avg action proba', torch.exp(log_proba).mean().item())
+    # if step % 1000 == 0:
+    #     print('avg action proba', torch.exp(log_proba).mean().item())
 
     return policy_loss

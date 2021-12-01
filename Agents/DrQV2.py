@@ -32,7 +32,7 @@ class DrQV2Agent(DQNDPGAgent):
 
         encode = self.encoder.forward
 
-        # "See" augmented
+        # "See"
         def see_augmented(obs):
             if self.encoder.training:
                 obs = aug(obs)

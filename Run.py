@@ -8,8 +8,6 @@ from hydra.utils import instantiate
 import os
 from pathlib import Path
 
-from Logger import Logger
-# from Vlogger import Vlogger  # M1 Mac: comment out freeimage imports in imageio/plugins/_init_
 import Utils
 
 import torch
@@ -50,7 +48,7 @@ def main(args):
     # Loggers
     logger = instantiate(args.logger)  # Aggregates per step  todo hydra exp, agent, task
 
-    # vlogger = Vlogger(root_path if args.log_video else None)
+    # vlogger = instantiate(args.vlogger)
 
     # Start training
     step = 0

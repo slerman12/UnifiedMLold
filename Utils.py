@@ -59,7 +59,7 @@ def soft_update_params(net, target_net, tau):
                                 (1 - tau) * target_param.data)
 
 
-# Context manager that temporarily switches on torch.no_grad() and eval() mode for specified models; then resets them
+# Context manager that temporarily switches on eval() mode for specified models; then resets them
 class act_mode:
     def __init__(self, *models):
         super().__init__()
@@ -73,7 +73,7 @@ class act_mode:
         self.start_modes = []
         for model in self.models:
             self.start_modes.append(model.training)
-            model.train(False)
+            model.eval()
 
     def __exit__(self, *args):
         # self.with_no_grad.__exit__(*args)
@@ -83,7 +83,7 @@ class act_mode:
         return False
 
 
-# Converts data to Torch Tensors and moves them to the specified device
+# Converts data to Torch Tensors and moves them to the specified device as floats
 def to_torch(xs, device):
     return tuple(torch.as_tensor(x, device=device).float() for x in xs)
 
@@ -105,6 +105,7 @@ def optimize(loss=None, *models, clear_grads=True, backward=True, step_optim=Tru
             model.optim.step()
 
 
+# Increment/decrement a value in proportion to a step count based on a string-formatted schedule
 def schedule(sched, step):
     try:
         return float(sched)

@@ -49,9 +49,7 @@ class BaseActor(nn.Module):
 class TruncatedGaussianActor(BaseActor):
     def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim,
                  stddev_schedule=None, stddev_clip=None,
-                 target_tau=None, optim_lr=None, **kwargs):
-        super().__init__(repr_dim, feature_dim, hidden_dim, action_dim,
-                         target_tau=target_tau, optim_lr=optim_lr)
+                 target_tau=None, optim_lr=None, **kwargs):  # note added kwargs todo check if ok
         dim = kwargs.get("dim", action_dim)  # (To make sure target has the same action_dim)
 
         num_outputs = 2 if stddev_schedule is None else 1
@@ -59,7 +57,7 @@ class TruncatedGaussianActor(BaseActor):
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
                          hidden_dim=hidden_dim, action_dim=dim * num_outputs,
                          stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
-                         target_tau=target_tau, optim_lr=optim_lr, dim=dim)
+                         target_tau=target_tau, optim_lr=optim_lr, dim=dim, **kwargs)
 
         self.action_dim = dim
         self.stddev_schedule = stddev_schedule
@@ -95,7 +93,7 @@ class DiagonalGaussianActor(BaseActor):
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
                          hidden_dim=hidden_dim, action_dim=dim * num_outputs,
                          stddev_schedule=stddev_schedule, log_std_bounds=log_std_bounds,
-                         target_tau=target_tau, optim_lr=optim_lr, dim=dim)
+                         target_tau=target_tau, optim_lr=optim_lr, dim=dim, **kwargs)
 
         self.tanh_transform = Utils.TanhTransform()
 

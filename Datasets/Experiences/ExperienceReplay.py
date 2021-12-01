@@ -6,7 +6,6 @@ import random
 import datetime
 import io
 import traceback
-from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
@@ -67,6 +66,17 @@ class ExperienceReplay:
         if experiences is None:
             experiences = []
 
+        # Enable merging of different Experience Replays
+        if isinstance(experiences, ExperienceReplay):
+            if self.episode_len > 0:
+                assert set([spec.name for spec in experiences.specs]) == \
+                       set([name for name in self.episode]), 'make sure to store before merging a disjoint replay'
+            self.loading.load_paths.append(experiences.store_path)
+            self.num_episodes += experiences.num_episodes
+            self.num_experiences_stored += experiences.num_experiences_stored
+            experiences = [{name: experiences.episode[name][i] for name in experiences.episode}
+                           for i in range(experiences.episode_len)]
+
         # An "episode" of experiences
         assert isinstance(experiences, (list, tuple))
 
@@ -105,7 +115,6 @@ class ExperienceReplay:
         self.episode_len = 0
 
     def __len__(self):
-        # return self.num_experiences_stored
         return self.loading.num_experiences_loaded
 
     @property
@@ -124,9 +133,9 @@ class ExperienceReplay:
     def __iter__(self):
         return self.replay.__iter__()
 
-    # Overrides methods in experience loading
+    # Overrides methods in Experience Loading
     def _sample(self, episode_names, metrics=None):
-        episode_name = random.choice(episode_names)  # Uniform sampling of experiences
+        episode_name = random.choice(episode_names)  # Uniform sampling of experiences  TODO Prioritized
         return episode_name
 
     def _process(self, episode):  # N-step cumulative discounted rewards
@@ -160,7 +169,7 @@ class ExperienceLoading(IterableDataset):
 
         # Dataset construction via parallel workers
 
-        self.load_path = load_path
+        self.load_paths = [load_path]
 
         self.episode_names = []
         self.episodes = dict()
@@ -215,7 +224,8 @@ class ExperienceLoading(IterableDataset):
         except Exception:
             worker_id = 0
 
-        episode_names = sorted(self.load_path.glob('*.npz'), reverse=True)
+        load_paths = [load_path.glob('*.npz') for load_path in self.load_paths]
+        episode_names = sorted(sum(load_paths, []), reverse=True)
         num_fetched = 0
         # Find one new episode
         for episode_name in episode_names:
@@ -230,11 +240,11 @@ class ExperienceLoading(IterableDataset):
             if not self.load_episode(episode_name):
                 break  # Resolve conflicts
 
-    def sample(self, episode_names, metrics=None):  # Can be over-ridden from ExperienceReplay
+    def sample(self, episode_names, metrics=None):  # Can be over-ridden from ExperienceReplay via ._sample()
         episode_name = random.choice(episode_names)  # Uniform sampling of experiences
         return episode_name
 
-    def process(self, episode):  # Can be over-ridden from ExperienceReplay
+    def process(self, episode):  # Can be over-ridden from ExperienceReplay via ._process()
         experience = tuple(episode[key] for key in episode)
         return experience
 
