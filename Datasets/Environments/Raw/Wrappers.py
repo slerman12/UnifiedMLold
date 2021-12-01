@@ -175,6 +175,7 @@ class FrameStackWrapper(dm_env.Environment):
         return getattr(self.env, name)
 
 
+# Note: Could technically do in Run.py just by setting rollout steps to truncate_episode_steps and always add to replay
 class TruncateWrapper(dm_env.Environment):
     def __init__(self, env, max_episode_steps=np.inf, truncate_episode_steps=np.inf, train=True):
         self.env = env
