@@ -115,11 +115,12 @@ class DQNDPGAgent(torch.nn.Module):
         # "Learn" / "Grow"
 
         # Actor loss
-        actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                                       self.step, logs=logs)
+        if not self.discrete:
+            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                                           self.step, logs=logs)
 
-        # Update actor
-        Utils.optimize(actor_loss,
-                       self.actor)
+            # Update actor
+            Utils.optimize(actor_loss,
+                           self.actor)
 
         return logs
