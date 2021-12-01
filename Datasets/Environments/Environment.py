@@ -35,7 +35,7 @@ class Environment:
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
-        exp = self.exp
+        exp = self.env.exp
         experiences = [exp]
 
         self.episode_done = False
@@ -74,11 +74,11 @@ class Environment:
 
         # Log stats
         sundown = time.time()
-        frames = self.episode_step * self.action_repeat
+        frames = self.episode_step * self.env.action_repeat
 
         logs = {'time': sundown - agent.birthday,
                 'step': agent.step,
-                'frame': agent.step * self.action_repeat,
+                'frame': agent.step * self.env.action_repeat,
                 'episode': agent.episode,
                 'reward': self.episode_reward,
                 'fps': frames / (sundown - self.daybreak)}
