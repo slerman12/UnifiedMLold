@@ -34,7 +34,7 @@ class Logger:
         self.logs = {}
         self.counts = {}
 
-        self.tensorboard_writer = SummaryWriter(self.root_path / 'TensorBoard')
+        self.tensorboard_writer = None
 
     def log(self, log=None, name="Logs", dump=False):
         if log is not None:
@@ -121,6 +121,9 @@ class Logger:
         print(' | '.join(pieces))
 
     def log_tensorboard(self, logs, name):
+        if self.tensorboard_writer is None:
+            self.tensorboard_writer = SummaryWriter(self.root_path / 'TensorBoard')
+
         for key in logs:
             if key != 'step' and key != 'episode':
                 self.tensorboard_writer.add_scalar(f'{name}/{key}', logs[key], logs['step'])

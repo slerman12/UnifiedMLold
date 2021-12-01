@@ -8,12 +8,12 @@ import torch
 
 import Utils
 
-from Blocks.augmentations import IntensityAug, RandomShiftsAug
 from Blocks.encoders import CNNEncoder
 from Blocks.actors import TruncatedGaussianActor, CategoricalCriticActor
 from Blocks.critics import EnsembleQCritic
 
-from Losses import QLearning, PolicyLearning
+from Losses.QLearning import ensembleQLearning
+from Losses.PolicyLearning import deepPolicyGradient
 
 
 class DQNDPGAgent(torch.nn.Module):
@@ -21,7 +21,7 @@ class DQNDPGAgent(torch.nn.Module):
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
-                 explore_steps, stddev_schedule, stddev_clip,  # Exploration
+                 stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
         super().__init__()
@@ -31,7 +31,6 @@ class DQNDPGAgent(torch.nn.Module):
         self.log_tensorboard = log_tensorboard
         self.birthday = time.time()
         self.step = self.episode = 0
-        self.explore_steps = explore_steps
 
         # Models
         self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
@@ -44,53 +43,32 @@ class DQNDPGAgent(torch.nn.Module):
                                         stddev_schedule, stddev_clip,
                                         optim_lr=lr).to(device)
 
-        # Data augmentation
-        self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
-
-        # Birth
-
-    # "Play"
     def act(self, obs):
         with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
             obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
 
-            # "See"
             obs = self.encoder(obs)
             dist = self.actor(obs, self.step)
 
             action = dist.sample() if self.training \
                 else dist.best if self.discrete \
-                else dist.mean
+                else dist.mean  # TODO test always just sampling... or also if <explore_steps
 
             if self.training:
                 self.step += 1
 
-                # Explore phase
-                if self.step < self.explore_steps and self.training:
-                    action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
-                        else action.uniform_(-1, 1)
-
             return action
 
-    # "Dream"
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
             else None
-
-        # "Recollect"
 
         batch = replay.sample()  # Can also write 'batch = next(replay)'
         obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
             batch, self.device)
         traj_o, traj_a, traj_r = traj
 
-        # "Imagine" / "Envision"
-
-        # Augment
-        obs = self.aug(obs)
-        next_obs = self.aug(next_obs)
-
-        # Encode
+        # "See"
         obs = self.encoder(obs)
         with torch.no_grad():
             next_obs = self.encoder(next_obs)
@@ -98,12 +76,10 @@ class DQNDPGAgent(torch.nn.Module):
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()
 
-        # "Predict" / "Discern"
-
         # Critic loss
-        critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
-                                                  obs, action, reward, discount, next_obs,
-                                                  self.step, logs=logs)
+        critic_loss = ensembleQLearning(self.actor, self.critic,
+                                        obs, action, reward, discount, next_obs,
+                                        self.step, logs=logs)
 
         # Update critic
         Utils.optimize(critic_loss,
@@ -112,11 +88,9 @@ class DQNDPGAgent(torch.nn.Module):
 
         self.critic.update_target_params()
 
-        # "Learn" / "Grow"
-
         # Actor loss
-        actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                                       self.step, logs=logs)
+        actor_loss = deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                        self.step, logs=logs)
 
         # Update actor
         Utils.optimize(actor_loss,

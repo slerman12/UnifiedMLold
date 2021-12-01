@@ -126,7 +126,7 @@ class ExperienceReplay:
     def sample(self):
         return next(self.replay)
 
-    # Can iterate on self to get batches e.g. next(self) <=> self.sample()
+    # Can iterate on self to get batches e.g. next(self) <=> self.sample()  TODO Can book-keep metadata
     def __next__(self):
         return self.replay.__next__()
 
@@ -198,17 +198,17 @@ class ExperienceLoading(IterableDataset):
             early_episode_name = self.episode_names.pop(0)
             early_episode = self.episodes.pop(early_episode_name)
             self.num_experiences_loaded -= episode_len(early_episode)
-            # deletes early episode file
+            # Deletes early episode file
             early_episode_name.unlink(missing_ok=True)
 
         self.episode_names.append(episode_name)
-        # TODO Book-keep corresponding metrics for prioritized sampling
+        # TODO Book-keep corresponding metrics, update names for prioritized sampling
         self.episode_names.sort()
         self.episodes[episode_name] = episode
         self.num_experiences_loaded += episode_len
 
         if not self.save:
-            episode_name.unlink(missing_ok=True)  # deletes file
+            episode_name.unlink(missing_ok=True)  # Deletes file
 
         return True
 
@@ -265,6 +265,6 @@ class ExperienceLoading(IterableDataset):
         return self.process(episode)  # Process episode into an experience
 
     def __iter__(self):
-        # Keep fetching, sampling, and building batches
+        # Keep fetching, sampling, and building batches TODO Metadata just for Replay
         while True:
             yield self.fetch_sample_process()
