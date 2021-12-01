@@ -241,7 +241,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
 
     def reset(self):
         time_step = self.env.reset()
-        # Augment time_step with extra functionality
+        # Augment time_step (experience) with extra functionality
         self.time_step = self.augment_time_step(time_step)
         return self.to_attr_dict(self.time_step)
 
@@ -297,6 +297,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
         keys = ['shape', 'dtype', 'name', 'num_actions']
         spec = {key: getattr(spec, key, None) for key in keys}
         spec['dtype'] = spec['dtype'].name
+        print(spec)
         return spec
 
     def __getattr__(self, name):
