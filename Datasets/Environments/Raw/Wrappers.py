@@ -284,6 +284,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
 
     @property
     def action_spec(self):
+        print("ya")
         action_spec = self.env.action_spec()
         return self.simplify_spec(action_spec)
 
