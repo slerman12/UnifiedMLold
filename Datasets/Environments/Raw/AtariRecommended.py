@@ -11,7 +11,8 @@ import cv2
 
 import numpy as np
 
-from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, TruncateWrapper, AugmentAttributesWrapper
+from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, TruncateWrapper, AugmentAttributesWrapper, \
+    FrameStackWrapper
 
 
 # https://github.com/google/dopamine/blob/df97ba1b0d4edf90824534efcdda20d6549c37a9/dopamine/discrete_domains/atari_lib.py#L329-L515
@@ -212,7 +213,8 @@ def make(task, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncat
                              terminal_on_life_loss=False, screen_size=84)
 
     # Stack several frames
-    # env = FrameStackWrapper(env, frame_stack)  TODO frame pool (n=2) above or here (n=frame_stack)?
+    env = FrameStackWrapper(env, frame_stack)  # Recommended: 4, Note: not redundant to "frame pooling"
+    # See: https://github.com/mgbellemare/Arcade-Learning-Environment/issues/441#issuecomment-983878228
 
     # Add extra info to action specs
     env = ActionSpecWrapper(env, np.int64, discrete=True)
