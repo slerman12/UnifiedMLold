@@ -231,8 +231,6 @@ def make(task, frame_stack=4, action_repeat=1, max_episode_frames=None, truncate
     env = ActionSpecWrapper(env, 'int64', discrete=True)
 
     # Truncate-resume or cut episodes short
-    print(max_episode_frames // action_repeat if max_episode_frames else np.inf,
-          truncate_episode_frames // action_repeat if truncate_episode_frames else np.inf)
     max_episode_steps = max_episode_frames // action_repeat if max_episode_frames else np.inf
     truncate_episode_steps = truncate_episode_frames // action_repeat if truncate_episode_frames else np.inf
     env = TruncateWrapper(env,
