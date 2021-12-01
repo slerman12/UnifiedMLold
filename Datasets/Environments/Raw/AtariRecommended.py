@@ -195,25 +195,25 @@ class AtariPreprocessing(dm_env.Environment):
 def make(task, frame_stack=4, action_repeat=1, max_episode_frames=None, truncate_episode_frames=None,
          train=True, seed=0):
     task = f'ALE/{task}-v5'
-    # Recommended
-    # env = gym.make(task,
-    #                obs_type='rgb',                   # ram | rgb | grayscale
-    #                frameskip=1,                      # frame skip
-    #                mode=0,                           # game mode, see Machado et al. 2018
-    #                difficulty=0,                     # game difficulty, see Machado et al. 2018
-    #                repeat_action_probability
-    #                =0.25 if train else 0.25,         # Sticky action probability
-    #                full_action_space=True,           # Use all actions
-    #                render_mode=None                  # None | human | rgb_array
-    #                )
-    # Original
+
+    # Recommended vs. original settings
+    recommended = False
+
+    sticky_action_proba = 0.25 * recommended
+
+    # Different train/eval settings?
+    if not train:
+        sticky_action_proba = sticky_action_proba
+        action_repeat = action_repeat
+
     env = gym.make(task,
                    obs_type='rgb',                   # ram | rgb | grayscale
                    frameskip=1,                      # frame skip
                    mode=0,                           # game mode, see Machado et al. 2018
                    difficulty=0,                     # game difficulty, see Machado et al. 2018
-                   repeat_action_probability=0,      # Sticky action probability
-                   full_action_space=False,          # Use all actions
+                   repeat_action_probability
+                   =sticky_action_proba,             # Sticky action probability
+                   full_action_space=recommended,    # Use all actions
                    render_mode=None                  # None | human | rgb_array
                    )
     # minimal_action_set = env.getMinimalActionSet()
@@ -231,6 +231,8 @@ def make(task, frame_stack=4, action_repeat=1, max_episode_frames=None, truncate
     env = ActionSpecWrapper(env, 'int64', discrete=True)
 
     # Truncate-resume or cut episodes short
+    print(max_episode_frames // action_repeat if max_episode_frames else np.inf,
+          truncate_episode_frames // action_repeat if truncate_episode_frames else np.inf)
     max_episode_steps = max_episode_frames // action_repeat if max_episode_frames else np.inf
     truncate_episode_steps = truncate_episode_frames // action_repeat if truncate_episode_frames else np.inf
     env = TruncateWrapper(env,

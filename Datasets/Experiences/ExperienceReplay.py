@@ -66,7 +66,7 @@ class ExperienceReplay:
         if experiences is None:
             experiences = []
 
-        # Enable merging of different Experience Replays
+        # Enable merging of different Experience Replays - maybe not stable
         if isinstance(experiences, ExperienceReplay):
             if self.episode_len > 0:
                 assert set([spec.name for spec in experiences.specs]) == \
