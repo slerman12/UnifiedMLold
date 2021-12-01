@@ -32,11 +32,10 @@ class Logger:
 
         self.experiment = experiment
         self.agent = agent.replace('Agents.', '').replace('Agent', '')
-        print(task, task.split("/"))
-        self.env, self.task = task.split("/")
+        self.task = task
         self.seed = seed
 
-        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{self.agent}/{self.env}/{self.task}/Seed_{seed}')
+        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{self.agent}/{self.task}/Seed_{seed}')
         self.log_path.mkdir(parents=True, exist_ok=True)
 
         self.logs = {}
@@ -105,7 +104,6 @@ class Logger:
 
     def dump_to_csv(self, logs, name):
         logs['agent'] = self.agent
-        logs['env'] = self.env
         logs['task'] = self.task
         logs['seed'] = self.seed
 
