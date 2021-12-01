@@ -28,9 +28,6 @@ class Environment:
         elif self.suite.lower() == "atari":
             return Atari
 
-    def __getattr__(self, item):
-        return getattr(self.env, item)
-
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
