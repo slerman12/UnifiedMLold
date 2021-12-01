@@ -57,7 +57,7 @@ class TruncatedGaussianActor(BaseActor):
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
                          hidden_dim=hidden_dim, action_dim=dim * num_outputs,
                          stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
-                         target_tau=target_tau, optim_lr=optim_lr, dim=dim, **kwargs)
+                         target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 
         self.action_dim = dim
         self.stddev_schedule = stddev_schedule
@@ -93,7 +93,7 @@ class DiagonalGaussianActor(BaseActor):
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
                          hidden_dim=hidden_dim, action_dim=dim * num_outputs,
                          stddev_schedule=stddev_schedule, log_std_bounds=log_std_bounds,
-                         target_tau=target_tau, optim_lr=optim_lr, dim=dim, **kwargs)
+                         target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 
         self.tanh_transform = Utils.TanhTransform()
 

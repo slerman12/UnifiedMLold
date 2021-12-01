@@ -20,15 +20,15 @@ class ExperienceReplay:
 
         # Episode storage
 
-        self.store_path = Path(root_path) / 'buffer'
+        self.store_path = Path(root_path) / 'Buffer'
         self.store_path.mkdir(exist_ok=True)
 
         self.num_episodes = 0
         self.num_experiences_stored = 0
 
         self.specs = (obs_spec, action_spec,
-                      {'shape': (1,), 'dtype': 'float32', 'name': 'reward'},
-                      {'shape': (1,), 'dtype': 'float32', 'name': 'discount'})
+                      {'name': 'reward', 'shape': (1,), 'dtype': 'float32'},
+                      {'name': 'discount', 'shape': (1,), 'dtype': 'float32'})
 
         self.episode = {spec['name']: [] for spec in self.specs}
         self.episode_len = 0

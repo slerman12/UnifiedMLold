@@ -21,7 +21,7 @@ cudnn.benchmark = True
 
 @hydra.main(config_path='Hyperparams', config_name='cfg')
 def main(args):
-    # Setup    todo logger hydra, logger csv, vlogger(?), munch, atari
+    # Setup    todo logger hydra exp agent task, logger csv, vlogger(?), atari, plotting, munch
 
     Utils.set_seed_everywhere(args.seed)
 
@@ -46,7 +46,7 @@ def main(args):
         replay = instantiate(args.replay)  # An instance of PrioritizedExperienceReplay, for example
 
     # Loggers
-    logger = instantiate(args.logger)  # Aggregates per step  todo hydra exp, agent, task
+    logger = instantiate(args.logger)  # Aggregates per step
 
     # vlogger = instantiate(args.vlogger)
 
