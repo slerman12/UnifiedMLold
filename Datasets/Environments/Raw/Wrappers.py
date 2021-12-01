@@ -297,7 +297,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
         keys = ['shape', 'dtype', 'name', 'num_actions']
         spec = {key: getattr(spec, key, None) for key in keys}
         print(spec['dtype'])
-        print(spec['dtype'].name)
+        print(spec['dtype'].__dict__)
         spec['dtype'] = spec['dtype'].name
         return spec
 
