@@ -4,7 +4,6 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import csv
 import datetime
-import os
 from pathlib import Path
 from termcolor import colored
 
@@ -30,8 +29,8 @@ def format(log, log_name):
 
 class Logger:
     def __init__(self, root_path='.', experiment='Experiment', agent='Agent', task='Task', seed=-1):
-        self.log_path = f'{root_path}/Benchmarking/{experiment}/{agent}/{task.replace("/", "_")}/Seed_{seed}'
-        os.mkdirs(self.log_path)
+        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{agent}/{task.replace("/", "_")}/Seed_{seed}')
+        self.log_path.mkdir(parents=True, exist_ok=True)
 
         self.logs = {}
         self.counts = {}
