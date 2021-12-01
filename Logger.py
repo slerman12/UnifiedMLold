@@ -29,7 +29,7 @@ def format(log, log_name):
 
 class Logger:
     def __init__(self, root_path='.', experiment='Experiment', agent='Agent', task='Task', seed=-1):
-        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{agent}/{task.replace("/", "_")}/Seed_{seed}')
+        self.log_path = Path(f'{root_path}\Benchmarking\{experiment}\{agent}\{task.replace("/", "_")}\Seed_{seed}')
         self.log_path.mkdir(exist_ok=True)
 
         self.logs = {}
