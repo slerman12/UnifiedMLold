@@ -12,8 +12,8 @@ class DrQV2Agent(DQNDPGAgent):
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
-                 device, log_tensorboard  # On-boarding
-                 ):
+                 device, log_tensorboard,  # On-boarding
+                 **kwargs):
         # discrete = False
         super().__init__(
             obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
