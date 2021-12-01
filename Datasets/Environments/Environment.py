@@ -16,7 +16,7 @@ class Environment:
         self.env = self.raw_env.make(task_name, frame_stack, action_repeat, max_episode_frames,
                                      truncate_episode_frames, train, seed)
 
-        self.exp = self.env.reset()
+        self.env.reset()
 
         self.episode_step = self.last_episode_len = self.episode_reward = self.last_episode_reward = 0
         self.daybreak = None
@@ -67,18 +67,18 @@ class Environment:
         if self.episode_done:
             if agent.training:
                 agent.episode += 1
-            self.exp = self.env.reset()
+            self.env.reset()
 
             self.last_episode_len = self.episode_step
             self.last_episode_reward = self.episode_reward
 
         # Log stats
         sundown = time.time()
-        frames = self.episode_step * self.env.action_repeat
+        frames = self.episode_step * self.action_repeat
 
         logs = {'time': sundown - agent.birthday,
                 'step': agent.step,
-                'frame': agent.step * self.env.action_repeat,
+                'frame': agent.step * self.action_repeat,
                 'episode': agent.episode,
                 'reward': self.episode_reward,
                 'fps': frames / (sundown - self.daybreak)}
