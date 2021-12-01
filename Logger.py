@@ -29,7 +29,13 @@ def format(log, log_name):
 
 class Logger:
     def __init__(self, root_path='.', experiment='Experiment', agent='Agent', task='Task', seed=-1):
-        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{agent}/{task.replace("/", "_")}/Seed_{seed}')
+
+        self.experiment = experiment
+        self.agent = agent.replace('Agents.', '').replace('Agent', '')
+        self.env, self.task = task.split("/")
+        self.seed = seed
+
+        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{self.agent}/{self.env}/{self.task}/Seed_{seed}')
         self.log_path.mkdir(parents=True, exist_ok=True)
 
         self.logs = {}
@@ -97,7 +103,11 @@ class Logger:
                 writer.writerow(row)
 
     def dump_to_csv(self, logs, name):
-        # file_name = Path(f'{name}/{self.experiment}/Benchmarking/{self.agent}/{self.task.replace("/", "_")}.csv')
+        logs['agent'] = self.agent
+        logs['env'] = self.env
+        logs['task'] = self.task
+        logs['seed'] = self.seed
+
         file_name = self.log_path / f'{name}.csv'
         write_header = True
         if file_name.exists():

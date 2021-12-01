@@ -98,7 +98,7 @@ class DQNDPGAgent(torch.nn.Module):
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()
 
-        # "Predict" / "Discern"/ "Learn" / "Grow"
+        # "Predict" / "Discern" / "Learn" / "Grow"
 
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,

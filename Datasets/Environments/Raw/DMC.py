@@ -11,8 +11,8 @@ from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, ActionRepeatWr
 import numpy as np
 
 
-def make(task, frame_stack=3, action_repeat=1, max_episode_frames=None, truncate_episode_frames=None,
-         train=True, seed=0):
+def make(task, frame_stack=3, action_repeat=2, max_episode_frames=None, truncate_episode_frames=None,
+         train=True, seed=1):
     # Load suite and task
     domain, task = task.split('_', 1)
     # Overwrite cup to ball_in_cup

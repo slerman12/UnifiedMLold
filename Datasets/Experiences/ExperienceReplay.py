@@ -265,6 +265,6 @@ class ExperienceLoading(IterableDataset):
         return self.process(episode)  # Process episode into an experience
 
     def __iter__(self):
-        # Keep fetching, sampling, and building batches TODO Metadata just for Replay
+        # Keep fetching, sampling, and building batches  TODO Metadata just for Replay
         while True:
             yield self.fetch_sample_process()

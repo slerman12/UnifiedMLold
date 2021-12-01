@@ -192,8 +192,8 @@ class AtariPreprocessing(dm_env.Environment):
         return np.expand_dims(int_image, axis=2)
 
 
-def make(task, frame_stack=4, action_repeat=1, max_episode_frames=None, truncate_episode_frames=None,
-         train=True, seed=0):
+def make(task, frame_stack=4, action_repeat=4, max_episode_frames=None, truncate_episode_frames=None,
+         train=True, seed=1):
     task = f'ALE/{task}-v5'
 
     # Recommended vs. original settings
