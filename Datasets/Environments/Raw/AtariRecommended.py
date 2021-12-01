@@ -196,14 +196,24 @@ def make(task, frame_stack=4, action_repeat=1, max_episode_frames=None, truncate
          train=True, seed=0):
     task = f'ALE/{task}-v5'
     # Recommended
+    # env = gym.make(task,
+    #                obs_type='rgb',                   # ram | rgb | grayscale
+    #                frameskip=1,                      # frame skip
+    #                mode=0,                           # game mode, see Machado et al. 2018
+    #                difficulty=0,                     # game difficulty, see Machado et al. 2018
+    #                repeat_action_probability
+    #                =0.25 if train else 0.25,         # Sticky action probability
+    #                full_action_space=True,           # Use all actions
+    #                render_mode=None                  # None | human | rgb_array
+    #                )
+    # Original
     env = gym.make(task,
                    obs_type='rgb',                   # ram | rgb | grayscale
                    frameskip=1,                      # frame skip
                    mode=0,                           # game mode, see Machado et al. 2018
                    difficulty=0,                     # game difficulty, see Machado et al. 2018
-                   repeat_action_probability
-                   =0.25 if train else 0.25,         # Sticky action probability
-                   full_action_space=True,           # Use all actions
+                   repeat_action_probability=0,      # Sticky action probability
+                   full_action_space=False,          # Use all actions
                    render_mode=None                  # None | human | rgb_array
                    )
     # minimal_action_set = env.getMinimalActionSet()
