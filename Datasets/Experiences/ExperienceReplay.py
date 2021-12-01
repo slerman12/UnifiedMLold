@@ -189,7 +189,7 @@ class ExperienceLoading(IterableDataset):
             with episode_name.open('rb') as episode_file:
                 episode = np.load(episode_file)
                 episode = {key: episode[key] for key in episode.keys()}
-        except Exception:
+        except:
             return False
 
         episode_len = next(iter(episode.values())).shape[0] - 1
@@ -221,7 +221,7 @@ class ExperienceLoading(IterableDataset):
 
         try:
             worker_id = torch.utils.data.get_worker_info().id
-        except Exception:
+        except:
             worker_id = 0
 
         # In case multiple Experience Replays merged
@@ -253,7 +253,7 @@ class ExperienceLoading(IterableDataset):
     def fetch_sample_process(self):
         try:
             self.worker_fetch_episodes()  # Populate workers with up-to-date data
-        except Exception:
+        except:
             traceback.print_exc()
 
         self.samples_since_last_fetch += 1
