@@ -11,7 +11,8 @@ from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, ActionRepeatWr
 import numpy as np
 
 
-def make(task, frame_stack, action_repeat=1, max_episode_frames=None, truncate_episode_frames=None, train=True, seed=0):
+def make(task, frame_stack=3, action_repeat=1, max_episode_frames=None, truncate_episode_frames=None,
+         train=True, seed=0):
     # Load suite and task
     domain, task = task.split('_', 1)
     # Overwrite cup to ball_in_cup
@@ -32,7 +33,7 @@ def make(task, frame_stack, action_repeat=1, max_episode_frames=None, truncate_e
     env = ActionSpecWrapper(env, np.float32)
 
     # Repeats actions n times  (frame skip)
-    env = ActionRepeatWrapper(env, action_repeat)
+    env = ActionRepeatWrapper(env, action_repeat if train else action_repeat)
 
     # Rescales actions to range
     env = action_scale.Wrapper(env, minimum=-1.0, maximum=+1.0)

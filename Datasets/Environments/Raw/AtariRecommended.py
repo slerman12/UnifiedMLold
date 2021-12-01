@@ -192,16 +192,17 @@ class AtariPreprocessing(dm_env.Environment):
         return np.expand_dims(int_image, axis=2)
 
 
-def make(task, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncate_episode_frames=1000,
+def make(task, frame_stack=4, action_repeat=1, max_episode_frames=None, truncate_episode_frames=None,
          train=True, seed=0):
     task = f'ALE/{task}-v5'
     # Recommended
     env = gym.make(task,
                    obs_type='rgb',                   # ram | rgb | grayscale
-                   frameskip=1,                      # frame skip  - careful, redundant frame skip
+                   frameskip=1,                      # frame skip
                    mode=0,                           # game mode, see Machado et al. 2018
                    difficulty=0,                     # game difficulty, see Machado et al. 2018
-                   repeat_action_probability=0.25,   # Sticky action probability
+                   repeat_action_probability
+                   =0.25 if train else 0.25,         # Sticky action probability
                    full_action_space=True,           # Use all actions
                    render_mode=None                  # None | human | rgb_array
                    )
@@ -209,7 +210,7 @@ def make(task, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncat
     # full_action_set = env.getLegalActionSet()
     # env = gym.make(task, full_action_space=False)  # For minimal action spaces
     env.seed(seed)
-    env = AtariPreprocessing(env, frame_skip=action_repeat,  # Recommended: 4
+    env = AtariPreprocessing(env, frame_skip=action_repeat if train else action_repeat,  # Recommended: 4
                              terminal_on_life_loss=False, screen_size=84)
 
     # Stack several frames
