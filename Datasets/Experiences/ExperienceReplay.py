@@ -29,6 +29,7 @@ class ExperienceReplay:
         self.specs = (obs_spec, action_spec,
                       {'name': 'reward', 'shape': (1,), 'dtype': 'float32'},
                       {'name': 'discount', 'shape': (1,), 'dtype': 'float32'})
+        print(action_spec)
 
         self.episode = {spec['name']: [] for spec in self.specs}
         self.episode_len = 0
