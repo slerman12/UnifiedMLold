@@ -21,7 +21,7 @@ cudnn.benchmark = True
 
 @hydra.main(config_path='Hyperparams', config_name='cfg')
 def main(args):
-    # Setup    todo logger hydra exp agent task, vlogger(?), atari, plotting, munch
+    # Setup    todo logger hydra exp agent task seed, vlogger(?), atari, plotting, munch
 
     Utils.set_seed_everywhere(args.seed)
 

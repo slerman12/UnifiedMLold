@@ -194,9 +194,10 @@ class AtariPreprocessing(dm_env.Environment):
 def make(task, frame_stack=4, action_repeat=1, max_episode_frames=27000, truncate_episode_frames=1000,
          train=True, seed=0):
     task = f'ALE/{task}-v5'
-    env = gym.make(task)
+    # env = gym.make(task)  # Recommended
     # minimal_action_set = env.getMinimalActionSet()
     # full_action_set = env.getLegalActionSet()
+    env = gym.make(task, full_action_space=False)  # For minimal action spaces
     env.seed(seed)
     env = AtariPreprocessing(env, frame_skip=action_repeat,
                              terminal_on_life_loss=False, screen_size=84)

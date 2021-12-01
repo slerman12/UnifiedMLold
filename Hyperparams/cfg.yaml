@@ -77,6 +77,10 @@ replay:
 logger:
   _target_: Logger.Logger
   root_path: ${root_path}
+  experiment: ${experiment}
+  agent: ${Agent}
+  task: ${task}
+  seed: ${seed}
 
 hydra:
   run:

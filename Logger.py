@@ -28,8 +28,8 @@ def format(log, log_name):
 
 
 class Logger:
-    def __init__(self, root_path):
-        self.root_path = Path(root_path)
+    def __init__(self, root_path='.', experiment='Experiment', agent='Agent', task='Task', seed=-1):
+        self.log_path = Path(f'{root_path}/{experiment}/{agent}/{task.replace("/", "_")}/Seed_{seed}')
 
         self.logs = {}
         self.counts = {}
@@ -97,7 +97,7 @@ class Logger:
 
     def dump_to_csv(self, logs, name):
         # file_name = Path(f'{name}/{self.experiment}/Benchmarking/{self.agent}/{self.task.replace("/", "_")}.csv')
-        file_name = self.root_path / f'{name}.csv'
+        file_name = self.log_path / f'{name}.csv'
         write_header = True
         if file_name.exists():
             self.remove_old_entries(logs, file_name)
@@ -122,7 +122,7 @@ class Logger:
 
     def log_tensorboard(self, logs, name):
         if self.tensorboard_writer is None:
-            self.tensorboard_writer = SummaryWriter(self.root_path / 'TensorBoard')
+            self.tensorboard_writer = SummaryWriter(self.log_path / 'TensorBoard')
 
         for key in logs:
             if key != 'step' and key != 'episode':
