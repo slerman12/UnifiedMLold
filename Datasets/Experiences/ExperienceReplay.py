@@ -224,8 +224,7 @@ class ExperienceLoading(IterableDataset):
         except Exception:
             worker_id = 0
 
-        load_paths = [load_path.glob('*.npz') for load_path in self.load_paths]
-        print(sum(load_paths, []))
+        load_paths = [list(load_path.glob('*.npz')) for load_path in self.load_paths]
         episode_names = sorted(sum(load_paths, []), reverse=True)
         num_fetched = 0
         # Find one new episode
