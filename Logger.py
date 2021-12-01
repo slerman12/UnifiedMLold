@@ -32,7 +32,7 @@ class Logger:
 
         self.experiment = experiment
         self.agent = agent.replace('Agents.', '').replace('Agent', '')
-        print(task.split("/"))
+        print(task, task.split("/"))
         self.env, self.task = task.split("/")
         self.seed = seed
 
