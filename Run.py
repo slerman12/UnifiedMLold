@@ -58,7 +58,7 @@ def main(args):
 
             for ep in range(args.evaluate_episodes):
                 _, logs, vlogs = test_env.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
-                                                  args.log_video)
+                                                  vlog=args.log_video)
 
                 logger.log(logs, 'Eval')
             logger.dump_logs('Eval')
