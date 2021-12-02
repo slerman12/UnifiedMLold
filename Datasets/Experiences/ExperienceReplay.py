@@ -258,11 +258,13 @@ class ExperienceLoading(IterableDataset):
 
         self.samples_since_last_fetch += 1
 
-        episode_name = self.sample(self.episode_names)  # Sample an episode
+        # TODO at the end of training, I think it bugs out; can limit this to:
+        if len(self.episode_names) > 0:
+            episode_name = self.sample(self.episode_names)  # Sample an episode
 
-        episode = self.episodes[episode_name]
+            episode = self.episodes[episode_name]
 
-        return self.process(episode)  # Process episode into an experience
+            return self.process(episode)  # Process episode into an experience
 
     def __iter__(self):
         # Keep fetching, sampling, and building batches  TODO Metadata just for Replay
