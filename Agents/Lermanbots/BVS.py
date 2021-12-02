@@ -84,6 +84,8 @@ class BVSAgent(DQNDPGAgent):
                                                   logs=logs)
 
         # Update critic
+        self.planner.optim.zero_grad(set_to_none=True)
+        self.sub_planner.optim.zero_grad(set_to_none=True)
         Utils.optimize(critic_loss,
                        self.encoder,
                        self.critic)
