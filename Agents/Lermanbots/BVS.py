@@ -79,8 +79,9 @@ class BVSAgent(DQNDPGAgent):
 
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
-                                                  obs, action, reward, discount, next_obs,
-                                                  self.step, logs=logs)
+                                                  obs, action, reward, discount, next_obs, self.step,
+                                                  sub_planner=self.sub_planner, planner=self.planner,
+                                                  logs=logs)
 
         # Update critic
         Utils.optimize(critic_loss,
@@ -103,8 +104,9 @@ class BVSAgent(DQNDPGAgent):
 
         # Actor loss
         if not self.discrete:
-            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                                           self.step, logs=logs)
+            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(), self.step,
+                                                           sub_planner=self.sub_planner, planner=self.planner,
+                                                           logs=logs)
 
             # Update actor
             Utils.optimize(actor_loss,
