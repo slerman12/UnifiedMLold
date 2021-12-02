@@ -51,7 +51,7 @@ class Environment:
             experiences.append(exp)
 
             if vlog:
-                # print(hasattr(self.env, 'physics'))
+                print(hasattr(self.env, 'physics'))
                 frame = self.env.physics.render(height=256,
                                                 width=256,
                                                 camera_id=0) \
