@@ -48,7 +48,7 @@ def main(args):
     # Loggers
     logger = instantiate(args.logger)  # Aggregates per step
 
-    # vlogger = instantiate(args.vlogger)
+    vlogger = instantiate(args.vlogger)
 
     # Start training
     step = 0
@@ -62,8 +62,8 @@ def main(args):
                 logger.log(logs, 'Eval')
             logger.dump_logs('Eval')
 
-            # if args.log_video:
-            #     vlogger.vlog(vlogs)
+            if args.log_video:
+                vlogger.vlog(vlogs, 'Eval')
 
         # Rollout
         experiences, logs, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True

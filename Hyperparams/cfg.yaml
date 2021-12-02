@@ -82,6 +82,11 @@ logger:
   task: ${task_name}
   seed: ${seed}
 
+vlogger:
+  _target_: Vlogger.Vlogger
+  root_path: ${root_path}
+  fps: 20
+
 hydra:
   run:
     dir: ./exp_local/${now:%Y.%m.%d}/${now:%H%M%S}_${hydra.job.override_dirname}
