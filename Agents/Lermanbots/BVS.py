@@ -35,11 +35,11 @@ class BVSAgent(DQNDPGAgent):
 
         # Models
         # state based
-        # self.sub_planner = LayerNormMLPEncoder(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim,
-        #                                        target_tau=target_tau, optim_lr=lr).to(device)
+        self.sub_planner = LayerNormMLPEncoder(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim,
+                                               target_tau=target_tau, optim_lr=lr).to(device)
         # state-action based
-        self.sub_planner = SubPlanner(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim, action_shape[-1],
-                                      target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
+        # self.sub_planner = SubPlanner(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim, action_shape[-1],
+        #                               target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
         self.planner = LayerNormMLPEncoder(hidden_dim, hidden_dim, hidden_dim, hidden_dim,
                                            target_tau=target_tau, optim_lr=lr).to(device)
@@ -90,7 +90,7 @@ class BVSAgent(DQNDPGAgent):
         # Planner loss
         planner_loss = bootstrapLearningBVS(self.actor, self.sub_planner, self.planner,
                                             obs, traj_o, self.plan_discount,
-                                            traj_a, self.step,  # Comment out for state-based
+                                            # traj_a, self.step,  # Comment out for state-based
                                             logs=logs)
 
         # Update planner
