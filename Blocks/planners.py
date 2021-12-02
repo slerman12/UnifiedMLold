@@ -31,8 +31,8 @@ class SubPlanner(nn.Module):
 
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(repr_dim, feature_dim, hidden_dim, output_dim,
-                                    action_dim, discrete)
+            target = self.__class__(repr_dim=repr_dim, feature_dim=feature_dim, hidden_dim=hidden_dim,
+                                    output_dim=output_dim, action_dim=action_dim, discrete=discrete)
             target.load_state_dict(self.state_dict())
             self.target = target
 
