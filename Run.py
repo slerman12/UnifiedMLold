@@ -64,6 +64,7 @@ def main(args):
             logger.dump_logs('Eval')
 
             if args.log_video:
+                print(vlogs)
                 vlogger.vlog(vlogs, 'Eval')
 
         # Rollout
