@@ -110,6 +110,8 @@ class Logger:
                 writer.writerow(row)
 
     def dump_to_csv(self, logs, name):
+        logs = dict(logs)
+
         logs['agent'] = self.agent
         logs['task'] = self.task
         logs['seed'] = self.seed
