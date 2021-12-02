@@ -7,10 +7,10 @@ import imageio  # M1 Mac: comment out freeimage imports in imageio/plugins/_init
 
 class Vlogger:
     def __init__(self, root_path, fps):
-        self.save_dir = root_path / 'Video'
-        self.save_dir.mkdir(exist_ok=True)
+        self.save_path = root_path / 'Video'
+        self.save_path.mkdir(exist_ok=True)
         self.fps = fps
 
     def vlog(self, vlogs, name):
-        path = self.save_dir / name
+        path = self.save_path / name
         imageio.mimsave(str(path), vlogs, fps=self.fps)
