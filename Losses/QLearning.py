@@ -15,8 +15,8 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
 
         # BVS Planning
         if sub_planner is not None and planner is not None:
-            # next_obs = sub_planner.target(next_obs, next_action)  # state-action-based planner TODO targets for both?
-            next_obs = sub_planner.target(next_obs)  #  state-based planner  TODO try this
+            next_obs = sub_planner.target(next_obs, next_action)  # state-action-based planner TODO targets for both?
+            # next_obs = sub_planner.target(next_obs)  #  state-based planner  TODO try this
             next_obs = planner.target(next_obs)
             # next_obs = torch.layer_norm(next_obs, next_obs.shape)  TODO try normalizing
 
@@ -49,8 +49,8 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
 
     # BVS Planning
     if sub_planner is not None and planner is not None:
-        # obs = sub_planner(obs, action)  # state-action based planner
-        obs = sub_planner(obs)  # state-based planner  TODO try this
+        obs = sub_planner(obs, action)  # state-action based planner
+        # obs = sub_planner(obs)  # state-based planner  TODO try this
         obs = planner(obs)
         # obs = torch.layer_norm(obs, obs.shape)  TODO try normalizing
 
