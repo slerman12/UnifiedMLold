@@ -97,7 +97,7 @@ class BVSAgent(DQNDPGAgent):
         # Update planner
         Utils.optimize(planner_loss,
                        self.sub_planner,
-                       self.planner)
+                       self.planner, clear_grads=False)
 
         self.sub_planner.update_target_params()  # Maybe not since kind of treated as encoder
         self.planner.update_target_params()
