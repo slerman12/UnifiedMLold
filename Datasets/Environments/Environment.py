@@ -55,9 +55,6 @@ class Environment:
                                                 width=256,
                                                 camera_id=0) \
                     if hasattr(self.env, 'physics') else self.env.render()
-                # frame = cv2.resize(exp.obs[-3:].transpose(1, 2, 0),
-                #                    dsize=(self.render_size, self.render_size),
-                #                    interpolation=cv2.INTER_CUBIC)
                 vlogs.append(frame)
 
             # Tally reward, done, step

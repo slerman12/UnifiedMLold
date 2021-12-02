@@ -15,3 +15,12 @@ class Vlogger:
     def vlog(self, vlogs, name):
         path = self.save_path / name
         imageio.mimsave(str(path), vlogs, fps=self.fps)
+
+
+# Note: May be able to video record more efficiently with:
+
+    # frame = cv2.resize(exp.obs[-3:].transpose(1, 2, 0),
+    #                    dsize=(self.render_size, self.render_size),
+    #                    interpolation=cv2.INTER_CUBIC)
+
+# in Environment.py
