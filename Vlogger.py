@@ -6,8 +6,8 @@ import imageio  # M1 Mac: comment out freeimage imports in imageio/plugins/_init
 
 
 class Vlogger:
-    def __init__(self, root_dir, fps):
-        self.save_dir = root_dir / 'Video'
+    def __init__(self, root_path, fps):
+        self.save_dir = root_path / 'Video'
         self.save_dir.mkdir(exist_ok=True)
         self.fps = fps
 
