@@ -90,9 +90,11 @@ class BVSAgent(DQNDPGAgent):
                        self.encoder,
                        self.critic)
 
+        self.critic.update_target_params()
+
         # Planner loss
         planner_loss = bootstrapLearningBVS(self.actor, self.sub_planner, self.planner,
-                                            obs, traj_o, self.plan_discount,
+                                            obs.detach(), traj_o.detach(), self.plan_discount,
                                             traj_a, self.step,  # Comment out for state-based
                                             logs=logs)
 
