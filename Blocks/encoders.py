@@ -8,6 +8,7 @@ import Utils
 
 
 class CNNEncoder(nn.Module):
+    """CNN encoder."""
     def __init__(self, obs_shape, target_tau=None, optim_lr=None):
         super().__init__()
 

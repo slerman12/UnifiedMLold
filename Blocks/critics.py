@@ -114,3 +114,46 @@ class EnsemblePROCritic(EnsembleQCritic):
             Qs = tuple((torch.abs(a) * log_pi + v).mean(-1, keepdim=True) for a, v in zip(A, V))
 
         return Qs
+
+
+# TODO
+class Critic(nn.Module):
+    """Critic network, employs dueling Q networks."""
+    def __init__(self, repr_dim, num_actions, feature_dim, hidden_dim, dueling):
+        super().__init__()
+
+        self.dueling = dueling
+
+        self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
+                                   nn.LayerNorm(feature_dim), nn.Tanh())
+
+        if dueling:  # todo hidden depth of 1 would suffice for Atari, can use MLP
+            #  todo = MLP(feature_dim, hidden_dim, num_actions, hidden_depth)
+            # todo drq paper noted two linears, not three
+            self.V = nn.Sequential(
+                nn.Linear(feature_dim, hidden_dim),
+                # nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(inplace=True), nn.Linear(hidden_dim, num_actions))  # TODO num_actions->1?
+            self.A = nn.Sequential(
+                nn.Linear(feature_dim, hidden_dim),
+                # nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(inplace=True), nn.Linear(hidden_dim, num_actions))
+        else:
+            self.Q = nn.Sequential(
+                nn.Linear(feature_dim, hidden_dim),
+                # nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(inplace=True), nn.Linear(hidden_dim, num_actions))
+
+        self.apply(Utils.weight_init)
+
+    def forward(self, obs):
+        h = self.trunk(obs)
+
+        if self.dueling:
+            v = self.V(h)
+            a = self.A(h)
+            q = v + a - a.mean(1, keepdim=True)  # (s,a) = (s,a) + [(s,a) - (s)] ? shouldn't v then output dim=1?
+        else:
+            q = self.Q(h)
+
+        return q

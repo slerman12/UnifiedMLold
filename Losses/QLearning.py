@@ -10,7 +10,8 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
                       munchausen_scaling=0, sub_planner=None, planner=None, logs=None):  # 0.9
     with torch.no_grad():
         next_dist = actor(next_obs, step)
-        next_action = next_dist.rsample()
+        # next_action = next_dist.mean  # Better, yeah?
+        next_action = next_dist.rsample()  # TODO why not just use mean? (or scatter sample, or all for discrete)
 
         # BVS Planning
         if sub_planner is not None and planner is not None:
@@ -21,7 +22,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
 
         # Ensemble Q learning
         next_Q_ensemble = critic.target(next_obs, next_action, next_dist)
-        next_Q = torch.min(*next_Q_ensemble)
+        next_Q = torch.min(*next_Q_ensemble)  # TODO should be Value function (V(s)) (B(s)?)
 
         # Future uncertainty maximization in reward  TODO consider N-step entropy... +actor(traj_o).entropy(traj_a)
         # next_action_log_proba = next_dist.log_prob(next_action).sum(-1, keepdim=True)

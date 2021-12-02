@@ -48,7 +48,7 @@ class Environment:
             action = agent.act(exp.observation)
             exp = self.env.step(action.cpu().numpy()[0])
 
-            experiences.append(exp)
+            experiences.append(exp)  # TODO exp.step = agent.step
 
             if vlog:
                 frame = self.env.physics.render(height=256,

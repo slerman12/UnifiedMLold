@@ -46,7 +46,7 @@ def main(args):
         replay = instantiate(args.replay)  # An instance of PrioritizedExperienceReplay, for example
 
     # Loggers
-    logger = instantiate(args.logger)  # Aggregates per step
+    logger = instantiate(args.logger)
 
     vlogger = instantiate(args.vlogger)
 
@@ -58,7 +58,7 @@ def main(args):
 
             for ep in range(args.evaluate_episodes):
                 _, logs, vlogs = test_env.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
-                                                  vlog=args.log_video)  # todo hydra this?
+                                                  vlog=args.log_video)
 
                 logger.log(logs, 'Eval')
             logger.dump_logs('Eval')

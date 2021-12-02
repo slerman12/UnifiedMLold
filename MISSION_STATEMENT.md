@@ -3,6 +3,7 @@
 -*Albert Einstein*
 
 ## Principles
+- Minimalism
 
 ## Our Pledge
 

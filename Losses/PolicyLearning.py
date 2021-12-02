@@ -10,9 +10,11 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
                        sub_planner=None, planner=None, logs=None):
     if dist is None:
         dist = actor(obs, step)
-    action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample"
+    # action = dist.mean  # TODO Better to use mean if no trainable entropy, yeah?
+    action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample" - or use .mean
     if sub_planner is not None and planner is not None:
         obs = sub_planner(obs, action)
+        # obs = sub_planner(obs)  # State-based
         obs = planner(obs)
         # obs = torch.layer_norm(obs, obs.shape)
 
@@ -26,7 +28,7 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
     # trust_region = torch.kl_div(log_proba, log_proba.detach()).mean()  # TODO
     # # Via Lagrangian relaxation TODO where trust_region_scale (alpha) is minimized
     # eps = 0.1
-    # trust_region = -(trust_region_scale.detach() * (eps - trust_region))
+    # trust_region = -(trust_region_scaling.detach() * (eps - trust_region))  # TODO just set scaling - when >, + when <
 
     policy_loss = -Q.mean() - entropy_temp * entropy
 
