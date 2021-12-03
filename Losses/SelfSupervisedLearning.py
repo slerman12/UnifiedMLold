@@ -57,6 +57,7 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
             projections = projection_g.target(traj_o_target.flatten(-3))
 
     forecasts = encoder(traj_o[:, 0]) if cheaper else encoder(traj_o)
+    print(forecasts.shape)
     dynamics_loss = 0
     for k in range(depth):
         if cheaper:
