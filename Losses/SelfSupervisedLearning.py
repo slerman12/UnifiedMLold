@@ -53,7 +53,7 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, traj_o, traj_a, logs=
     forecasts = prediction_q(forecasts)
 
     with torch.no_grad():
-        projections = projection_g.target(traj_o[:, 1:])  # TODO also encoder target
+        projections = projection_g.target(traj_o[:, 1:].flatten(-3))  # TODO also encoder target
 
     # TODO recurrent prediction
     dynamics_loss = -F.cosine_similarity(forecasts, projections, -1).mean()

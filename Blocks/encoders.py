@@ -68,8 +68,6 @@ class LayerNormMLPEncoder(nn.Module):
                  target_tau=None, optim_lr=None):
         super().__init__()
 
-        print(in_dim)
-
         self.trunk = nn.Sequential(nn.Linear(in_dim, feature_dim),
                                    nn.LayerNorm(feature_dim), nn.Tanh())
 
