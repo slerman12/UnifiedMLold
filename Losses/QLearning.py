@@ -9,6 +9,8 @@ import torch.nn.functional as F
 def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, dist=None, entropy_temp=0,  # 0.03
                       munchausen_scaling=0, sub_planner=None, planner=None, logs=None):  # 0.9
     with torch.no_grad():
+        next_obs = sub_planner(next_obs)  #  state-based planner  TODO try this
+
         next_dist = actor(next_obs, step)
         # next_action = next_dist.mean  # Better, yeah?
         next_action = next_dist.rsample()  # TODO why not just use mean? (or scatter sample, or all for discrete)
@@ -17,7 +19,6 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         if sub_planner is not None and planner is not None:
             # next_obs = sub_planner.target(next_obs, next_action)  # state-action-based planner TODO targets for both?
             # next_obs = sub_planner.target(next_obs)  #  state-based planner  TODO try this
-            next_obs = sub_planner(next_obs)  #  state-based planner  TODO try this
             next_obs = planner.target(next_obs, next_action)
             # next_obs = torch.layer_norm(next_obs, next_obs.shape)  TODO try normalizing
 
