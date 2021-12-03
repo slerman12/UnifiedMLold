@@ -117,7 +117,7 @@ class SPRAgent(torch.nn.Module):
         # Dynamics loss
         dynamics_loss = SelfSupervisedLearning.dynamicsLearning(self.dynamics, self.projection_g, self.prediction_q,
                                                                 self.encoder,  # is encoder target necessary?
-                                                                traj_o, traj_a, depth=3, cheaper=False, logs=logs)
+                                                                traj_o, traj_a, depth=3, cheaper=True, logs=logs)
 
         # Update critic, dynamics
         Utils.optimize(critic_loss + dynamics_loss,
