@@ -49,6 +49,7 @@ class CNNEncoder(nn.Module):
         # Operates on last 3 dims of obs, preserves leading dims
         shape = obs.shape
         obs = obs.view(-1, *self.obs_shape)
+        # Assumes pixels
         obs = obs / 255.0 - 0.5
         h = self.conv_net(obs)
         if self.flatten:
@@ -138,7 +139,7 @@ class IsotropicCNNEncoder(nn.Module):
         # Operates on last 3 dims of obs, preserves leading dims
         obs_shape = obs.shape
         obs = obs.reshape(-1, *self.obs_shape)
-        # obs = obs / 255.0 - 0.5
+
         if action is not None:
             # Appends action to channels
             action = action.view(-1, action.shape[-1])[:, :, None, None].expand(-1, -1, *obs.shape[-2:])
