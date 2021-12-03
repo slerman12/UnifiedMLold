@@ -141,14 +141,15 @@ class IsotropicCNNEncoder(nn.Module):
 
         if action is not None:
             # Appends action to channels
+            print(action.shape)
             action = action.view(-1, action.shape[-1])[:, :, None, None].expand(-1, -1, *obs.shape[-2:])
+            print(action.shape)
             obs = torch.cat([obs,  action], -3)
 
         h = self.conv_net(obs)
 
         if self.flatten:
             h = h.view(*obs_shape[:-3], -1)
-            print(h.view(*obs_shape[:-3], -1).shape)
         else:
             # h = h.view(*obs_shape[:-3], *h.shape[-3:])
             h = h.view(*obs_shape)  # Isotropic
