@@ -5,6 +5,7 @@
 import time
 
 import torch
+from torch.nn import functional as F
 
 import Utils
 
@@ -114,13 +115,17 @@ class SPRAgent(torch.nn.Module):
                                                   obs, action, reward, discount, next_obs,
                                                   self.step, logs=logs)
 
+        # Convert discrete action trajectories to one-hot
+        if self.discrete:
+            traj_a = F.one_hot(traj_a, num_classes=self.actor.action_dim)
+
         # Dynamics loss
         dynamics_loss = SelfSupervisedLearning.dynamicsLearning(self.dynamics, self.projection_g, self.prediction_q,
-                                                                self.encoder,  # is encoder target necessary?
+                                                                self.encoder,  # Is encoder target necessary?
                                                                 traj_o, traj_a, depth=3, cheaper=True, logs=logs)
 
         # Update critic, dynamics
-        Utils.optimize(critic_loss + dynamics_loss,
+        Utils.optimize(critic_loss + dynamics_loss,  # Paper weighed dynamics loss by 2
                        self.encoder,
                        self.critic,
                        self.dynamics, self.projection_g, self.prediction_q)

@@ -48,7 +48,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
 
 
 def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj_a, depth=1, cheaper=False, logs=None):
-    assert depth < traj_o.shape[1], f"depth of {depth} exceeds trajectory size of {traj_o.shape[1]} time steps"
+    assert depth < traj_o.shape[1], f"depth {depth} exceeds future trajectory size of {traj_o.shape[1] - 1} time steps"
 
     with torch.no_grad():
         if cheaper:
