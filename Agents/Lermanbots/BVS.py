@@ -36,14 +36,19 @@ class BVSAgent(DQNDPGAgent):
 
         # Models
         # State based
-        self.sub_planner = LayerNormMLPEncoder(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim,
+        # self.sub_planner = LayerNormMLPEncoder(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim,
+        #                                        target_tau=target_tau, optim_lr=lr).to(device)
+        self.sub_planner = LayerNormMLPEncoder(self.encoder.repr_dim, hidden_dim, hidden_dim, hidden_dim,
                                                target_tau=target_tau, optim_lr=lr).to(device)
         # State-action based
         # self.sub_planner = SubPlanner(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim, action_shape[-1],
         #                               target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
-        self.planner = LayerNormMLPEncoder(hidden_dim, hidden_dim, hidden_dim, hidden_dim,
-                                           target_tau=target_tau, optim_lr=lr).to(device)
+        self.planner = SubPlanner(hidden_dim, hidden_dim, hidden_dim, hidden_dim, action_shape[-1],
+                                  target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
+
+        # self.planner = LayerNormMLPEncoder(hidden_dim, hidden_dim, hidden_dim, hidden_dim,
+        #                                    target_tau=target_tau, optim_lr=lr).to(device)
 
         self.critic = EnsembleQCritic(hidden_dim, hidden_dim, hidden_dim, action_shape[-1],
                                       target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
@@ -63,7 +68,7 @@ class BVSAgent(DQNDPGAgent):
             # "See"
             obs = self.encoder(obs)
             obs = self.sub_planner(obs)
-            obs = self.planner(obs)
+            # obs = self.planner(obs)
             dist = self.actor(obs, self.step)
 
             action = dist.sample() if self.training \
@@ -115,25 +120,20 @@ class BVSAgent(DQNDPGAgent):
                                                   sub_planner=self.sub_planner, planner=self.planner,
                                                   logs=logs)
 
-        # Update critic
-        self.planner.optim.zero_grad(set_to_none=True)
-        self.sub_planner.optim.zero_grad(set_to_none=True)
-        Utils.optimize(critic_loss,
-                       self.encoder,
-                       self.critic)
-
-        self.critic.update_target_params()
-
         # Planner loss
         planner_loss = bootstrapLearningBVS(self.actor, self.sub_planner, self.planner,
                                             obs.detach(), traj_o.detach(), self.plan_discount,
                                             # traj_a, self.step,  # Comment out for state-based
                                             logs=logs)
 
-        # Update planner
-        Utils.optimize(planner_loss,
+        # Update planner-critic
+        Utils.optimize(planner_loss + critic_loss,
+                       self.encoder,
+                       self.critic,
                        self.sub_planner,
-                       self.planner, clear_grads=False)
+                       self.planner)
+
+        self.critic.update_target_params()
 
         # self.sub_planner.update_target_params()  # Maybe not since kind of treated as encoder
         self.planner.update_target_params()

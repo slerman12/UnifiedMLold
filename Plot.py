@@ -23,15 +23,15 @@ plt.rcParams['legend.loc'] = 'lower right'
 #                  '/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_quadruped_walk.csv',
 #                  '/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_cheetah_run.csv']
 
-# experiment_names = ['statebvs', 'statebvss', 'stateactionbasedbvs']
-experiment_names = ['Eval']
+experiment_names = ['statebvs', 'statebvss', 'stateactionbasedbvs']
+experiment_names = ['statebvsdiff']
 path = Path.cwd() / f'Benchmarking'
-files_to_plot = sum([glob.glob(f'{str(path)}/**/*{name}.csv', recursive=True) for name in experiment_names], [])
+files_to_plot = sum([glob.glob(f'{str(path)}/**/Eval*{name}.csv', recursive=True) for name in experiment_names], [])
 files_to_plot += ['/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_quadruped_walk.csv',
                   '/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_cheetah_run.csv']
 
 
-def plot(df, key='Reward', name='Curve'):
+def plot(df, key='Reward', name='Curve2'):
     tasks = np.sort(df.task.unique())
     cols = 2
     assert tasks.shape[0] % cols == 0
