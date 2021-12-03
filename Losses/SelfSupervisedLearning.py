@@ -48,6 +48,9 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
 
 
 def dynamicsLearning(dynamics, projection_g, prediction_q, traj_o, traj_a, depth=1, logs=None):
+    with torch.no_grad():
+        projections = projection_g.target(traj_o[:, 1:].flatten(-3))  # TODO also encoder target
+
     forecasts = traj_o
     dynamics_loss = 0
     for k in range(depth):
@@ -55,11 +58,7 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, traj_o, traj_a, depth
         forecasts = projection_g(forecasts)
         forecasts = prediction_q(forecasts)
 
-        with torch.no_grad():
-            projections = projection_g.target(traj_o[:, k + 1:].flatten(-3))  # TODO also encoder target
-
-        # TODO recurrent prediction
-        dynamics_loss -= F.cosine_similarity(forecasts, projections, -1).mean()
+        dynamics_loss -= F.cosine_similarity(forecasts, projections[:, k:], -1).mean()
 
     if logs is not None:
         logs['dynamics_loss'] = dynamics_loss
