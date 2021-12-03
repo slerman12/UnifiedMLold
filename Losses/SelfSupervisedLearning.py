@@ -48,7 +48,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
 
 
 def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj_a, depth=1, cheaper=False, logs=None):
-    assert depth < traj_o.shape[1]
+    assert depth < traj_o.shape[1], "trajectory does not have sufficient time steps"
 
     with torch.no_grad():
         if cheaper:
