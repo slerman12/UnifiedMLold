@@ -37,13 +37,13 @@ class SPRAgent(torch.nn.Module):
         self.encoder = CNNEncoder(obs_shape, flatten=False, target_tau=target_tau, optim_lr=lr).to(device)
 
         self.dynamics = IsotropicCNNEncoder(self.encoder.repr_shape, out_channels=self.encoder.out_channels,
-                                            action_dim=action_shape[-1]).to(device)
+                                            action_dim=action_shape[-1], optim_lr=lr).to(device)
 
         self.projection_g = LayerNormMLPEncoder(self.encoder.repr_dim, hidden_dim, hidden_dim, hidden_dim,
                                                 target_tau=target_tau, optim_lr=lr).to(device)
 
         self.prediction_q = LayerNormMLPEncoder(hidden_dim, hidden_dim, hidden_dim, hidden_dim,
-                                                target_tau=target_tau, optim_lr=lr).to(device)
+                                                optim_lr=lr).to(device)
 
         self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                       target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
