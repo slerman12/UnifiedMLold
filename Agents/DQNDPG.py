@@ -88,7 +88,7 @@ class DQNDPGAgent(torch.nn.Module):
 
         # Augment
         obs = self.aug(obs)
-        next_obs = self.aug(next_obs)
+        next_obs = self.aug(next_obs)  # TODO don't augment next
 
         # Encode
         obs = self.encoder(obs)

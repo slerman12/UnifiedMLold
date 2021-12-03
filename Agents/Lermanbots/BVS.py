@@ -7,6 +7,7 @@ import torch
 import Utils
 
 from Agents import DQNDPGAgent
+from Blocks.actors import CategoricalCriticActor, TruncatedGaussianActor
 
 from Blocks.encoders import LayerNormMLPEncoder
 from Blocks.critics import EnsembleQCritic
@@ -46,6 +47,11 @@ class BVSAgent(DQNDPGAgent):
 
         self.critic = EnsembleQCritic(hidden_dim, hidden_dim, hidden_dim, action_shape[-1],
                                       target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
+
+        self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
+            else TruncatedGaussianActor(hidden_dim, hidden_dim, hidden_dim, action_shape[-1],
+                                        stddev_schedule, stddev_clip,
+                                        optim_lr=lr).to(device)
 
         # Birth
 
