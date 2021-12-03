@@ -140,8 +140,8 @@ class IsotropicCNNEncoder(nn.Module):
         obs = obs.view(-1, *self.obs_shape)
         # obs = obs / 255.0 - 0.5
         if action is not None:
-            obs = torch.cat([obs, action], 1)
-            # obs = torch.cat([obs, action.unsqueeze(-1).unsqueeze(-1)], -3)
+            action = action.view(obs.shape[:-1])
+            obs = torch.cat([obs, action], -1)
 
         h = self.conv_net(obs)
 
