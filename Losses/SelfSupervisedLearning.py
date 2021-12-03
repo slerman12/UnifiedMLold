@@ -65,8 +65,7 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
             forecasts = dynamics(forecasts, traj_a[:, k])
         else:
             forecasts = dynamics(forecasts[:, :-1], traj_a[:, k:])
-            print(forecasts.shape)
-        projected_forecasts = projection_g(forecasts)
+        projected_forecasts = projection_g(forecasts.flatten(-3))
         predictions = prediction_q(projected_forecasts)
 
         if cheaper:
