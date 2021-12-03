@@ -101,32 +101,33 @@ class SPRAgent(torch.nn.Module):
 
         # Encode
         obs = self.encoder(obs).flatten(-3)
-        traj_o = self.encoder(traj_o)
         with torch.no_grad():
             next_obs = self.encoder(next_obs).flatten(-3)
 
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()
 
-        # "Predict" / "Discern" / "Learn" / "Grow"
+        # "Predict" / "Discern" / "Plan" / "Learn" / "Grow"
 
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
                                                   obs, action, reward, discount, next_obs,
                                                   self.step, logs=logs)
 
+        # Dynamics loss
         dynamics_loss = SelfSupervisedLearning.dynamicsLearning(self.dynamics, self.projection_g, self.prediction_q,
+                                                                self.encoder,
                                                                 traj_o, traj_a, depth=5, logs=logs)
 
-        # Update critic
+        # Update critic, dynamics
         Utils.optimize(critic_loss + dynamics_loss,
                        self.encoder,
                        self.critic,
-                       self.dynamics,
-                       self.projection_g,
-                       self.prediction_q)
+                       self.dynamics, self.projection_g, self.prediction_q)
 
+        self.encoder.update_target_params()
         self.critic.update_target_params()
+        self.projection_g.update_target_params()
 
         # Actor loss
         if not self.discrete:
