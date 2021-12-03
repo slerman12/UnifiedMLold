@@ -20,7 +20,7 @@ class CNNEncoder(nn.Module):
         self.flatten = flatten
 
         out_height, out_width = Utils.conv_output_shape(*obs_shape[-2:], kernel_size=3, stride=2)
-        out_height, out_width = Utils.conv_output_shape((out_height, out_width), kernel_size=3, stride=1)
+        out_height, out_width = Utils.conv_output_shape(out_height, out_width, kernel_size=3, stride=1)
 
         self.repr_shape = (out_channels,) + (out_height, out_width)
         self.repr_dim = out_channels * out_height * out_width
