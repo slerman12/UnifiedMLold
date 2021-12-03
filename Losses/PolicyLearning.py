@@ -8,8 +8,8 @@ import torch
 # TODO entropy could be more strongly enforced at the beginning (scheduled)
 def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
                        sub_planner=None, planner=None, logs=None):
-    if dist is None:
-        dist = actor(obs, step)
+    # if dist is None:
+    #     dist = actor(obs, step)
     # action = dist.mean  # TODO Better to use mean if no trainable entropy, yeah?
     action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample" - or use .mean
     if sub_planner is not None and planner is not None:
@@ -17,6 +17,8 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
         # obs = sub_planner(obs)  # State-based
         obs = planner(obs)
         # obs = torch.layer_norm(obs, obs.shape)
+    if dist is None:
+        dist = actor(obs, step)
 
     Qs = critic(obs, action)
     Q = torch.min(*Qs)
