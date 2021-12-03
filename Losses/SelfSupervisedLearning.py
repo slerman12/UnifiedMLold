@@ -22,7 +22,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
         #     traj_a = torch.cat([traj_a, next_action.unsqueeze(1)], dim=1)
         #     target_sub_plan = sub_planner.target(traj_o, traj_a)  # State-action based planner
 
-        target_sub_plan[:, -1] = planner.target(target_sub_plan[:, -1]).detach()
+        target_sub_plan[:, -1] = planner.target(target_sub_plan[:, -1], traj_a[:, -1]).detach()
 
     plan_discount = plan_discount ** torch.arange(target_sub_plan.shape[1]).to(obs.device)
     target_plan = torch.einsum('j,ijk->ik', plan_discount, target_sub_plan)
@@ -34,7 +34,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
     #     action = traj_a[:, 0]
     #     sub_plan = sub_planner(obs, action)  # state-action based planner
     sub_plan = obs
-    plan = planner(sub_plan)
+    plan = planner(sub_plan, traj_a[:, 0])
     # plan = torch.layer_norm(plan, plan.shape)
 
     planner_loss = F.mse_loss(plan, target_plan)  # Bellman error
