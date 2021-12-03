@@ -39,6 +39,8 @@ class SPRAgent(torch.nn.Module):
         self.dynamics = IsotropicCNNEncoder(self.encoder.repr_shape, out_channels=self.encoder.out_channels,
                                             action_dim=action_shape[-1]).to(device)
 
+        print(self.encoder.repr_dim, self.dynamics.repr_dim)
+
         self.projection_g = LayerNormMLPEncoder(self.encoder.repr_dim, hidden_dim, hidden_dim, hidden_dim,
                                                 target_tau=target_tau, optim_lr=lr).to(device)
 

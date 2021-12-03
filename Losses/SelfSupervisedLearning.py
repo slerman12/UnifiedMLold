@@ -49,6 +49,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
 
 def dynamicsLearning(dynamics, projection_g, prediction_q, traj_o, traj_a, logs=None):
     forecasts = dynamics(traj_o[:, :-1], traj_a)
+    print(forecasts.shape)
     forecasts = projection_g(forecasts)
     forecasts = prediction_q(forecasts)
 

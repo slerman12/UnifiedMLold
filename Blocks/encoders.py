@@ -83,7 +83,7 @@ class LayerNormMLPEncoder(nn.Module):
 
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(in_dim, feature_dim, hidden_dim, out_dim)
+            target = self.__class__(in_dim=in_dim, feature_dim=feature_dim, hidden_dim=hidden_dim, out_dim=out_dim)
             target.load_state_dict(self.state_dict())
             self.target = target
 
