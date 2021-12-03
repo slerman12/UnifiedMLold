@@ -115,9 +115,8 @@ class IsotropicCNNEncoder(nn.Module):
         assert obs_shape[-1] == out_width
 
         self.conv_net = nn.Sequential(nn.Conv2d(obs_shape[0] + action_dim, out_channels, (3, 3), padding=1),
-                                      nn.BatchNorm2d(out_channels),
-                                      nn.ReLU(), nn.Conv2d(out_channels, out_channels, (3, 3), padding=1),
-                                      nn.ReLU())
+                                      nn.BatchNorm2d(out_channels), nn.ReLU(),
+                                      nn.Conv2d(out_channels, out_channels, (3, 3), padding=1), nn.ReLU())
 
         self.apply(Utils.weight_init)
 
@@ -151,5 +150,6 @@ class IsotropicCNNEncoder(nn.Module):
             h = h.view(*obs_shape[:-3], -1)
         else:
             h = h.view(*obs_shape[:-3], *h.shape[-3:])
+        print(self.obs_shape, h.shape)
 
         return h
