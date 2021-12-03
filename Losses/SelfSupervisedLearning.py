@@ -9,7 +9,7 @@ import torch.nn.functional as F
 # TODO can put into TemporalDifferenceLearning (TDLearning) file together with QLearning
 def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount,
                          traj_a=None, step=None, logs=None):
-    target_sub_plan = traj_o
+    target_sub_plan = sub_planner(traj_o)
     with torch.no_grad():
         next_obs = traj_o[:, -1]
 
@@ -34,7 +34,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
     # else:
     #     action = traj_a[:, 0]
     #     sub_plan = sub_planner(obs, action)  # state-action based planner
-    sub_plan = obs
+    sub_plan = sub_planner(obs)
     plan = planner(sub_plan, traj_a[:, 0])
     # plan = torch.layer_norm(plan, plan.shape)
 

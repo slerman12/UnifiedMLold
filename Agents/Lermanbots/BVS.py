@@ -104,7 +104,6 @@ class BVSAgent(DQNDPGAgent):
 
         # Encode
         traj_o = self.encoder(traj_o)
-        traj_o = self.sub_planner(traj_o)  # todo compute in losses so as to include in actr optom as well?
         obs = traj_o[:, 0]
         with torch.no_grad():
             next_obs = traj_o[:, -1].detach()
@@ -146,6 +145,7 @@ class BVSAgent(DQNDPGAgent):
 
             # Update actor
             Utils.optimize(actor_loss,
-                           self.actor)
+                           self.actor,
+                           self.sub_planner)
 
         return logs
