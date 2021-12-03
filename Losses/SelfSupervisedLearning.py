@@ -48,7 +48,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
 
 
 def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj_a, depth=1, cheaper=False, logs=None):
-    assert depth < traj_o.shape[1], "trajectory does not have sufficient time steps"
+    assert depth < traj_o.shape[1], f"depth of {depth} exceeds trajectory size of {traj_o.shape[1]} time steps"
 
     with torch.no_grad():
         if cheaper:
@@ -71,7 +71,7 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
         if cheaper:
             dynamics_loss -= F.cosine_similarity(predictions, projections[:, k], -1).mean()
         else:
-            dynamics_loss -= F.cosine_similarity(forecasts, projections[:, k:], -1).mean()
+            dynamics_loss -= F.cosine_similarity(predictions, projections[:, k:], -1).mean()
 
     if logs is not None:
         logs['dynamics_loss'] = dynamics_loss
