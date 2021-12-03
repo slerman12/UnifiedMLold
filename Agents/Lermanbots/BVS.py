@@ -55,6 +55,31 @@ class BVSAgent(DQNDPGAgent):
 
         # Birth
 
+    # "Play"
+    def act(self, obs):
+        with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
+            obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
+
+            # "See"
+            obs = self.encoder(obs)
+            obs = self.sub_planner(obs)
+            obs = self.planner(obs)
+            dist = self.actor(obs, self.step)
+
+            action = dist.sample() if self.training \
+                else dist.best if self.discrete \
+                else dist.mean
+
+            if self.training:
+                self.step += 1
+
+                # Explore phase
+                if self.step < self.explore_steps and self.training:
+                    action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
+                        else action.uniform_(-1, 1)
+
+            return action
+
     # "Dream"
     def update(self, replay):
         logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
@@ -110,7 +135,7 @@ class BVSAgent(DQNDPGAgent):
                        self.sub_planner,
                        self.planner, clear_grads=False)
 
-        self.sub_planner.update_target_params()  # Maybe not since kind of treated as encoder
+        # self.sub_planner.update_target_params()  # Maybe not since kind of treated as encoder
         self.planner.update_target_params()
 
         # Actor loss
