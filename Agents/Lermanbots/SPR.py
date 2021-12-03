@@ -63,7 +63,7 @@ class SPRAgent(torch.nn.Module):
             obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
 
             # "See"
-            obs = self.encoder(obs)
+            obs = self.encoder(obs).flatten(-3)
             dist = self.actor(obs, self.step)
 
             action = dist.sample() if self.training \
