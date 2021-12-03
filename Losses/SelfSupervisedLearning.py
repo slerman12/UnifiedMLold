@@ -52,7 +52,7 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
 
     with torch.no_grad():
         if cheaper:
-            traj_o_target = encoder.target(traj_o[:, 1:depth])
+            traj_o_target = encoder.target(traj_o[:, 1:depth + 1])
             projections = projection_g.target(traj_o_target.flatten(-3))
         else:
             traj_o_target = encoder.target(traj_o[:, 1:])
