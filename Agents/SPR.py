@@ -5,7 +5,6 @@
 import time
 
 import torch
-from torch.nn import functional as F
 
 import Utils
 
@@ -117,7 +116,7 @@ class SPRAgent(torch.nn.Module):
 
         # Convert discrete action trajectories to one-hot
         if self.discrete:
-            traj_a = F.one_hot(traj_a, num_classes=self.actor.action_dim)
+            traj_a = Utils.one_hot(traj_a, num_classes=self.actor.action_dim)
 
         # Dynamics loss
         dynamics_loss = SelfSupervisedLearning.dynamicsLearning(self.dynamics, self.projection_g, self.prediction_q,

@@ -202,10 +202,10 @@ def conv_output_shape(in_height, in_width, kernel_size=1, stride=1, pad=0, dilat
     return out_height, out_width
 
 
-# # Multi-dimensional one-hot encoding
-# def to_one_hot(y, num_classes):
-#     scatter_dim = len(y.size())
-#     y_tensor = y.view(*y.size(), -1)
-#     zeros = torch.zeros(*y.size(), num_classes, dtype=y.dtype)
-#
-#     return zeros.scatter(scatter_dim, y_tensor, 1)
+# Multi-dimensional one-hot encoding
+def one_hot(y, num_classes):
+    scatter_dim = len(y.size())
+    y_tensor = y.view(*y.size(), -1)
+    zeros = torch.zeros(*y.size(), num_classes, dtype=y.dtype)
+
+    return zeros.scatter(scatter_dim, y_tensor, 1)
