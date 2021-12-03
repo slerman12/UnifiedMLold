@@ -24,7 +24,6 @@ class CNNEncoder(nn.Module):
             out_height, out_width = Utils.conv_output_shape(out_height, out_width, kernel_size=3, stride=1)
 
         self.repr_shape = (out_channels,) + (out_height, out_width)
-        print(self.repr_shape)
         self.repr_dim = out_channels * out_height * out_width
 
         self.conv_net = nn.Sequential(nn.Conv2d(obs_shape[0], out_channels, 3, stride=2), nn.ReLU(),
