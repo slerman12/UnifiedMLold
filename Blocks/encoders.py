@@ -148,7 +148,7 @@ class IsotropicCNNEncoder(nn.Module):
 
         if self.flatten:
             h = h.view(*obs_shape[:-3], -1)
-            print(h.shape)
+            assert h.shape[-1] == self.repr_dim
         else:
             # h = h.view(*obs_shape[:-3], *h.shape[-3:])
             h = h.view(*obs_shape)  # Isotropic
