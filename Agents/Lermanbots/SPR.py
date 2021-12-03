@@ -36,7 +36,7 @@ class SPRAgent(torch.nn.Module):
         # Models
         self.encoder = CNNEncoder(obs_shape, flatten=False, target_tau=target_tau, optim_lr=lr).to(device)
 
-        self.dynamics = IsotropicCNNEncoder(self.encoder.repr_shape, out_channels=self.encoder.out_features)
+        self.dynamics = IsotropicCNNEncoder(self.encoder.repr_shape, out_channels=self.encoder.out_channels)
 
         self.projection_g = LayerNormMLPEncoder(self.encoder.repr_dim, hidden_dim, hidden_dim, hidden_dim,
                                                 target_tau=target_tau, optim_lr=lr).to(device)

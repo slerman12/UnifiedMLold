@@ -35,7 +35,7 @@ class CNNEncoder(nn.Module):
 
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(obs_shape)
+            target = self.__class__(obs_shape=obs_shape, out_channels=out_channels, depth=depth, flatten=flatten)
             target.load_state_dict(self.state_dict())
             self.target = target
 
@@ -123,7 +123,8 @@ class IsotropicCNNEncoder(nn.Module):
 
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(obs_shape)
+            target = self.__class__(obs_shape=obs_shape, action_dim=action_dim,
+                                    out_channels=out_channels, flatten=flatten)
             target.load_state_dict(self.state_dict())
             self.target = target
 
