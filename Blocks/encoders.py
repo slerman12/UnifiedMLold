@@ -103,17 +103,17 @@ class IsotropicCNNEncoder(nn.Module):
         self.out_channels = out_channels
         self.flatten = flatten
 
-        out_height, out_width = Utils.conv_output_shape(*obs_shape[-2:], kernel_size=(3, 3))
+        out_height, out_width = Utils.conv_output_shape(*obs_shape[-2:], kernel_size=(3, 3), pad=1)
 
         self.repr_shape = (out_channels,) + (out_height, out_width)
         self.repr_dim = out_channels * out_height * out_width
-        print(obs_shape, out_width, out_height)
+
         assert obs_shape[-2] == out_height
         assert obs_shape[-1] == out_width
 
-        self.conv_net = nn.Sequential(nn.Conv2d(obs_shape[0] + action_dim, out_channels, (3, 3)),
+        self.conv_net = nn.Sequential(nn.Conv2d(obs_shape[0] + action_dim, out_channels, (3, 3), padding=1),
                                       nn.BatchNorm2d(out_channels),
-                                      nn.ReLU(), nn.Conv2d(out_channels, out_channels, (3, 3)),
+                                      nn.ReLU(), nn.Conv2d(out_channels, out_channels, (3, 3), padding=1),
                                       nn.ReLU())
 
         self.apply(Utils.weight_init)
