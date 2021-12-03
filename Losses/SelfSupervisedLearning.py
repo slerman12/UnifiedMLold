@@ -48,6 +48,8 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
 
 
 def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj_a, depth=1, cheaper=False, logs=None):
+    assert depth < traj_o.shape[1]
+
     with torch.no_grad():
         if cheaper:
             traj_o_target = encoder.target(traj_o[:, 1:depth])
@@ -59,16 +61,15 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
     forecasts = encoder(traj_o[:, 0]) if cheaper else encoder(traj_o)
     dynamics_loss = 0
     for k in range(depth):
-        print(forecasts.shape)
         if cheaper:
             forecasts = dynamics(forecasts, traj_a[:, k])
         else:
             forecasts = dynamics(forecasts[:, :-1], traj_a[:, k:])
-        forecasts = projection_g(forecasts)
-        forecasts = prediction_q(forecasts)
+        projected_forecasts = projection_g(forecasts)
+        predictions = prediction_q(projected_forecasts)
 
         if cheaper:
-            dynamics_loss -= F.cosine_similarity(forecasts, projections[:, k], -1).mean()
+            dynamics_loss -= F.cosine_similarity(predictions, projections[:, k], -1).mean()
         else:
             dynamics_loss -= F.cosine_similarity(forecasts, projections[:, k:], -1).mean()
 
