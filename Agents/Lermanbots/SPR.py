@@ -16,7 +16,7 @@ from Blocks.critics import EnsembleQCritic
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
-class DQNDPGAgent(torch.nn.Module):
+class SPRAgent(torch.nn.Module):
     """Deep Q-Network, Deep Policy Gradient"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture

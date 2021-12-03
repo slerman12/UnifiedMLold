@@ -5,3 +5,4 @@
 from Agents.DQNDPG import DQNDPGAgent
 from Agents.DrQV2 import DrQV2Agent
 from Agents.Lermanbots.BVS import BVSAgent
+from Agents.Lermanbots.SPR import SPRAgent
