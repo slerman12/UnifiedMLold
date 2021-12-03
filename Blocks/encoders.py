@@ -148,8 +148,9 @@ class IsotropicCNNEncoder(nn.Module):
 
         if self.flatten:
             h = h.view(*obs_shape[:-3], -1)
+            print(h.view(*obs_shape[:-3], -1).shape)
         else:
-            h = h.view(*obs_shape[:-3], *h.shape[-3:])
-        print(self.obs_shape, h.shape)
+            # h = h.view(*obs_shape[:-3], *h.shape[-3:])
+            h = h.view(*obs_shape)  # Isotropic
 
         return h
