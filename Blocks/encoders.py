@@ -54,8 +54,10 @@ class CNNEncoder(nn.Module):
         h = self.conv_net(obs)
         if self.flatten:
             h = h.view(*shape[:-3], -1)
+            assert h.shape[-1] == self.repr_dim
         else:
             h = h.view(*shape[:-3], *h.shape[-3:])
+            assert tuple(h.shape[-3:]) == self.repr_shape
         return h
 
 
@@ -152,5 +154,6 @@ class IsotropicCNNEncoder(nn.Module):
         else:
             # h = h.view(*obs_shape[:-3], *h.shape[-3:])
             h = h.view(*obs_shape)  # Isotropic
+            assert tuple(h.shape[-3:]) == self.repr_shape
 
         return h
