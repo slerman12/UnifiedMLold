@@ -141,8 +141,7 @@ class IsotropicCNNEncoder(nn.Module):
         # obs = obs / 255.0 - 0.5
         if action is not None:
             # obs = torch.cat([obs, action], 1)
-            print(obs.shape, action.shape, action.view(-1, action.shape[-1]).unsqueeze(-1).unsqueeze(-1).shape)
-            obs = torch.cat([obs, action.view(-1, action.shape[-1])[:, :, None, None]], -3)
+            obs = torch.cat([obs, action.view(-1, action.shape[-1])[:, :, None, None].expand_as(obs)], -3)
 
         h = self.conv_net(obs)
 
