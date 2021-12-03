@@ -100,7 +100,7 @@ class BVSAgent(DQNDPGAgent):
         # "Imagine" / "Envision"
 
         # Augment
-        traj_o = self.aug(traj_o)
+        traj_o[:, 0] = self.aug(traj_o[:, 0])
 
         # Encode
         traj_o = self.encoder(traj_o)
