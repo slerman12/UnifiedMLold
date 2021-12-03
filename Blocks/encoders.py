@@ -9,20 +9,24 @@ import Utils
 
 class CNNEncoder(nn.Module):
     """CNN encoder."""
-    def __init__(self, obs_shape, target_tau=None, optim_lr=None):
+
+    def __init__(self, obs_shape, out_channels=32, depth=3, flatten=True, target_tau=None, optim_lr=None):
         super().__init__()
 
         assert len(obs_shape) == 3
         self.obs_shape = obs_shape
+        self.out_channels = out_channels
+        self.depth = depth
+        self.flatten = flatten
 
-        self.repr_dim = 32 * 35 * 35
-        self.repr_shape = (32, 35, 35)
+        out_height, out_width = Utils.conv_output_shape(*obs_shape[-2:], kernel_size=(3, 3), stride=1)
 
-        self.conv_net = nn.Sequential(nn.Conv2d(obs_shape[0], 32, 3, stride=2),
-                                      nn.ReLU(), nn.Conv2d(32, 32, 3, stride=1),
-                                      nn.ReLU(), nn.Conv2d(32, 32, 3, stride=1),
-                                      nn.ReLU(), nn.Conv2d(32, 32, 3, stride=1),
-                                      nn.ReLU())
+        self.repr_shape = (out_channels,) + (out_height, out_width)
+        self.repr_dim = out_channels * out_height * out_width
+
+        self.conv_net = nn.Sequential(nn.Conv2d(obs_shape[0], out_channels, 3, stride=2), nn.ReLU(),
+                                      *sum([(nn.Conv2d(out_channels, out_channels, 3, stride=1), nn.ReLU())
+                                            for _ in range(depth)], ()))
 
         self.apply(Utils.weight_init)
 
@@ -39,13 +43,13 @@ class CNNEncoder(nn.Module):
         assert self.target_tau is not None
         Utils.soft_update_params(self, self.target, self.target_tau)
 
-    def forward(self, obs, flatten=True):
-        # operates on last 3 dims of obs, preserves leading dims
+    def forward(self, obs):
+        # Operates on last 3 dims of obs, preserves leading dims
         shape = obs.shape
         obs = obs.view(-1, *self.obs_shape)
         obs = obs / 255.0 - 0.5
         h = self.conv_net(obs)
-        if flatten:
+        if self.flatten:
             h = h.view(*shape[:-3], -1)
         else:
             h = h.view(*shape[:-3], *h.shape[-3:])
@@ -54,6 +58,7 @@ class CNNEncoder(nn.Module):
 
 class LayerNormMLPEncoder(nn.Module):
     """Layer-norm MLP encoder."""
+
     def __init__(self, in_dim, feature_dim, hidden_dim, out_dim,
                  target_tau=None, optim_lr=None):
         super().__init__()
@@ -86,3 +91,60 @@ class LayerNormMLPEncoder(nn.Module):
 
         return self.net(h)
 
+
+class IsotropicCNNEncoder(nn.Module):
+    """Isotropic (no bottleneck / dimensionality conserving) CNN encoder."""
+
+    def __init__(self, obs_shape, action_dim=0, out_channels=64, flatten=True, target_tau=None, optim_lr=None):
+        super().__init__()
+
+        assert len(obs_shape) == 3
+        self.obs_shape = obs_shape
+        self.out_channels = out_channels
+        self.flatten = flatten
+
+        out_height, out_width = Utils.conv_output_shape(*obs_shape[-2:], kernel_size=(3, 3))
+
+        self.repr_shape = (out_channels,) + (out_height, out_width)
+        self.repr_dim = out_channels * out_height * out_width
+
+        assert obs_shape[-2] == out_width
+        assert obs_shape[-1] == out_height
+
+        self.conv_net = nn.Sequential(nn.Conv2d(obs_shape[0] + action_dim, out_channels, (3, 3)),
+                                      nn.BatchNorm2d(out_channels),
+                                      nn.ReLU(), nn.Conv2d(out_channels, out_channels, (3, 3)),
+                                      nn.ReLU())
+
+        self.apply(Utils.weight_init)
+
+        if optim_lr is not None:
+            self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
+
+        if target_tau is not None:
+            self.target_tau = target_tau
+            target = self.__class__(obs_shape)
+            target.load_state_dict(self.state_dict())
+            self.target = target
+
+    def update_target_params(self):
+        assert self.target_tau is not None
+        Utils.soft_update_params(self, self.target, self.target_tau)
+
+    def forward(self, obs, action=None):
+        # Operates on last 3 dims of obs, preserves leading dims
+        obs_shape = obs.shape
+        obs = obs.view(-1, *self.obs_shape)
+        # obs = obs / 255.0 - 0.5
+        if action is not None:
+            obs = torch.cat([obs, action], 1)
+            # obs = torch.cat([obs, action.unsqueeze(-1).unsqueeze(-1)], -3)
+
+        h = self.conv_net(obs)
+
+        if self.flatten:
+            h = h.view(*obs_shape[:-3], -1)
+        else:
+            h = h.view(*obs_shape[:-3], *h.shape[-3:])
+
+        return h

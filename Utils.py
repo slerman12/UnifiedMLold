@@ -192,3 +192,11 @@ class TanhTransform(pyd.transforms.Transform):
         # https://github.com/tensorflow/probability/commit/ef6bb176e0ebd1cf6e25c6b5cecdd2428c22963f#diff-e120f70e92e6741bca649f04fcd907b7
         return 2. * (math.log(2.) - x - F.softplus(-2. * x))
 
+
+# Compute the output shape of a CNN
+def conv_output_shape(in_height, in_width, kernel_size=1, stride=1, pad=0, dilation=1):
+    if type(kernel_size) is not tuple:
+        kernel_size = (kernel_size, kernel_size)
+    out_height = math.floor(((in_height + (2 * pad) - (dilation * (kernel_size[0] - 1)) - 1) / stride) + 1)
+    out_width = math.floor(((in_width + (2 * pad) - (dilation * (kernel_size[1] - 1)) - 1) / stride) + 1)
+    return out_height, out_width

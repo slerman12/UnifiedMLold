@@ -45,3 +45,19 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
         logs['planner_loss'] = planner_loss.item()
 
     return planner_loss
+
+
+def dynamicsLearning(dynamics, projection_g, prediction_q, traj_o, traj_a, logs=None):
+    forecasts = dynamics(traj_o, traj_a)  # TODO check dynamic dims for obs and action in CNN
+    forecasts = projection_g(forecasts)
+    forecasts = prediction_q(forecasts)
+
+    with torch.no_grad():
+        projections = projection_g.target(traj_o)  # TODO also encoder target
+
+    dynamics_loss = F.cosine_similarity(forecasts, projections, -1).mean()
+
+    if logs is not None:
+        logs['dynamics_loss'] = dynamics_loss
+
+    return dynamics_loss
