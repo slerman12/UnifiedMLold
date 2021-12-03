@@ -21,8 +21,9 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
         #     next_action = dist.rsample()
         #     traj_a = torch.cat([traj_a, next_action.unsqueeze(1)], dim=1)
         #     target_sub_plan = sub_planner.target(traj_o, traj_a)  # State-action based planner
-
-        target_sub_plan[:, -1] = planner.target(target_sub_plan[:, -1], traj_a[:, -1]).detach()
+        dist = actor(target_sub_plan[:, -1], step)
+        next_action = dist.mean
+        target_sub_plan[:, -1] = planner.target(target_sub_plan[:, -1], next_action).detach()
 
     plan_discount = plan_discount ** torch.arange(target_sub_plan.shape[1]).to(obs.device)
     target_plan = torch.einsum('j,ijk->ik', plan_discount, target_sub_plan)

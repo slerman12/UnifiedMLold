@@ -104,7 +104,7 @@ class BVSAgent(DQNDPGAgent):
 
         # Encode
         traj_o = self.encoder(traj_o)
-        traj_o = self.sub_planner(traj_o)
+        traj_o = self.sub_planner(traj_o)  # todo compute in losses so as to include in actr optom as well?
         obs = traj_o[:, 0]
         with torch.no_grad():
             next_obs = traj_o[:, -1].detach()
@@ -123,7 +123,7 @@ class BVSAgent(DQNDPGAgent):
         # Planner loss
         planner_loss = bootstrapLearningBVS(self.actor, self.sub_planner, self.planner,
                                             obs.detach(), traj_o.detach(), self.plan_discount,
-                                            # traj_a, self.step,  # Comment out for state-based
+                                            traj_a, self.step,  # Comment out for state-based
                                             logs=logs)
 
         # Update planner-critic
