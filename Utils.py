@@ -90,7 +90,7 @@ def to_torch(xs, device):
 
 # Backward pass on a loss; clear the grads of models; step their optimizers
 def optimize(loss=None, *models, clear_grads=True, backward=True, step_optim=True):
-    # Clear grads
+    # Clear grads  TODO (Optionally) clear grads at end instead to allow accumulation?
     if clear_grads:
         for model in models:
             model.optim.zero_grad(set_to_none=True)
@@ -129,7 +129,7 @@ def schedule(sched, step):
     raise NotImplementedError(sched)
 
 
-# A Normal distribution with its variance clipped TODO clip via differentiable re-param trick
+# A Normal distribution with its variance clipped
 class TruncatedNormal(pyd.Normal):
     def __init__(self, loc, scale, low=-1.0, high=1.0, eps=1e-6, clip=None):
         super().__init__(loc, scale, validate_args=False)

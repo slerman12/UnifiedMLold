@@ -34,10 +34,10 @@ class BVSAgent(DQNDPGAgent):
         self.plan_discount = plan_discount
 
         # Models
-        # state based
+        # State based
         self.sub_planner = LayerNormMLPEncoder(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim,
                                                target_tau=target_tau, optim_lr=lr).to(device)
-        # state-action based
+        # State-action based
         # self.sub_planner = SubPlanner(self.encoder.repr_dim, feature_dim, hidden_dim, hidden_dim, action_shape[-1],
         #                               target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
@@ -67,10 +67,11 @@ class BVSAgent(DQNDPGAgent):
         traj_o = self.aug(traj_o)
 
         # Encode
-        obs = self.encoder(traj_o[:, 0])
+        traj_o = self.encoder(traj_o)
+        traj_o = self.sub_planner(traj_o)
+        obs = traj_o[:, 0]
         with torch.no_grad():
-            traj_o = self.encoder(traj_o)
-            next_obs = traj_o[:, -1]
+            next_obs = traj_o[:, -1].detach()
 
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()

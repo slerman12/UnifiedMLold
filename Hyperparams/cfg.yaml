@@ -27,8 +27,8 @@ evaluate_episodes: 10
 # Saving
 save_session: false
 # Logging
-log_video: true
-log_tensorboard: true
+log_video: false
+log_tensorboard: false
 # Misc
 root_path: ???  # To be specified later
 device: cuda

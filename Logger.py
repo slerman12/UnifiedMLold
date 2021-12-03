@@ -35,7 +35,7 @@ class Logger:
         self.task = task
         self.seed = seed
 
-        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{self.agent}/{self.task}/Seed_{seed}')
+        self.log_path = Path(f'{root_path}/Benchmarking/{experiment}/{self.agent}')
         self.log_path.mkdir(parents=True, exist_ok=True)
 
         self.logs = {}
@@ -115,8 +115,9 @@ class Logger:
         logs['agent'] = self.agent
         logs['task'] = self.task
         logs['seed'] = self.seed
+        logs['experiment'] = self.experiment
 
-        file_name = self.log_path / f'{name}.csv'
+        file_name = self.log_path / f'{name}_{self.task}_{self.seed}_{self.experiment}.csv'
         write_header = True
         if file_name.exists():
             self.remove_old_entries(logs, file_name)
@@ -132,6 +133,7 @@ class Logger:
         writer.writerow(logs)
         file.flush()
 
+    # TODO add log_weights_and_biases / log_wandb too
     def log_tensorboard(self, logs, name):
         if self.tensorboard_writer is None:
             self.tensorboard_writer = SummaryWriter(self.log_path / 'TensorBoard')
