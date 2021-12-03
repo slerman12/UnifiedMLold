@@ -47,18 +47,27 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
     return planner_loss
 
 
-def dynamicsLearning(dynamics, projection_g, prediction_q, traj_o, traj_a, depth=1, logs=None):
+def dynamicsLearning(dynamics, projection_g, prediction_q, traj_o, traj_a, depth=1, cheaper=True, logs=None):
     with torch.no_grad():
-        projections = projection_g.target(traj_o[:, 1:].flatten(-3))  # TODO also encoder target
+        if cheaper:
+            projections = projection_g.target(traj_o[:, 1:depth].flatten(-3))  # TODO also encoder target
+        else:
+            projections = projection_g.target(traj_o[:, 1:].flatten(-3))  # TODO also encoder target
 
-    forecasts = traj_o
+    forecasts = traj_o[:, 0] if cheaper else traj_o
     dynamics_loss = 0
     for k in range(depth):
-        forecasts = dynamics(forecasts[:, :-1], traj_a[:, k:])
+        if cheaper:
+            forecasts = dynamics(forecasts, traj_a[:, k])
+        else:
+            forecasts = dynamics(forecasts[:, :-1], traj_a[:, k:])
         forecasts = projection_g(forecasts)
         forecasts = prediction_q(forecasts)
 
-        dynamics_loss -= F.cosine_similarity(forecasts, projections[:, k:], -1).mean()
+        if cheaper:
+            dynamics_loss -= F.cosine_similarity(forecasts, projections[:, k], -1).mean()
+        else:
+            dynamics_loss -= F.cosine_similarity(forecasts, projections[:, k:], -1).mean()
 
     if logs is not None:
         logs['dynamics_loss'] = dynamics_loss
