@@ -137,7 +137,7 @@ class IsotropicCNNEncoder(nn.Module):
     def forward(self, obs, action=None):
         # Operates on last 3 dims of obs, preserves leading dims
         obs_shape = obs.shape
-        obs = obs.view(-1, *self.obs_shape)
+        obs = obs.reshape(-1, *self.obs_shape)
         # obs = obs / 255.0 - 0.5
         if action is not None:
             # obs = torch.cat([obs, action], 1)
