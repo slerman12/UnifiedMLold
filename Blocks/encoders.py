@@ -48,7 +48,7 @@ class CNNEncoder(nn.Module):
     def forward(self, obs):
         # Operates on last 3 dims of obs, preserves leading dims
         shape = obs.shape
-        obs = obs.view(-1, *self.obs_shape)
+        obs = obs.reshape(-1, *self.obs_shape)
         # Assumes pixels
         obs = obs / 255.0 - 0.5
         h = self.conv_net(obs)
