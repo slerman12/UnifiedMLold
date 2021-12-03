@@ -11,7 +11,7 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
     # if dist is None:
     #     dist = actor(obs, step)
     # action = dist.mean  # TODO Better to use mean if no trainable entropy, yeah?
-    action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample" - or use .mean
+    # action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample" - or use .mean
     if sub_planner is not None and planner is not None:
         # obs = sub_planner(obs, action)  # State-action based
         # obs = sub_planner(obs)  # State-based
@@ -19,6 +19,7 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
         # obs = torch.layer_norm(obs, obs.shape)
     if dist is None:
         dist = actor(obs, step)
+    action = dist.rsample()
 
     Qs = critic(obs, action)
     Q = torch.min(*Qs)
