@@ -86,7 +86,7 @@ class DrQV2PlusAgent(torch.nn.Module):
         # "Recollect"
 
         batch = replay.sample()  # Can also write 'batch = next(replay)'
-        obs, action, reward, discount, next_obs, *traj = Utils.to_torch(
+        obs, action, reward, discount, next_obs_orig, *traj = Utils.to_torch(
             batch, self.device)
         traj_o, traj_a, traj_r = traj
 
@@ -94,11 +94,12 @@ class DrQV2PlusAgent(torch.nn.Module):
 
         # Augment
         obs = self.aug(obs)
+        next_obs = self.aug(next_obs_orig)
 
         # Encode
-        concept = self.encoder(obs)
+        obs = self.encoder(obs)
         with torch.no_grad():
-            next_concept = self.encoder(next_obs)  # TODO encoder target? then "concept" not needed. or no target fr CL
+            next_obs = self.encoder(next_obs)  # TODO encoder target? then "concept" not needed. or no target fr CL
 
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()
@@ -107,13 +108,13 @@ class DrQV2PlusAgent(torch.nn.Module):
 
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
-                                                  concept, action, reward, discount, next_concept,
+                                                  obs, action, reward, discount, next_obs,
                                                   self.step, ensemble_reduction='mean', logs=logs)
 
         # Self supervision loss
         self_supervision_loss = SelfSupervisedLearning.correlationLearning(self.encoder, self.critic,
                                                                            self.self_supervisor,
-                                                                           obs, next_obs)
+                                                                           obs, next_obs_orig)
 
         # Update critic
         Utils.optimize(critic_loss + self_supervision_loss,
@@ -126,7 +127,7 @@ class DrQV2PlusAgent(torch.nn.Module):
 
         # Actor loss
         if not self.discrete:
-            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, concept.detach(),
+            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
                                                            self.step, logs=logs)
 
             # Update actor
