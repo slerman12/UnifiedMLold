@@ -114,7 +114,7 @@ class DrQV2PlusAgent(torch.nn.Module):
         # Self supervision loss
         self_supervision_loss = SelfSupervisedLearning.bootstrapYourOwnLatent(self.encoder, self.critic,
                                                                               self.self_supervisor,
-                                                                              obs, next_obs_orig)
+                                                                              obs_orig, next_obs_orig)
 
         # Update critic
         Utils.optimize(critic_loss + self_supervision_loss,
