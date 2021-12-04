@@ -115,6 +115,12 @@ def optimize(loss=None, *models, clear_grads=True, backward=True, step_optim=Tru
         for model in models:
             model.optim.step()
 
+    # # Update EMA targets
+    # if update_targets:
+    #     for model in models:
+    #         if hasattr(model, 'target'):
+    #             model.update_target_params()
+
 
 # Increment/decrement a value in proportion to a step count based on a string-formatted schedule
 def schedule(sched, step):

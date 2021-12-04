@@ -112,9 +112,9 @@ class DrQV2PlusAgent(torch.nn.Module):
                                                   self.step, ensemble_reduction='mean', logs=logs)
 
         # Self supervision loss
-        self_supervision_loss = SelfSupervisedLearning.correlationLearning(self.encoder, self.critic,
-                                                                           self.self_supervisor,
-                                                                           obs, next_obs_orig)
+        self_supervision_loss = SelfSupervisedLearning.bootstrapYourOwnLatent(self.encoder, self.critic,
+                                                                              self.self_supervisor,
+                                                                              obs, next_obs_orig)
 
         # Update critic
         Utils.optimize(critic_loss + self_supervision_loss,

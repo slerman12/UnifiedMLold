@@ -79,7 +79,7 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
     return dynamics_loss
 
 
-def correlationLearning(encoder, critic, predictor, anchor, positive, contrastive=False):
+def bootstrapYourOwnLatent(encoder, critic, predictor, anchor, positive, contrastive=False):
     with torch.no_grad():
         positive = encoder.target(positive)
         positive = F.normalize(critic.target.trunk[0](positive))  # Kind of presumptive to use Critic as projection
