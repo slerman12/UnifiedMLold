@@ -120,6 +120,7 @@ class DrQV2PlusAgent(torch.nn.Module):
                        self.self_supervisor)
 
         self.critic.update_target_params()
+        self.self_supervisor.update_target_params()
 
         # Actor loss
         if not self.discrete:
