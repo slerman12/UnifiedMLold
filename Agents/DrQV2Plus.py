@@ -94,9 +94,9 @@ class DrQV2PlusAgent(torch.nn.Module):
         obs = self.aug(obs)
 
         # Encode
-        obs = self.encoder(obs)
+        concept = self.encoder(obs)
         with torch.no_grad():
-            next_obs = self.encoder(next_obs)
+            next_concept = self.encoder(next_obs)
 
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()
@@ -105,7 +105,7 @@ class DrQV2PlusAgent(torch.nn.Module):
 
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
-                                                  obs, action, reward, discount, next_obs,
+                                                  concept, action, reward, discount, next_concept,
                                                   self.step, logs=logs)
 
         # Self supervision loss
@@ -123,7 +123,7 @@ class DrQV2PlusAgent(torch.nn.Module):
 
         # Actor loss
         if not self.discrete:
-            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
+            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, concept.detach(),
                                                            self.step, logs=logs)
 
             # Update actor
