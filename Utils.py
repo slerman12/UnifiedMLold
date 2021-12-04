@@ -204,6 +204,7 @@ def conv_output_shape(in_height, in_width, kernel_size=1, stride=1, pad=0, dilat
 
 # Multi-dimensional one-hot encoding
 def one_hot(x, num_classes):
+    x = x.long()
     scatter_dim = len(x.shape)
     inds = x.view(*x.shape, -1)
     zeros = torch.zeros(*x.shape, num_classes, dtype=x.dtype).to(x.device)

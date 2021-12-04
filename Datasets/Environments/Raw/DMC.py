@@ -2,7 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-from dm_control import manipulation, suite
+from dm_control import manipulation, suite  # Maybe move into make() to avoid glfw warning when using other envs
 from dm_control.suite.wrappers import action_scale, pixels
 
 from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, ActionRepeatWrapper, FrameStackWrapper, \
