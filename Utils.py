@@ -206,6 +206,6 @@ def conv_output_shape(in_height, in_width, kernel_size=1, stride=1, pad=0, dilat
 def one_hot(y, num_classes):
     scatter_dim = len(y.size())
     y_tensor = y.view(*y.size(), -1)
-    zeros = torch.zeros(*y.size(), num_classes, dtype=y.dtype)
+    zeros = torch.zeros(*y.size(), num_classes, dtype=y.dtype).to(y.device)
 
     return zeros.scatter(scatter_dim, y_tensor, 1)
