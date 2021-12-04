@@ -29,7 +29,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             next_Q = torch.min(*next_Q_ensemble)  # TODO should be Value function (V(s)) (B(s)?)
         elif ensemble_reduction == 'mean':
             # See: https://openreview.net/pdf?id=9xhgmsNVHu
-            next_Q = sum(*next_Q_ensemble) / len(next_Q_ensemble)
+            next_Q = sum(next_Q_ensemble) / len(next_Q_ensemble)
         else:
             raise Exception('ensemble reduction', ensemble_reduction, 'not implemented')
 
