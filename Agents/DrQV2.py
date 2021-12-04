@@ -17,8 +17,8 @@ from Blocks.actors import TruncatedGaussianActor
 from Losses import PolicyLearning, QLearning
 
 
-class DrQV2Agent:
-    """Data-Regularized Q-Network V2"""
+class DrQV2Agent(torch.nn.Module):
+    """Data-Regularized Q-Network V2 (https://arxiv.org/abs/2107.09645)"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
@@ -116,11 +116,12 @@ class DrQV2Agent:
         self.critic.update_target_params()
 
         # Actor loss
-        actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                                       self.step, logs=logs)
+        if not self.discrete:
+            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                                           self.step, logs=logs)
 
-        # Update actor
-        Utils.optimize(actor_loss,
-                       self.actor)
+            # Update actor
+            Utils.optimize(actor_loss,
+                           self.actor)
 
         return logs

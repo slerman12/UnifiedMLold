@@ -46,6 +46,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         # "Munchausen reward":
         # Current certainty maximization in reward, thereby increasing so-called "action-gap"
         # Furthermore, off-policy sampling of outdated rewards might be mitigated to a degree by on-policy estimate
+        # Another salient heuristic: "optimism in the face of uncertainty" (Brafman & Tennenholtz, 2002)
         if munchausen_scaling != 0:
             if dist is None:
                 dist = actor(obs, step)

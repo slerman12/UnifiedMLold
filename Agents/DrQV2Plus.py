@@ -18,7 +18,7 @@ from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
 class DrQV2PlusAgent(torch.nn.Module):
-    """Variance-Reduced Data-Regularized Q-Network (V3?) (https://openreview.net/pdf?id=9xhgmsNVHu)"""
+    """Variance-Reduced Data-Regularized Q-Network (https://openreview.net/pdf?id=9xhgmsNVHu)"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
@@ -128,7 +128,7 @@ class DrQV2PlusAgent(torch.nn.Module):
                                                            self.step, logs=logs)
 
             # Update actor
-            Utils.optimize(actor_loss,
+            Utils.optimize(actor_loss + 0.000001 * self.actor.raw_mu.square().mean(),
                            self.actor)
 
         return logs

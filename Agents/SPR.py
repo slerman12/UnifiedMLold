@@ -17,7 +17,7 @@ from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
 class SPRAgent(torch.nn.Module):
-    """Self-Predictive Representations"""
+    """Self-Predictive Representations (https://arxiv.org/abs/2007.05929)"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
@@ -26,7 +26,8 @@ class SPRAgent(torch.nn.Module):
                  ):
         super().__init__()
 
-        self.discrete = discrete
+        # ! Original SPR only compatible with discrete spaces but both supported here
+        self.discrete = discrete  # Continuous (e.g. DM Control) supported
         self.device = device
         self.log_tensorboard = log_tensorboard
         self.birthday = time.time()
@@ -129,7 +130,7 @@ class SPRAgent(torch.nn.Module):
                        self.critic,
                        self.dynamics, self.projection_g, self.prediction_q)
 
-        self.encoder.update_target_params()
+        self.encoder.update_target_params()  # TODO Utils.optimize should (optionally) handle this
         self.critic.update_target_params()
         self.projection_g.update_target_params()
 

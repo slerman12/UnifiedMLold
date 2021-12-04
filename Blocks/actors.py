@@ -77,6 +77,7 @@ class TruncatedGaussianActor(BaseActor):
             std = Utils.schedule(self.stddev_schedule, step)
             std = torch.full_like(mu, std)
 
+        self.raw_mu = mu
         mu = torch.tanh(mu)
 
         dist = Utils.TruncatedNormal(mu, std, clip=self.stddev_clip)

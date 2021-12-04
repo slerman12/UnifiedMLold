@@ -2,17 +2,19 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-from dm_control import manipulation, suite  # Maybe move into make() to avoid glfw warning when using other envs
-from dm_control.suite.wrappers import action_scale, pixels
-
-from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, ActionRepeatWrapper, FrameStackWrapper, \
-    TruncateWrapper, AugmentAttributesWrapper
-
-import numpy as np
 
 
 def make(task, frame_stack=3, action_repeat=2, max_episode_frames=None, truncate_episode_frames=None,
          train=True, seed=1):
+    # Imports in make() to avoid glfw warning when using other envs
+    from dm_control import manipulation, suite
+    from dm_control.suite.wrappers import action_scale, pixels
+
+    from Datasets.Environments.Raw.Wrappers import ActionSpecWrapper, ActionRepeatWrapper, FrameStackWrapper, \
+        TruncateWrapper, AugmentAttributesWrapper
+
+    import numpy as np
+
     # Load suite and task
     domain, task = task.split('_', 1)
     # Overwrite cup to ball_in_cup
