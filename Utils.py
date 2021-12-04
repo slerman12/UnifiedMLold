@@ -7,6 +7,7 @@ import random
 import re
 
 import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -207,5 +208,5 @@ def one_hot(x, num_classes):
     x = x.long()
     scatter_dim = len(x.shape)
     inds = x.view(*x.shape, -1)
-    zeros = torch.zeros(*x.shape, num_classes, dtype=x.dtype).to(x.device)
+    zeros = torch.zeros(*x.shape, num_classes, dtype=x.dtype, device=x.device)
     return zeros.scatter(scatter_dim, inds, 1)

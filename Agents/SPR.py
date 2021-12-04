@@ -17,7 +17,7 @@ from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
 class SPRAgent(torch.nn.Module):
-    """Deep Q-Network, Deep Policy Gradient"""
+    """Self-Predictive Representations"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization

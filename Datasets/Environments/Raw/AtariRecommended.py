@@ -197,7 +197,7 @@ def make(task, frame_stack=4, action_repeat=4, max_episode_frames=None, truncate
     task = f'ALE/{task}-v5'
 
     # Recommended vs. original settings
-    recommended = True
+    recommended = False
 
     sticky_action_proba = 0.25 * recommended
 
