@@ -108,8 +108,7 @@ class DQNDPGAgent(torch.nn.Module):
         # Update critic
         Utils.optimize(critic_loss,
                        self.encoder,
-                       self.critic,
-                       self.self_supervisor)
+                       self.critic)
 
         self.critic.update_target_params()
 
