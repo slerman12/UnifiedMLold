@@ -79,19 +79,21 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
     return dynamics_loss
 
 
-def contrastiveLearning(encoder, critic,  predictor, anchor, positive, contrastive=False):
+def correlationLearning(encoder, critic, predictor, anchor, positive, contrastive=False):
     with torch.no_grad():
         positive = encoder.target(positive)
-        positive = F.normalize(critic.target.trunk[0](positive))  # Kind of inelegant to use Critic as 2nd encoder
+        positive = F.normalize(critic.target.trunk[0](positive))  # Kind of presumptive to use Critic as projection
 
-    anchor = F.normalize(predictor(critic.trunk[0](anchor)))
+    anchor = encoder(anchor)  # Redundant, can just pass in obs/concept
+    anchor = F.normalize(predictor(critic.trunk[0](anchor)))  # Can just yield cosine similarity of anchor / positive
 
-    # Contrastive predictive coding (https://arxiv.org/pdf/1807.03748.pdf)
     if contrastive:
-        cpc_loss = 0
-        pass  # TODO use uncorrelated batch samples
+        # Contrastive predictive coding (https://arxiv.org/pdf/1807.03748.pdf)
+        self_supervised_loss = 0
+        pass  # TODO use negative samples via uncorrelated batch samples
     else:
-        cpc_loss = - (anchor * positive.detach())
-        cpc_loss = cpc_loss.sum(dim=-1).mean()
+        # Bootstrap Your Own Latent (https://arxiv.org/abs/2006.07733)
+        self_supervised_loss = - (anchor * positive.detach())
+        self_supervised_loss = self_supervised_loss.sum(dim=-1).mean()
 
-    return cpc_loss
+    return self_supervised_loss

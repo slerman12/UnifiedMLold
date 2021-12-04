@@ -96,7 +96,7 @@ class DrQV2PlusAgent(torch.nn.Module):
         # Encode
         concept = self.encoder(obs)
         with torch.no_grad():
-            next_concept = self.encoder(next_obs)
+            next_concept = self.encoder(next_obs)  # TODO encoder target? then "concept" not needed. or no target fr CL
 
         if self.log_tensorboard:
             logs['batch_reward'] = reward.mean().item()
@@ -109,7 +109,7 @@ class DrQV2PlusAgent(torch.nn.Module):
                                                   self.step, logs=logs)
 
         # Self supervision loss
-        self_supervision_loss = SelfSupervisedLearning.contrastiveLearning(self.encoder, self.critic,
+        self_supervision_loss = SelfSupervisedLearning.correlationLearning(self.encoder, self.critic,
                                                                            self.self_supervisor,
                                                                            obs, next_obs)
 
