@@ -17,7 +17,7 @@ from Blocks.Architectures.MLP import MLP
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
-class DrQV3Agent(torch.nn.Module):
+class DrQV2PlusAgent(torch.nn.Module):
     """Variance-Reduced Data-Regularized Q-Network (V3?) (https://openreview.net/pdf?id=9xhgmsNVHu)"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
@@ -27,7 +27,8 @@ class DrQV3Agent(torch.nn.Module):
                  ):
         super().__init__()
 
-        self.discrete = discrete
+        # ! Original only compatible with continuous spaces, both supported here
+        self.discrete = discrete  # Discrete (e.g. Atari) supported
         self.device = device
         self.log_tensorboard = log_tensorboard
         self.birthday = time.time()
