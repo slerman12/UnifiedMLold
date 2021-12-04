@@ -119,8 +119,8 @@ class DrQV2PlusAgent(torch.nn.Module):
                        self.critic,
                        self.self_supervisor)
 
+        self.encoder.update_target_params()  # note: should Utils.optimize optionally update target params as well?
         self.critic.update_target_params()
-        self.self_supervisor.update_target_params()
 
         # Actor loss
         if not self.discrete:
