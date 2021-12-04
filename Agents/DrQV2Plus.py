@@ -86,18 +86,18 @@ class DrQV2PlusAgent(torch.nn.Module):
         # "Recollect"
 
         batch = replay.sample()  # Can also write 'batch = next(replay)'
-        obs, action, reward, discount, next_obs_orig, *traj = Utils.to_torch(
+        obs_orig, action, reward, discount, next_obs_orig, *traj = Utils.to_torch(
             batch, self.device)
         traj_o, traj_a, traj_r = traj
 
         # "Imagine" / "Envision"
 
         # Augment
-        obs = self.aug(obs)
+        obs_orig = self.aug(obs_orig)
         next_obs = self.aug(next_obs_orig)
 
         # Encode
-        obs = self.encoder(obs)
+        obs = self.encoder(obs_orig)
         with torch.no_grad():
             next_obs = self.encoder(next_obs)  # TODO encoder target? then "concept" not needed. or no target fr CL
 
