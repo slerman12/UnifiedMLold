@@ -39,11 +39,13 @@ class DrQV2PlusAgent(torch.nn.Module):
         self.encoder = CNNEncoder(obs_shape, target_tau=target_tau, optim_lr=lr).to(device)
 
         self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
+                                      critic_norm=True,
                                       target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                         stddev_schedule, stddev_clip,
+                                        policy_norm=True,
                                         optim_lr=lr).to(device)
 
         self.self_supervisor = MLP(feature_dim, feature_dim, target_tau=target_tau, optim_lr=lr).to(device)
@@ -106,7 +108,7 @@ class DrQV2PlusAgent(torch.nn.Module):
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
                                                   concept, action, reward, discount, next_concept,
-                                                  self.step, logs=logs)
+                                                  self.step, ensemble_reduction='mean', logs=logs)
 
         # Self supervision loss
         self_supervision_loss = SelfSupervisedLearning.correlationLearning(self.encoder, self.critic,
