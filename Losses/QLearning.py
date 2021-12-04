@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 
 
-def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, ensemble_reduction='mean',
+def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, ensemble_reduction='min',
                       dist=None, entropy_temp=0,  # 0.03
                       munchausen_scaling=0, sub_planner=None, planner=None, logs=None):  # 0.9
     with torch.no_grad():

@@ -10,7 +10,7 @@ import Utils
 
 
 class BaseActor(nn.Module):
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, policy_norm=True,
+    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, policy_norm=False,
                  target_tau=None, optim_lr=None, **kwargs):
         super().__init__()
 

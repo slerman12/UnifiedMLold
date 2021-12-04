@@ -9,7 +9,7 @@ import Utils
 
 class EnsembleQCritic(nn.Module):
     """Critic network, employs ensemble Q learning."""
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, ensemble_size=2, critic_norm=True,
+    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, ensemble_size=2, critic_norm=False,
                  target_tau=None, optim_lr=None, discrete=False, **kwargs):
         super().__init__()
 
