@@ -5,7 +5,7 @@
 import time
 from math import inf
 
-from Datasets import Environments
+from Datasets.Environments.Raw import DMC, Atari
 
 
 class Environment:
@@ -24,9 +24,9 @@ class Environment:
     @property
     def raw_env(self):
         if self.suite.lower() == "dmc":
-            return Environments.Raw.DMC
+            return DMC
         elif self.suite.lower() == "atari":
-            return Environments.Raw.Atari
+            return Atari
 
     def __getattr__(self, item):
         return getattr(self.env, item)
