@@ -36,7 +36,7 @@ def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount
     #     sub_plan = sub_planner(obs, action)  # state-action based planner
     sub_plan = sub_planner(obs)
     plan = planner(sub_plan, traj_a[:, 0])
-    # plan = torch.layer_norm(plan, plan.shape)
+    # plan = torch.layer_norm(plan, plan.shape)  TODO NO, use L2 norm F.normalize
 
     planner_loss = F.mse_loss(plan, target_plan)  # Bellman error
 
@@ -77,3 +77,21 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
         logs['dynamics_loss'] = dynamics_loss
 
     return dynamics_loss
+
+
+def contrastiveLearning(encoder, critic,  predictor, anchor, positive, contrastive=False):
+    with torch.no_grad():
+        positive = encoder.target(positive)
+        positive = F.normalize(critic.target.trunk[0](positive))  # Kind of inelegant to use Critic as 2nd encoder
+
+    anchor = F.normalize(predictor(critic.trunk[0](anchor)))
+
+    # Contrastive predictive coding (https://arxiv.org/pdf/1807.03748.pdf)
+    if contrastive:
+        cpc_loss = 0
+        pass  # TODO use uncorrelated batch samples
+    else:
+        cpc_loss = - (anchor * positive.detach())
+        cpc_loss = cpc_loss.sum(dim=-1).mean()
+
+    return cpc_loss

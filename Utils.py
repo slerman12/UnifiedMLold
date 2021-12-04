@@ -60,6 +60,16 @@ def soft_update_params(net, target_net, tau):
                                 (1 - tau) * target_param.data)
 
 
+# Basic L2 normalization
+class L2Norm(nn.Module):
+    def __init__(self, eps=1e-10):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, x):
+        return F.normalize(x, dim=-1, eps=self.eps)
+
+
 # Context manager that temporarily switches on eval() mode for specified models; then resets them
 class act_mode:
     def __init__(self, *models):

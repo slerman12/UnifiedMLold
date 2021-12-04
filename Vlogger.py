@@ -12,7 +12,7 @@ class Vlogger:
         self.save_path.mkdir(exist_ok=True)
         self.fps = fps
 
-    def vlog(self, vlogs, name):
+    def dump_vlogs(self, vlogs, name):
         path = self.save_path / name
         imageio.mimsave(str(path), vlogs, fps=self.fps)
 

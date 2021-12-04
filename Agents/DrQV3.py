@@ -12,12 +12,13 @@ from Blocks.augmentations import IntensityAug, RandomShiftsAug
 from Blocks.encoders import CNNEncoder
 from Blocks.actors import TruncatedGaussianActor, CategoricalCriticActor
 from Blocks.critics import EnsembleQCritic
+from Blocks.Architectures.MLP import MLP
 
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
-class DQNDPGAgent(torch.nn.Module):
-    """Deep Q-Network, Deep Policy Gradient"""
+class DrQV3Agent(torch.nn.Module):
+    """Variance-Reduced Data-Regularized Q-Network (V3?) (https://openreview.net/pdf?id=9xhgmsNVHu)"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
@@ -43,6 +44,8 @@ class DQNDPGAgent(torch.nn.Module):
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                         stddev_schedule, stddev_clip,
                                         optim_lr=lr).to(device)
+
+        self.self_supervisor = MLP(feature_dim, feature_dim, target_tau=target_tau, optim_lr=lr)
 
         # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
@@ -88,7 +91,6 @@ class DQNDPGAgent(torch.nn.Module):
 
         # Augment
         obs = self.aug(obs)
-        next_obs = self.aug(next_obs)
 
         # Encode
         obs = self.encoder(obs)
@@ -105,8 +107,13 @@ class DQNDPGAgent(torch.nn.Module):
                                                   obs, action, reward, discount, next_obs,
                                                   self.step, logs=logs)
 
+        # Self supervision loss
+        self_supervision_loss = SelfSupervisedLearning.contrastiveLearning(self.encoder, self.critic,
+                                                                           self.self_supervisor,
+                                                                           obs, next_obs)
+
         # Update critic
-        Utils.optimize(critic_loss,
+        Utils.optimize(critic_loss + self_supervision_loss,
                        self.encoder,
                        self.critic,
                        self.self_supervisor)

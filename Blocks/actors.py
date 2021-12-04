@@ -10,7 +10,8 @@ import Utils
 
 
 class BaseActor(nn.Module):
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, target_tau=None, optim_lr=None, **kwargs):
+    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, policy_norm=True,
+                 target_tau=None, optim_lr=None, **kwargs):
         super().__init__()
 
         self.action_dim = action_dim
@@ -18,11 +19,13 @@ class BaseActor(nn.Module):
         self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
                                    nn.LayerNorm(feature_dim), nn.Tanh())
 
-        self.policy = nn.Sequential(nn.Linear(feature_dim, hidden_dim),
-                                    nn.ReLU(inplace=True),
-                                    nn.Linear(hidden_dim, hidden_dim),
-                                    nn.ReLU(inplace=True),
-                                    nn.Linear(hidden_dim, action_dim))
+        self.policy = nn.Sequential(*[nn.Linear(feature_dim, hidden_dim),
+                                      nn.ReLU(inplace=True),
+                                      nn.Linear(hidden_dim, hidden_dim),
+                                      nn.ReLU(inplace=True),
+                                      # See: https://openreview.net/pdf?id=9xhgmsNVHu
+                                      Utils.L2Norm() if policy_norm else nn.Identity(),
+                                      nn.Linear(hidden_dim, action_dim)])
 
         self.apply(Utils.weight_init)
 
@@ -48,14 +51,14 @@ class BaseActor(nn.Module):
 
 class TruncatedGaussianActor(BaseActor):
     def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim,
-                 stddev_schedule=None, stddev_clip=None,
+                 policy_norm=True, stddev_schedule=None, stddev_clip=None,
                  target_tau=None, optim_lr=None, **kwargs):  # note added kwargs todo check if ok
         dim = kwargs.get("dim", action_dim)  # (To make sure target has the same action_dim)
 
         num_outputs = 2 if stddev_schedule is None else 1
 
         super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
-                         hidden_dim=hidden_dim, action_dim=dim * num_outputs,
+                         hidden_dim=hidden_dim, action_dim=dim * num_outputs, policy_norm=policy_norm,
                          stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
                          target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 

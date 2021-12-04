@@ -9,7 +9,7 @@ import Utils
 
 class EnsembleQCritic(nn.Module):
     """Critic network, employs ensemble Q learning."""
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, ensemble_size=2,
+    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, ensemble_size=2, critic_norm=True,
                  target_tau=None, optim_lr=None, discrete=False, **kwargs):
         super().__init__()
 
@@ -27,7 +27,10 @@ class EnsembleQCritic(nn.Module):
             nn.Sequential(
                 nn.Linear(in_dim, hidden_dim),
                 nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
-                nn.ReLU(inplace=True), nn.Linear(hidden_dim, Q_dim)
+                nn.ReLU(inplace=True),
+                # See: https://openreview.net/pdf?id=9xhgmsNVHu
+                Utils.L2Norm() if critic_norm else nn.Identity(),
+                nn.Linear(hidden_dim, Q_dim)
             )
             for _ in range(ensemble_size)])
 

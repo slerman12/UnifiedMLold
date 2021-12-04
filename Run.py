@@ -64,7 +64,7 @@ def main(args):
             logger.dump_logs('Eval')
 
             if args.log_video:
-                vlogger.vlog(vlogs, f'{agent.step}.mp4')
+                vlogger.dump_vlogs(vlogs, f'{agent.step}.mp4')
 
         # Rollout
         experiences, logs, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True

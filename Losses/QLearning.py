@@ -6,7 +6,8 @@ import torch
 import torch.nn.functional as F
 
 
-def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, dist=None, entropy_temp=0,  # 0.03
+def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, ensemble_reduction='mean',
+                      dist=None, entropy_temp=0,  # 0.03
                       munchausen_scaling=0, sub_planner=None, planner=None, logs=None):  # 0.9
     with torch.no_grad():
         # next_obs = sub_planner(next_obs)  #  state-based planner  TODO try this
@@ -24,7 +25,13 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
 
         # Ensemble Q learning
         next_Q_ensemble = critic.target(next_obs, next_action, next_dist)
-        next_Q = torch.min(*next_Q_ensemble)  # TODO should be Value function (V(s)) (B(s)?)
+        if ensemble_reduction == 'min':
+            next_Q = torch.min(*next_Q_ensemble)  # TODO should be Value function (V(s)) (B(s)?)
+        elif ensemble_reduction == 'mean':
+            # See: https://openreview.net/pdf?id=9xhgmsNVHu
+            next_Q = sum(*next_Q_ensemble) / len(next_Q_ensemble)
+        else:
+            raise Exception('ensemble reduction', ensemble_reduction, 'not implemented')
 
         # Future uncertainty maximization in reward  TODO consider N-step entropy... +actor(traj_o).entropy(traj_a)
         # next_action_log_proba = next_dist.log_prob(next_action).sum(-1, keepdim=True)
