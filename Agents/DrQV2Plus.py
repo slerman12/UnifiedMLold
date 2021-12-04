@@ -44,8 +44,8 @@ class DrQV2PlusAgent(torch.nn.Module):
 
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-                                        stddev_schedule, stddev_clip,
                                         policy_norm=True,
+                                        stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
                                         optim_lr=lr).to(device)
 
         self.self_supervisor = MLP(feature_dim, feature_dim, target_tau=target_tau, optim_lr=lr).to(device)
