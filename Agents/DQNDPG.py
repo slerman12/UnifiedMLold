@@ -13,7 +13,7 @@ from Blocks.encoders import CNNEncoder
 from Blocks.actors import TruncatedGaussianActor, CategoricalCriticActor
 from Blocks.critics import EnsembleQCritic
 
-from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
+from Losses import QLearning, PolicyLearning
 
 
 class DQNDPGAgent(torch.nn.Module):
@@ -34,7 +34,7 @@ class DQNDPGAgent(torch.nn.Module):
         self.explore_steps = explore_steps
 
         # Models
-        self.encoder = CNNEncoder(obs_shape, target_tau=target_tau, optim_lr=lr).to(device)
+        self.encoder = CNNEncoder(obs_shape).to(device)
 
         self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                       target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
