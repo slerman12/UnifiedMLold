@@ -46,7 +46,7 @@ class DrQV2PlusAgent(torch.nn.Module):
                                         stddev_schedule, stddev_clip,
                                         optim_lr=lr).to(device)
 
-        self.self_supervisor = MLP(feature_dim, feature_dim, target_tau=target_tau, optim_lr=lr)
+        self.self_supervisor = MLP(feature_dim, feature_dim, target_tau=target_tau, optim_lr=lr).to(device)
 
         # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
