@@ -40,7 +40,7 @@ for f in files_to_plot:
 def plot(df, key='Reward', name='Curve2'):
     tasks = np.sort(df.task.unique())
     cols = np.floor(np.sqrt(tasks.shape[0]))
-    while tasks.shape[0] % cols == 0:
+    while tasks.shape[0] % cols != 0:
         cols -= 1
     assert tasks.shape[0] % cols == 0, f'{tasks.shape[0]} tasks, {cols} columns invalid'
     rows = tasks.shape[0] // cols
