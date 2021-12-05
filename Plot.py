@@ -40,7 +40,7 @@ for f in files_to_plot:
 def plot(df, key='Reward', name='Curve2'):
     tasks = np.sort(df.task.unique())
     cols = 3
-    assert tasks.shape[0] % cols == 0
+    assert tasks.shape[0] % cols == 0, f'{tasks.shape[0]} tasks, {cols} columns invalid'
     rows = tasks.shape[0] // cols
     fig, axs = plt.subplots(rows, cols, figsize=(4 * cols, 3 * rows))
 
