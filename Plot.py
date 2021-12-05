@@ -26,7 +26,7 @@ plt.rcParams['legend.loc'] = 'lower right'
 # experiment_names = ['statebvs', 'statebvss', 'stateactionbasedbvs']
 
 experiment_names = ['humanoid']
-path = Path.cwd() / f'Benchmarking'
+path = Path.cwd()
 files_to_plot = sum([glob.glob(f'{str(path)}/**/Eval*{name}.csv', recursive=True) for name in experiment_names], [])
 # also_files_to_plot = ['dmc_quadruped_walk',
 #                   'dmc_cheetah_run']
