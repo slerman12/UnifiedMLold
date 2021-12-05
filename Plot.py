@@ -33,13 +33,14 @@ files_to_plot = sum([glob.glob(f'{str(path)}/**/Eval*{name}.csv', recursive=True
 also_files_to_plot = ['humanoid_walk']
 files_to_plot += sum([glob.glob(f'{str(path)}/**/{name}.csv', recursive=True) for name in also_files_to_plot], [])
 
-print('plotting from', path)
-for f in files_to_plot:
-    print(f)
+print('Plotting from', path)
+for file_name in files_to_plot:
+    print(file_name)
+
 
 def plot(df, key='Reward', name='Curve2'):
     tasks = np.sort(df.task.unique())
-    cols = np.floor(np.sqrt(tasks.shape[0]))
+    cols = int(np.floor(np.sqrt(tasks.shape[0])))
     while tasks.shape[0] % cols != 0:
         cols -= 1
     assert tasks.shape[0] % cols == 0, f'{tasks.shape[0]} tasks, {cols} columns invalid'
