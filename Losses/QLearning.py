@@ -31,6 +31,8 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             # See: https://openreview.net/pdf?id=9xhgmsNVHu
             next_Q = sum(next_Q_ensemble) / len(next_Q_ensemble)
         else:
+            # Can also try mean - uncertainty, wehre uncertainty is stddev or convolved distances:
+            # https://arxiv.org/pdf/2110.03375.pdf
             raise Exception('ensemble reduction', ensemble_reduction, 'not implemented')
 
         # Future uncertainty maximization in reward  TODO consider N-step entropy... +actor(traj_o).entropy(traj_a)

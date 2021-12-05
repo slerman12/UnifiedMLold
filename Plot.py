@@ -23,8 +23,9 @@ plt.rcParams['legend.loc'] = 'lower right'
 #                  '/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_quadruped_walk.csv',
 #                  '/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_cheetah_run.csv']
 
-experiment_names = ['statebvs', 'statebvss', 'stateactionbasedbvs']
-experiment_names = ['statebvsdiffnew']
+# experiment_names = ['statebvs', 'statebvss', 'stateactionbasedbvs']
+
+experiment_names = ['humanoid']
 path = Path.cwd() / f'Benchmarking'
 files_to_plot = sum([glob.glob(f'{str(path)}/**/Eval*{name}.csv', recursive=True) for name in experiment_names], [])
 files_to_plot += ['/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_quadruped_walk.csv',
