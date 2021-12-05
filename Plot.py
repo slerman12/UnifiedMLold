@@ -33,7 +33,7 @@ files_to_plot = sum([glob.glob(f'{str(path)}/**/Eval*{name}.csv', recursive=True
 also_files_to_plot = ['humanoid_walk']
 files_to_plot += sum([glob.glob(f'{str(path)}/**/{name}.csv', recursive=True) for name in also_files_to_plot], [])
 
-print('plotting')
+print('plotting from', path)
 for f in files_to_plot:
     print(f)
 
