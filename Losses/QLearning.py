@@ -43,7 +43,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             raise Exception('ensemble reduction', ensemble_reduction, 'not implemented')
 
         # Value V = expected Q
-        next_log_probs = torch.cat([next_dist.log_prob(next_action).mean(-1)
+        next_log_probs = torch.cat([next_dist.log_prob(next_action).mean(-1, keepdim=True)
                                     for next_action in next_actions], -1)
         next_probs = torch.softmax(next_log_probs, -1)
         next_V = (next_Q * next_probs).sum(-1, keepdim=True)
