@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="80%" style="border-top:20px solid black;border-right:1px solid black;border-bottom:20px solid black;border-left:1px solid black;" src="https://i.imgur.com/YWndtJc.jpeg">
+  <img width="100%" style="border-top:20px solid black;border-right:1px solid black;border-bottom:20px solid black;border-left:1px solid black;" src="https://i.imgur.com/oxBvCrk.jpeg">
  </p>
 
 ## Unified ML
