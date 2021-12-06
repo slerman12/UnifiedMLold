@@ -21,7 +21,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             # All discrete actions in discrete action space
             next_actions = [torch.full_like(next_dist.best, a) for a in range(actor.action_dim)]
         else:
-            num_actions = 1
+            num_actions = 5
             # A discrete set of sampled actions from continuous action space
             next_actions = [next_dist.rsample() for _ in range(num_actions)]
 
