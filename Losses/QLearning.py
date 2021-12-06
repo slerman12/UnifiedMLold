@@ -45,7 +45,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         next_log_probs = torch.cat([next_dist.log_prob(next_action)
                                     for next_action in next_actions], -1)
         next_probs = torch.softmax(next_log_probs, -1)
-        next_V = (next_Q * next_probs).sum(-1, keppdim=True)
+        next_V = (next_Q * next_probs).sum(-1, keepdim=True)
 
         # TODO consider N-step entropy... +actor(traj_o).entropy(traj_a) ... or should these be added a la Munchausen?
         # "Entropy maximization"
