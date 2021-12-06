@@ -14,10 +14,10 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
 
         # next_actions = [next_dist.rsample()]
         # TODO Better, yeah? Why not just use mean for continuous, best for discrete?
-        next_actions = [next_dist.best if actor.discrete else next_dist.mean]
+        next_actions = [next_dist.best if critic.discrete else next_dist.mean]
 
         # TODO Or scatter sample for continuous, use all for discrete
-        if actor.discrete:  # For now, just trying with discrete
+        if critic.discrete:  # For now, just trying with discrete
             # All discrete actions in discrete action space
             next_actions = [torch.full_like(next_dist.best, a) for a in range(actor.action_dim)]
         # else:
