@@ -62,6 +62,7 @@ class TruncatedGaussianActor(BaseActor):
                          stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
                          target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 
+        self.discrete = False
         self.action_dim = dim
         self.stddev_schedule = stddev_schedule
         self.stddev_clip = stddev_clip
@@ -101,6 +102,7 @@ class DiagonalGaussianActor(BaseActor):
 
         self.tanh_transform = Utils.TanhTransform()
 
+        self.discrete = False
         self.action_dim = dim
         self.stddev_schedule = stddev_schedule
         self.log_std_bounds = log_std_bounds
@@ -132,6 +134,7 @@ class CategoricalCriticActor(nn.Module):
     def __init__(self, critic, stddev_schedule=None):
         super(CategoricalCriticActor, self).__init__()
 
+        self.discrete = True
         self.stddev_schedule = stddev_schedule
         self.critic = critic
         self.action_dim = critic.action_dim
