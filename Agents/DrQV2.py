@@ -9,7 +9,6 @@ import torch
 import Utils
 
 from Blocks.augmentations import IntensityAug, RandomShiftsAug
-
 from Blocks.encoders import CNNEncoder
 from Blocks.critics import EnsembleQCritic
 from Blocks.actors import TruncatedGaussianActor
@@ -25,6 +24,7 @@ class DrQV2Agent(torch.nn.Module):
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard,  # On-boarding
                  **kwargs):
+        super().__init__()
 
         # ! Original DrQV2 only compatible with continuous spaces but both supported here
         self.discrete = discrete  # Discrete (e.g. Atari) supported

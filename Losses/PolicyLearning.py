@@ -4,46 +4,51 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import torch
 
+import Utils
 
-# TODO entropy could be more strongly enforced at the beginning (scheduled)
-def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None,
-                       sub_planner=None, planner=None, logs=None):
-    # if dist is None:
-    #     dist = actor(obs, step)
-    # action = dist.mean  # TODO Better to use mean if no trainable entropy, yeah?
-    # action = dist.rsample()  # todo try sampling multiple - why not? convolve with obs "scatter sample" - or use .mean
-    if sub_planner is not None and planner is not None:
-        # obs = sub_planner(obs, action)  # State-action based
-        obs = sub_planner(obs)  # State-based
-        # obs = planner(obs)
-        # obs = torch.layer_norm(obs, obs.shape)
+
+def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None, logs=None):
     if dist is None:
         dist = actor(obs, step)
-    action = dist.rsample()
+
+    if actor.discrete:
+        action = Utils.one_hot(dist.best, actor.action_dim)
+    else:
+        action = dist.mean
+        # action = dist.rsample()  # Traditional way is to sample, but only necessary if learnable entropy/stddev
+        # actions = dist.scatter_sample(num_actions)  # TODO
 
     Qs = critic(obs, action)
+
+    # Reduce Q ensemble via min  TODO 'mean minus uncertainty' maybe (https://arxiv.org/pdf/2110.03375.pdf)
     Q = torch.min(*Qs)
 
-    log_proba = dist.log_prob(action)
+    # "Entropy maximization"
+    # Entropy - 'aleatory' - uncertainty - randomness in decision-making - keeps exploration active, gradients tractable
+    # neg_log_proba = -dist.log_prob(action).mean()  TODO Is this better for entropy?
+    entropy = dist.entropy().mean()
 
-    entropy = dist.entropy().mean()  # TODO or use -log_proba.mean() ?
+    # "Trust region optimization"
+    # Policies that change too rapidly per batch are unstable, so we try to bound their temperament a little
+    # within a "trust region", ideally one that keeps large gradients from propelling weights beyond their local optima
+    # TODO can also try BYOL between actor representations and EMA target representations
+    # policy_divergence = torch.kl_div(log_proba, log_proba.detach()).mean()
+    # eps = 0.1  # This is the "trust region"
+    # TODO Or can try just setting scaling - when >, + when <
+    # # Via Lagrangian relaxation TODO wherein metas.trust_region_scale (alpha) is minimized
+    # trust_region_bounding = metas.trust_region_scaling.detach() * (eps - policy_divergence)
 
-    # trust_region = torch.kl_div(log_proba, log_proba.detach()).mean()  # TODO
-    # # Via Lagrangian relaxation TODO where trust_region_scale (alpha) is minimized
-    # eps = 0.1
-    # trust_region = -(trust_region_scaling.detach() * (eps - trust_region))  # TODO just set scaling - when >, + when <
-
-    policy_loss = -Q.mean() - entropy_temp * entropy
+    # Maximize action-value
+    policy_loss = -Q.mean()
+    # Maximize entropy
+    policy_loss -= entropy_temp * entropy  # TODO metas.entropy_temp (w/ Meta accepting kwargs w/ init vals)
+    # Maximize trust region bounding
+    # policy_loss -= trust_region_bounding
 
     if logs is not None:
         assert isinstance(logs, dict)
         logs['policy_loss'] = policy_loss.item()
-        logs['avg_action_proba'] = torch.exp(log_proba).mean().item()
+        logs['avg_action_proba'] = torch.exp(dist.log_prob(action)).mean().item()
         logs['avg_policy_entropy'] = entropy.item()
-        # logs['avg_trust_region'] = trust_region.item()
-
-    # TODO DEBUGGING delete
-    # if step % 1000 == 0:
-    #     print('avg action proba', torch.exp(log_proba).mean().item())
 
     return policy_loss

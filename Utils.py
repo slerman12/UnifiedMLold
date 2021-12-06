@@ -115,6 +115,15 @@ def optimize(loss=None, *models, clear_grads=True, backward=True, step_optim=Tru
         for model in models:
             model.optim.step()
 
+    # for model in models:
+    #     # Optimize
+    #     if step_optim:
+    #         model.optim.step()
+    #
+    #     # Update EMA targets
+    #     if update_targets and hasattr(model, 'target'):
+    #         model.update_target_params()
+
     # # Update EMA targets
     # if update_targets:
     #     for model in models:

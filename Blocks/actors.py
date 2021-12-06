@@ -148,31 +148,33 @@ class CategoricalCriticActor(nn.Module):
             self.optim = critic.optim
 
     def forward(self, obs, step=None):
-        # TODO learnable temp
-        temp = 1 if step is None else Utils.schedule(self.stddev_schedule, step)  # todo should also schedule continuous
+        # TODO Learnable temp
+        temp = 1 if step is None else Utils.schedule(self.stddev_schedule, step)
 
         Qs = self.critic(obs)
-        # Q = torch.min(*Qs)  # min-reduced
-        Q = sum(*Qs) / self.ensemble_size  # mean-reduced
+        Q_min = torch.min(*Qs)  # Min-reduced
+        Q = sum(*Qs) / self.ensemble_size  # Mean-reduced
 
-        # TODO clip with Munchausen-style lo for stability? (otherwise, exp vanishes with high logits I think)
-        # TODO logits/logprob via subtracting max_q first for stability? (otherwise, exp explodes for low temps I think)
+        # TODO Clip with Munchausen-style lo for stability? (otherwise, exp vanishes with high logits I think)
+        # TODO Logits/logprob via subtracting max_q first for stability? (otherwise, exp explodes for low temps I think)
         # TODO torch.logsumexp !! example of both: https://github.com/BY571/Munchausen-RL/blob/master/M-DQN.ipynb
-        dist = Categorical(logits=Q / temp)
+        logits = (Q - Q.max(dim=-1, keepdim=True)[0])
+        dist = Categorical(logits=logits / temp)
 
-        # set dist.Qs (Q1, Q2, ...)
+        # Set dist.Qs (Q1, Q2, ...)
         setattr(dist, "Qs", Qs)
 
-        # set dist.Q
+        # Set dist.Q
         setattr(dist, "Q", Q)
 
-        # set rsample
+        # Set rsample
         setattr(dist, "rsample", dist.sample)
 
-        # set dist.best_action
+        # Set dist.best_action
         setattr(dist, "best", torch.argmax(Q, -1))
 
-        # TODO dist.expected_Q : or dist.expected_V : Q * dist.log_prob (Q min-reduced?) - for continuous scatter sample
+        # Set expected Value function V
+        # setattr(dist, "V", (Q_min * torch.softmax(logits / temp, dim=-1)).sum(-1))
 
         return dist
 

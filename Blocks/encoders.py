@@ -114,6 +114,7 @@ class IsotropicCNNEncoder(nn.Module):
         self.repr_shape = (out_channels,) + (out_height, out_width)
         self.repr_dim = out_channels * out_height * out_width
 
+        # Isotropic
         assert obs_shape[-2] == out_height
         assert obs_shape[-1] == out_width
 

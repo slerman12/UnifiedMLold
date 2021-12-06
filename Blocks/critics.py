@@ -55,18 +55,18 @@ class EnsembleQCritic(nn.Module):
             assert obs is not None or dist is not None
         else:
             assert obs is not None and action is not None
-            dist = None
+            dist = None  # dist precedes action in continuous, therefore redundant if action not None
 
-        if dist is None:
+        if dist is None:  # Predict Qs from obs
             h = self.trunk(obs)
             if not self.discrete:
                 h = torch.cat([h, action], dim=-1)
             # get Q1, Q2, ...
             Qs = tuple(Q_net(h) for Q_net in self.Q_nets)
-        else:
+        else:  # Recall Qs from discrete actor
             # get dist.Q1, dist.Q2, ...
             Qs = dist.Qs
-        if self.discrete and action is not None:  # analogous to dist.log_probs(action) except w.r.t. Qs, not logits
+        if self.discrete and action is not None:  # Analogous to dist.log_probs(action) except w/ Qs and discrete action
             # get Q1[action], Q2[action], ...
             ind = action.long().view(*Qs[0].shape[:-1], 1)
             Qs = tuple(torch.gather(Q, -1, ind) for Q in Qs)
@@ -120,7 +120,7 @@ class EnsemblePROCritic(EnsembleQCritic):
 
 
 # TODO
-class Critic(nn.Module):
+class DuelingCritic(nn.Module):
     """Critic network, employs dueling Q networks."""
     def __init__(self, repr_dim, num_actions, feature_dim, hidden_dim, dueling):
         super().__init__()

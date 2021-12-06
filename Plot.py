@@ -16,20 +16,9 @@ plt.rcParams['legend.loc'] = 'lower right'
 
 
 # List of benchmarks to plot
-# files_to_plot = ['/Users/samlerman/Code/UnifiedML/Benchmarking/BVS/163140_+agent.plan_discount=0.9,Agent=Agents.BVSAgent,experiment=stateactionbasedbvs/Benchmarking/stateactionbasedbvs/BVS/quadruped_walk/Seed_1/Eval.csv',
-#                  '/Users/samlerman/Code/UnifiedML/Benchmarking/BVS/163141_+agent.plan_discount=0.9,Agent=Agents.BVSAgent,experiment=stateactionbasedbvs,task=dmc/cheetah_run/Benchmarking/stateactionbasedbvs/BVS/cheetah_run/Seed_1/Eval.csv',
-#                  '/Users/samlerman/Code/UnifiedML/Benchmarking/BVS/163648_+agent.plan_discount=0.9,Agent=Agents.BVSAgent,experiment=statebvs,task=dmc/cheetah_run/Benchmarking/statebvs/BVS/cheetah_run/Seed_1/Eval.csv',
-#                  '/Users/samlerman/Code/UnifiedML/Benchmarking/BVS/164207_+agent.plan_discount=0.9,Agent=Agents.BVSAgent,experiment=statebvss/Benchmarking/statebvss/BVS/quadruped_walk/Seed_1/Eval.csv',
-#                  '/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_quadruped_walk.csv',
-#                  '/Users/samlerman/Code/UnifiedML/Benchmarking/drqv2/dmc_cheetah_run.csv']
-
-# experiment_names = ['statebvs', 'statebvss', 'stateactionbasedbvs']
-
 experiment_names = ['humanoid']
 path = Path.cwd()
 files_to_plot = sum([glob.glob(f'{str(path)}/**/Eval*{name}.csv', recursive=True) for name in experiment_names], [])
-# also_files_to_plot = ['dmc_quadruped_walk',
-#                   'dmc_cheetah_run']
 also_files_to_plot = ['humanoid_walk']
 files_to_plot += sum([glob.glob(f'{str(path)}/**/{name}.csv', recursive=True) for name in also_files_to_plot], [])
 
@@ -77,7 +66,6 @@ def standardize_header(name):
 
 
 i = 0
-# n = ['-state-action', '-state-action', '-state', '-state', '', '']
 n = ['-state-action' if 'action' in file else '-state' if 'state' in file else '' for file in files_to_plot]
 to_c = []
 for file in files_to_plot:
