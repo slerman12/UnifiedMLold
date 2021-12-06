@@ -1,4 +1,4 @@
-## Unified ML
+# Unified ML
 
 <p align="center">
 
@@ -16,26 +16,26 @@
 
 In our code, we strive for:
 
-- Minimalism
-- Beauty
-- Pedagogic clarity
-- SOTA performance
+- *Minimalism*
+- *Beauty*
+- *Pedagogic clarity*
+- *SOTA performance*
 
 All 4.
 
 On a broader level:
 
-- Humanity before mechanization
-- Heart before calloused mind
-- The earth and trees, mountains and brooks, deer and caribou before industrialization 
+- *Humanity before mechanization*
+- *Heart before calloused mind*
+- *The earth and trees, mountains and brooks, deer and caribou before industrialization* 
 
 ## Our Pledge
 
-We will always put humanity, nature, and Mother Earth first, ahead in the queue before money, bottom line, propriety, or even the art itself.
+We will always __put humanity, nature, and Mother Earth first__, ahead in the queue before money, bottom line, propriety, or even the art itself.
 
-We will make technology that frees humankind to pursue the passions and callings of the spirit, not further enslave it beneath illusory mists of technological luxury. 
+We will __make technology that frees humankind__ to pursue the passions and callings of the spirit, not further enslave it beneath illusory mists of technological luxury. 
 
-We envision a world that is care-taken by AI, sustainably, efficiently, leaving no footprint of harm on the mental, physical, or spiritual spheres of biological existence. 
+We envision a world that is __care-taken by AI, sustainably__, efficiently, leaving no footprint of harm on the mental, physical, or spiritual spheres of biological existence. 
 
 
 
