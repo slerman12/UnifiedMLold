@@ -11,7 +11,7 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None, logs
     if dist is None:
         dist = actor(obs, step)
 
-    if actor.discrete:
+    if critic.discrete:
         action = Utils.one_hot(dist.best, actor.action_dim)
     else:
         action = dist.mean
