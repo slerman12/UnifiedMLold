@@ -31,11 +31,11 @@ On a broader level:
 
 ## Our Pledge
 
-We will always __put humanity, nature, and Mother Earth first__, ahead in the queue before money, bottom line, propriety, or even the art itself.
+We will always put humanity, nature, and Mother Earth first, ahead in the queue before money, bottom line, propriety, or even the art itself.
 
-We will __make technology that frees humankind__ to pursue the passions and callings of the spirit, not further enslave it beneath illusory mists of technological luxury. 
+We will make technology that frees humankind to pursue the passions and callings of the spirit, not further enslave it beneath illusory mists of technological luxury. 
 
-We envision a world that is __care-taken by AI, sustainably__, efficiently, leaving no footprint of harm on the mental, physical, or spiritual spheres of biological existence. 
+We envision a world that is care-taken by AI, sustainably, efficiently, leaving no footprint of harm on the mental, physical, or spiritual spheres of biological existence. 
 
 
 
