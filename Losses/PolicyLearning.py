@@ -4,19 +4,17 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import torch
 
-import Utils
-
 
 def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None, logs=None):
     if dist is None:
         dist = actor(obs, step)
 
-    if actor.discrete:
-        action = Utils.one_hot(dist.best, actor.action_dim)
-    else:
-        action = dist.mean
-        # action = dist.rsample()  # Traditional way is to sample, but only necessary if learnable entropy/stddev, right?
-        # actions = dist.scatter_sample(num_actions)  # TODO
+    action = dist.mean
+    # Would be great to test effect of mean vs sample
+    # action = dist.rsample()  # Traditional way is to sample, but only necessary if learnable entropy/stddev, right?
+    # num_actions = 5  # Would be great to test effect of num_actions  # TODO
+    # A discrete set of sampled continuous actions
+    # next_actions = [next_dist.rsample() for _ in range(num_actions)]
 
     Qs = critic(obs, action)
 
