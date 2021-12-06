@@ -14,8 +14,8 @@ def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, dist=None, logs
     if actor.discrete:
         action = Utils.one_hot(dist.best, actor.action_dim)
     else:
-        # action = dist.mean
-        action = dist.rsample()  # Traditional way is to sample, but only necessary if learnable entropy/stddev, right?
+        action = dist.mean
+        # action = dist.rsample()  # Traditional way is to sample, but only necessary if learnable entropy/stddev, right?
         # actions = dist.scatter_sample(num_actions)  # TODO
 
     Qs = critic(obs, action)
