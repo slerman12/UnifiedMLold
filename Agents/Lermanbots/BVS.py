@@ -7,10 +7,10 @@ import torch
 import Utils
 
 from Agents import DQNDPGAgent
-from Blocks.actors import CategoricalCriticActor, TruncatedGaussianActor
+from Blocks.Actors import CategoricalCriticActor, TruncatedGaussianActor
 
-from Blocks.encoders import LayerNormMLPEncoder
-from Blocks.critics import EnsembleQCritic
+from Blocks.Encoders import LayerNormMLPEncoder
+from Blocks.Critics import EnsembleQCritic
 from Blocks.planners import SubPlanner
 
 from Losses import QLearning, PolicyLearning

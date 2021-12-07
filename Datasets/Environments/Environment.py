@@ -48,12 +48,12 @@ class Environment:
             action = agent.act(exp.observation)
             exp = self.env.step(action.cpu().numpy()[0])
 
-            experiences.append(exp)  # TODO exp.step = agent.step
+            # exp.step = agent.step
+
+            experiences.append(exp)
 
             if vlog:
-                frame = self.env.physics.render(height=256,
-                                                width=256,
-                                                camera_id=0) \
+                frame = self.env.physics.render(height=256, width=256, camera_id=0) \
                     if hasattr(self.env, 'physics') else self.env.render()
                 vlogs.append(frame)
 

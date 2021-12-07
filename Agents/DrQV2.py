@@ -8,10 +8,10 @@ import torch
 
 import Utils
 
-from Blocks.augmentations import IntensityAug, RandomShiftsAug
-from Blocks.encoders import CNNEncoder
-from Blocks.critics import EnsembleQCritic
-from Blocks.actors import TruncatedGaussianActor
+from Blocks.Augmentations import IntensityAug, RandomShiftsAug
+from Blocks.Encoders import CNNEncoder
+from Blocks.Critics import EnsembleQCritic
+from Blocks.Actors import TruncatedGaussianActor
 
 from Losses import PolicyLearning, QLearning
 

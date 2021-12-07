@@ -235,3 +235,59 @@ def one_hot(x, num_classes):
     inds = x.view(*x.shape, -1)
     zeros = torch.zeros(*x.shape, num_classes, dtype=x.dtype, device=x.device)
     return zeros.scatter(scatter_dim, inds, 1)
+
+
+# Converts an agent to a classifier
+def to_classifier(agent):
+    assert agent.discrete, "Only agents initialized as discrete " \
+                           "can be converted to classifiers. " \
+                           "Simply re-initialize your agent with " \
+                           "the 'discrete' hyper-parameter set to True."
+
+    def update(replay):
+
+        agent.step += 1
+
+        # "Recollect"
+
+        batch = replay.sample()  # Can also write 'batch = next(replay)'
+        obs, y_label = to_torch(batch, agent.device)
+
+        # "Imagine" / "Envision"
+
+        # Augment
+        if hasattr(agent, 'aug'):
+            obs = agent.aug(obs)
+
+        # Encode
+        obs = agent.encoder(obs)
+
+        # "Predict" / "Learn" / "Grow"
+
+        y_pred = agent.actor(obs).probs
+        loss = nn.CrossEntropyLoss()(y_pred, y_label)
+
+        # Update critic
+        optimize(loss, agent.encoder, agent.critic)
+
+        logs = {'step': agent.step,
+                'loss': loss.item(),
+                'accuracy': torch.sum(torch.argmax(y_pred, -1)
+                                      == y_label, -1) / y_pred.shape[0]}
+
+        return logs
+
+    setattr(agent, 'original_update', agent.update)
+    setattr(agent, 'update', update)
+
+    return agent
+
+
+# Converts a classifier to an agent
+def to_agent(classifier):
+
+    if hasattr(classifier, 'original_update'):
+        update = getattr(classifier, 'original_update')
+        setattr(classifier, 'update', update)
+
+    return classifier

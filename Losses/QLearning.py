@@ -54,6 +54,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         next_entropy = next_dist.entropy().mean(-1, keepdim=True)
         # next_action_log_proba = next_dist.log_prob(next_action).sum(-1, keepdim=True)  # Action-based entropy
         target_Q = reward + (discount * next_V) + (entropy_temp * next_entropy)
+        # TODO Q-value itself should be Gaussian, then next_V not needed
 
         # "Munchausen reward":
         # Current-action certainty maximization in reward, thereby increasing so-called "action-gap" w.r.t. above
