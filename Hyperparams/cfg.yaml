@@ -32,6 +32,7 @@ log_tensorboard: false
 # Misc
 root_path: ???  # To be specified later
 device: cuda
+RL: ??? # To be specified later
 # Experiment
 Agent: Agents.DQNDPGAgent
 seed: 1
@@ -73,6 +74,7 @@ replay:
   nstep: ${nstep}
   discount: ${discount}
   save: false
+  suite: ${suite}
 
 logger:
   _target_: Logger.Logger

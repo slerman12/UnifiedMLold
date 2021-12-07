@@ -242,11 +242,13 @@ def to_classifier(agent):
     assert agent.discrete, "Only agents initialized as discrete " \
                            "can be converted to classifiers. " \
                            "Simply re-initialize your agent with " \
-                           "the 'discrete' hyper-parameter set to True."
+                           "the 'discrete' hyper-parameter set to True." \
+                           "All agents support discrete actions."
 
     def update(replay):
 
-        agent.step += 1
+        if agent.training:
+            agent.step += 1
 
         # "Recollect"
 
@@ -256,7 +258,7 @@ def to_classifier(agent):
         # "Imagine" / "Envision"
 
         # Augment
-        if hasattr(agent, 'aug'):
+        if agent.training and hasattr(agent, 'aug'):
             obs = agent.aug(obs)
 
         # Encode
@@ -268,7 +270,8 @@ def to_classifier(agent):
         loss = nn.CrossEntropyLoss()(y_pred, y_label)
 
         # Update critic
-        optimize(loss, agent.encoder, agent.critic)
+        if agent.training:
+            optimize(loss, agent.encoder, agent.critic)
 
         logs = {'step': agent.step,
                 'loss': loss.item(),

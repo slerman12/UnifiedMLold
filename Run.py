@@ -21,6 +21,7 @@ cudnn.benchmark = True
 
 @hydra.main(config_path='Hyperparams', config_name='cfg')
 def main(args):
+
     # Setup
 
     Utils.set_seed_everywhere(args.seed)
@@ -29,12 +30,30 @@ def main(args):
 
     args.root_path, root_path = os.getcwd(), Path.cwd()  # Hydra doesn't support Path types
 
+    # All agents can convert seamlessly between RL or classification
+
+    # RL vs. classification is automatically inferred based on task,
+    # e.g., task=dmc/humanoid_walk (RL), task=classify/mnist (classification)
+
+    if args.RL:
+        # Reinforcement Learning
+        reinforce(args, root_path)
+    else:
+        # Classification
+        classify(args, root_path)
+
+
+def reinforce(args, root_path):
+
     # Train, test environments
     env = instantiate(args.environment)  # An instance of DeepMindControl, for example
-    test_env = instantiate(args.environment, train=False)
+    generalize = instantiate(args.environment, train=False)
 
+    # Load
     if (root_path / 'Saved.pt').exists():
         agent, replay = Utils.load(root_path, 'agent', 'replay')
+
+        agent = Utils.to_agent(agent)
     else:
         for arg in ('obs_shape', 'action_shape', 'discrete', 'obs_spec', 'action_spec'):
             setattr(args, arg, getattr(env, arg))
@@ -57,8 +76,8 @@ def main(args):
         if step % args.evaluate_per_steps == 0:
 
             for ep in range(args.evaluate_episodes):
-                _, logs, vlogs = test_env.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
-                                                  vlog=args.log_video)
+                _, logs, vlogs = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
+                                                    vlog=args.log_video)
 
                 logger.log(logs, 'Eval')
             logger.dump_logs('Eval')
@@ -90,6 +109,48 @@ def main(args):
 
             if args.log_tensorboard:
                 logger.log_tensorboard(logs, 'Train')
+
+
+def classify(args, root_path):
+
+    # Agent
+    agent = Utils.load(root_path,
+                       'agent') if (root_path / 'Saved.pt').exists() \
+        else instantiate(args.agent)  # An instance of DQNDPGAgent, for example
+
+    # Convert to classifier
+    agent = Utils.to_classifier(agent)
+
+    # Experience replay (train, test)
+    replay, generalize = instantiate(args.replay)  # An instance of Cifar_10, for example
+
+    # Loggers
+    logger = instantiate(args.logger)
+
+    # Start training
+    step = 0
+    while step < args.train_steps:
+
+        if step % args.evaluate_per_steps == 0:
+
+            # Evaluate
+            logs = agent.eval().update(generalize)
+
+            logger.log(logs, 'Eval', dump=True)
+
+            # Save
+            if args.save_session:
+                Utils.save(root_path, agent=agent)
+
+        # Train
+        logs = agent.train().update(replay)
+
+        logger.log(logs, 'Train', dump=True)
+
+        if args.log_tensorboard:
+            logger.log_tensorboard(logs, 'Train')
+
+        step += 1
 
 
 if __name__ == "__main__":

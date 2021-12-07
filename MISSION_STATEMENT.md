@@ -1,4 +1,4 @@
-# Unified ML
+# UnifiedML
 
 <p align="center">
 
@@ -10,7 +10,7 @@
 
 ## Principles
 
-> "If you can't explain it simply, you don't understand it well enough."
+> "If you can't explain it simply, you don't understand it well enough"
 >
 > -*Albert Einstein*
 
