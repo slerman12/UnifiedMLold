@@ -11,7 +11,7 @@ from Blocks.Actors import CategoricalCriticActor, TruncatedGaussianActor
 
 from Blocks.Encoders import LayerNormMLPEncoder
 from Blocks.Critics import EnsembleQCritic
-from Blocks.planners import SubPlanner
+from Blocks.Creators import SubPlanner
 
 from Losses import QLearning, PolicyLearning
 from Losses.SelfSupervisedLearning import bootstrapLearningBVS

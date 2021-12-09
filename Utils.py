@@ -219,13 +219,31 @@ class TanhTransform(pyd.transforms.Transform):
         return 2. * (math.log(2.) - x - F.softplus(-2. * x))
 
 
-# Compute the output shape of a CNN
-def conv_output_shape(in_height, in_width, kernel_size=1, stride=1, pad=0, dilation=1):
+# Compute the output shape of a CNN layer
+def conv_output_shape(in_height, in_width, kernel_size=1, stride=1, padding=0, dilation=1):
     if type(kernel_size) is not tuple:
         kernel_size = (kernel_size, kernel_size)
-    out_height = math.floor(((in_height + (2 * pad) - (dilation * (kernel_size[0] - 1)) - 1) / stride) + 1)
-    out_width = math.floor(((in_width + (2 * pad) - (dilation * (kernel_size[1] - 1)) - 1) / stride) + 1)
+    out_height = math.floor(((in_height + (2 * padding) - (dilation * (kernel_size[0] - 1)) - 1) / stride) + 1)
+    out_width = math.floor(((in_width + (2 * padding) - (dilation * (kernel_size[1] - 1)) - 1) / stride) + 1)
     return out_height, out_width
+
+
+# Compute the output shape of a whole CNN
+def cnn_output_shape(height, width, block):
+    if isinstance(block, (nn.Conv2d, nn.AvgPool2d)):
+        height, width = conv_output_shape(height, width,
+                                          kernel_size=block.kernel_size,
+                                          stride=block.stride,
+                                          padding=block.padding)
+    elif hasattr(block, 'output_shape'):
+        height, width = block.output_shape(height, width)
+    elif hasattr(block, 'modules'):
+        for module in block.modules():
+            height, width = cnn_output_shape(height, width, module)
+
+    output_shape = (height, width)  # TODO should probably do (width, height) universally
+
+    return output_shape
 
 
 # Multi-dimensional one-hot encoding

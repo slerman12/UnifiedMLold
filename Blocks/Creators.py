@@ -3,6 +3,9 @@ from torch import nn
 import Utils
 
 
+"""Creators: As in, "to create." Generative models that plan, forecast, and imagine."""
+
+
 class SubPlanner(nn.Module):
     """SubPlanner state-action based network."""
     def __init__(self, repr_dim, feature_dim, hidden_dim, output_dim, action_dim,

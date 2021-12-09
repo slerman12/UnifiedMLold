@@ -9,7 +9,7 @@ import torch
 import Utils
 
 from Blocks.Augmentations import IntensityAug, RandomShiftsAug
-from Blocks.Encoders import CNNEncoder
+from Blocks.Encoders import BasicCNNEncoder
 from Blocks.Actors import TruncatedGaussianActor, CategoricalCriticActor
 from Blocks.Critics import EnsembleQCritic
 
@@ -34,7 +34,7 @@ class DQNDPGAgent(torch.nn.Module):
         self.explore_steps = explore_steps
 
         # Models
-        self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
+        self.encoder = BasicCNNEncoder(obs_shape, optim_lr=lr).to(device)
 
         self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                       target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
