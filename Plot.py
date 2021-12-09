@@ -39,10 +39,10 @@ def plot(df, key='Reward', name='Curve2'):
     for i, task in enumerate(tasks):
         data = df[df['task'] == task]
         task = ' '.join([y.capitalize() for y in task.split('_')])
+        data.columns = [' '.join([y.capitalize() for y in x.split('_')]) for x in data.columns]
 
         data.loc[data['Agent'] == 'SPR', 'Agent'] = 'SPR-general (mine)'
 
-        data.columns = [' '.join([y.capitalize() for y in x.split('_')]) for x in data.columns]
         row = i // cols
         col = i % cols
         ax = axs[row, col] if rows > 1 else axs[col] if cols > 1 else axs
