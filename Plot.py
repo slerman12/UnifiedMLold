@@ -39,13 +39,14 @@ def plot(df, key='Reward', name='Curve2'):
     for i, task in enumerate(tasks):
         data = df[df['task'] == task]
         task = ' '.join([y.capitalize() for y in task.split('_')])
+
+        data.loc[data['Agent'] == 'SPR', 'Agent'] = 'SPR-general (mine)'
+
         data.columns = [' '.join([y.capitalize() for y in x.split('_')]) for x in data.columns]
         row = i // cols
         col = i % cols
         ax = axs[row, col] if rows > 1 else axs[col] if cols > 1 else axs
         hue_order = np.sort(data.Agent.unique())
-
-        data.loc[data['Agent'] == 'SPR', 'Agent'] = 'SPR-general (mine)'
 
         sns.lineplot(x='Step', y=key, data=data, ci='sd', hue='Agent', hue_order=hue_order, ax=ax)
         ax.set_title(f'{task}')
