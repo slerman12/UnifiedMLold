@@ -44,6 +44,9 @@ def plot(df, key='Reward', name='Curve2'):
         col = i % cols
         ax = axs[row, col] if rows > 1 else axs[col] if cols > 1 else axs
         hue_order = np.sort(data.Agent.unique())
+
+        data['agent'][data['agent'] == 'SPR'] = 'SPR-general (mine)'
+
         sns.lineplot(x='Step', y=key, data=data, ci='sd', hue='Agent', hue_order=hue_order, ax=ax)
         ax.set_title(f'{task}')
 
@@ -80,7 +83,6 @@ for file in files_to_plot:
         action_repeat = 2
         bla['hour'] = bla['time']
     bla['agent'] = bla['agent'] + f'{n[i]}'
-    bla['agent'][bla['agent'] == 'SPR'] = 'SPR-general (mine)'
     to_c.append(bla)
     i += 1
 df = pd.concat(to_c, ignore_index=True)
