@@ -45,7 +45,7 @@ def plot(df, key='Reward', name='Curve2'):
         ax = axs[row, col] if rows > 1 else axs[col] if cols > 1 else axs
         hue_order = np.sort(data.Agent.unique())
 
-        data['Agent'][data['agent'] == 'SPR'] = 'SPR-general (mine)'
+        data['Agent'][data['Agent'] == 'SPR'] = 'SPR-general (mine)'
 
         sns.lineplot(x='Step', y=key, data=data, ci='sd', hue='Agent', hue_order=hue_order, ax=ax)
         ax.set_title(f'{task}')
