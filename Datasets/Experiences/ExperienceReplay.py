@@ -15,8 +15,8 @@ from torch.utils.data import IterableDataset
 
 
 class ExperienceReplay:
-    def __init__(self, root_path, obs_spec, action_spec, capacity, batch_size, num_workers,
-                 save, nstep, discount, suite):
+    def __init__(self, batch_size, num_workers, root_path, obs_spec, action_spec, capacity,
+                 save, nstep, discount):  # TODO pass in nulls
 
         # Episode storage
 
@@ -33,20 +33,22 @@ class ExperienceReplay:
         self.episode = {spec['name']: [] for spec in self.specs}
         self.episode_len = 0
 
+        self.merging_enabled = True
+
         # Experience loading
 
         # Can override
-        self.loading = ExperienceLoading(load_path=self.store_path,
-                                         capacity=capacity // max(1, num_workers),
-                                         num_workers=num_workers,
-                                         fetch_every=1000,
-                                         save=save)
+        self.loader = ExperienceLoading(load_path=self.store_path,
+                                        capacity=capacity // max(1, num_workers),
+                                        num_workers=num_workers,
+                                        fetch_every=1000,
+                                        save=save)
 
         self.nstep = nstep
         self.discount = discount
 
-        self.loading.sample = self._sample
-        self.loading.process = self._process
+        self.loader.sample = self._sample
+        self.loader.process = self._process
 
         self._replay = None
 
@@ -55,7 +57,7 @@ class ExperienceReplay:
             np.random.seed(seed)
             random.seed(seed)
 
-        self.loader = torch.utils.data.DataLoader(dataset=self.loading,
+        self.loader = torch.utils.data.DataLoader(dataset=self.loader,
                                                   batch_size=batch_size,
                                                   num_workers=num_workers,
                                                   pin_memory=True,
@@ -68,10 +70,11 @@ class ExperienceReplay:
 
         # Enable merging of different Experience Replays - maybe not stable
         if isinstance(experiences, ExperienceReplay):
+            assert experiences.merging_enabled, 'added replay not compatible with merging'
             if self.episode_len > 0:
                 assert set([spec.name for spec in experiences.specs]) == \
                        set([name for name in self.episode]), 'make sure to store before merging a disjoint replay'
-            self.loading.load_paths.append(experiences.store_path)
+            self.loader.load_paths.append(experiences.store_path)
             self.num_episodes += experiences.num_episodes
             self.num_experiences_stored += experiences.num_experiences_stored
             experiences = [{name: experiences.episode[name][i] for name in experiences.episode}
@@ -115,7 +118,7 @@ class ExperienceReplay:
         self.episode_len = 0
 
     def __len__(self):
-        return self.loading.num_experiences_loaded
+        return self.loader.num_experiences_loaded
 
     @property
     def replay(self):

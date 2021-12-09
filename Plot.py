@@ -80,6 +80,7 @@ for file in files_to_plot:
         action_repeat = 2
         bla['hour'] = bla['time']
     bla['agent'] = bla['agent'] + f'{n[i]}'
+    bla['agent'][bla['agent'] == 'spr'] = 'SPR-general (mine)'
     to_c.append(bla)
     i += 1
 df = pd.concat(to_c, ignore_index=True)

@@ -221,7 +221,7 @@ def make(task, frame_stack=4, action_repeat=4, max_episode_frames=None, truncate
     # env = gym.make(task, full_action_space=False)  # For minimal action spaces
     env.seed(seed)
     env = AtariPreprocessing(env, frame_skip=action_repeat if train else action_repeat,  # Recommended: 4
-                             terminal_on_life_loss=False, screen_size=84)
+                             terminal_on_life_loss=not recommended, screen_size=84)
 
     # Stack several frames
     env = FrameStackWrapper(env, frame_stack)  # Recommended: 4, Note: not redundant to "frame pooling"

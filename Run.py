@@ -1,4 +1,4 @@
-# Copyright Sam Lerman. All Rights Reserved.
+# Copyright (c) Sam Lerman. All Rights Reserved.
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
@@ -44,7 +44,6 @@ def main(args):
 
 
 def reinforce(args, root_path):
-
     # Train, test environments
     env = instantiate(args.environment)  # An instance of DeepMindControl, for example
     generalize = instantiate(args.environment, train=False)
@@ -112,7 +111,6 @@ def reinforce(args, root_path):
 
 
 def classify(args, root_path):
-
     # Agent
     agent = Utils.load(root_path,
                        'agent') if (root_path / 'Saved.pt').exists() \
@@ -151,6 +149,8 @@ def classify(args, root_path):
             logger.log_tensorboard(logs, 'Train')
 
         step += 1
+
+    # Death
 
 
 if __name__ == "__main__":

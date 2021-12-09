@@ -74,7 +74,6 @@ replay:
   nstep: ${nstep}
   discount: ${discount}
   save: false
-  suite: ${suite}
 
 logger:
   _target_: Logger.Logger

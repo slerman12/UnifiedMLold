@@ -1,4 +1,4 @@
-# Copyright Sam Lerman. All Rights Reserved.
+# Copyright (c) Sam Lerman. All Rights Reserved.
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
@@ -239,11 +239,11 @@ def one_hot(x, num_classes):
 
 # Converts an agent to a classifier
 def to_classifier(agent):
-    assert agent.discrete, "Only agents initialized as discrete " \
-                           "can be converted to classifiers. " \
-                           "Simply re-initialize your agent with " \
-                           "the 'discrete' hyper-parameter set to True." \
-                           "All agents support discrete actions."
+    assert agent.discrete, "Only agents initialized as discrete\n" \
+                           "can be converted to classifiers.\n" \
+                           "Simply re-initialize your agent with\n" \
+                           "the 'discrete' hyper-parameter set to True;\n" \
+                           "all agents support discrete actions.\n"
 
     def update(replay):
 
