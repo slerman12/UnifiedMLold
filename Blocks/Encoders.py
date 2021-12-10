@@ -58,7 +58,8 @@ class _CNNEncoder(nn.Module):
 
         # Optionally append context to channels assuming dimensions allow
         if context is not None:
-            assert context.shape[-1] == self.in_channels - obs.shape[1]
+            assert len(context.shape) == 2 and \
+                   context.shape[-1] == self.in_channels - context.shape[1]
 
             action = context.reshape(-1, context.shape[-1])[:, :, None, None].expand(-1, -1, *obs.shape[-2:])
             obs = torch.cat([obs,  action], 1)
