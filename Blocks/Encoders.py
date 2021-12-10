@@ -42,6 +42,8 @@ class _Encoder(nn.Module):
         self.repr_shape = (out_channels, height, width)  # Feature map shape
         self.repr_dim = math.prod(self.repr_shape)  # Flattened features dim
 
+        print(self.repr_shape, self.repr_dim)
+
     def update_target_params(self):
         assert self.target_tau is not None
         Utils.soft_update_params(self, self.target, self.target_tau)

@@ -92,7 +92,6 @@ class MLPEnsembleQCritic(_Critic):
         super().__init__()
 
         repr_dim = math.prod(repr_shape)
-        print(repr_dim)
 
         # Linear + LayerNorm
         self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
@@ -104,8 +103,8 @@ class MLPEnsembleQCritic(_Critic):
 
         # MLP
         self.Q_nets = nn.ModuleList([MLP(in_dim=in_dim,
-                                         out_dim=Q_dim,
                                          hidden_dim=hidden_dim,
+                                         out_dim=Q_dim,
                                          depth=1,
                                          l2_norm=critic_norm)
                                      for _ in range(ensemble_size)])
