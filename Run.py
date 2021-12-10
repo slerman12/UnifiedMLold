@@ -26,7 +26,7 @@ def main(args):
 
     Utils.set_seed_everywhere(args.seed)
 
-    torch.device(args.device)
+    args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     args.root_path, root_path = os.getcwd(), Path.cwd()  # Hydra doesn't support Path types
 

@@ -20,9 +20,18 @@ class _Critic(nn.Module):
         self.trunk = nn.Identity()
         self.Q_nets = None
 
-    def init(self, discrete=False, optim_lr=None, target_tau=None, **kwargs):
+    def init(self, action_dim, ensemble_size=2, discrete=False, optim_lr=None, target_tau=None, **kwargs):
 
         assert self.Q_nets is not None, 'Inheritor of Critic must define self.Q_nets'
+
+        # Discrete action space
+        self.discrete = discrete
+
+        # Action dim
+        self.action_dim = action_dim
+
+        # Ensemble size
+        self.ensemble_size = ensemble_size
 
         # Initialize weights
         self.apply(Utils.weight_init)
@@ -34,12 +43,10 @@ class _Critic(nn.Module):
         # EMA target
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(**kwargs)
+            target = self.__class__(action_dim=action_dim, ensemble_size=ensemble_size,
+                                    discrete=discrete, **kwargs)
             target.load_state_dict(self.state_dict())
             self.target = target
-
-        # Discrete action space
-        self.discrete = discrete
 
     def update_target_params(self):
         assert self.target_tau is not None
