@@ -238,8 +238,8 @@ def cnn_output_shape(height, width, block):
     elif hasattr(block, 'output_shape'):
         height, width = block.output_shape(height, width)
     elif hasattr(block, 'modules'):
+        print(block.modules(), "oooooopspksjdsndkddndddd")
         for module in block.modules():
-            print(block, "wooooooooooooo", module)
             height, width = cnn_output_shape(height, width, module)
 
     output_shape = (height, width)  # TODO should probably do (width, height) universally
