@@ -15,11 +15,9 @@ from Blocks.Critics import MLPEnsembleQCritic
 from Blocks.Architectures.MLP import MLPBlock
 
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
-print("LLLLLLL")
 
 
 class DrQV2PlusAgent(torch.nn.Module):
-    """Variance-Reduced Data-Regularized Q-Network (https://openreview.net/pdf?id=9xhgmsNVHu)"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
