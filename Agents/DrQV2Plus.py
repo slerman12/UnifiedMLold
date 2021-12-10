@@ -56,82 +56,82 @@ class DrQV2PlusAgent(torch.nn.Module):
         # Birth
 
     # "Play"
-    def act(self, obs):
-        with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
-            obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
-
-            # "See"
-            obs = self.encoder(obs)
-            dist = self.actor(obs, self.step)
-
-            action = dist.sample() if self.training \
-                else dist.best if self.discrete \
-                else dist.mean
-
-            if self.training:
-                self.step += 1
-
-                # Explore phase
-                if self.step < self.explore_steps and self.training:
-                    action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
-                        else action.uniform_(-1, 1)
-
-            return action
-
-    # "Dream"
-    def update(self, replay):
-        logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
-            else None
-
-        # "Recollect"
-
-        batch = replay.sample()  # Can also write 'batch = next(replay)'
-        obs_orig, action, reward, discount, next_obs_orig, *traj = Utils.to_torch(
-            batch, self.device)
-        traj_o, traj_a, traj_r = traj
-
-        # "Imagine" / "Envision"
-
-        # Augment
-        obs_orig = self.aug(obs_orig)
-        next_obs = self.aug(next_obs_orig)
-
-        # Encode
-        obs = self.encoder(obs_orig)
-        with torch.no_grad():
-            next_obs = self.encoder(next_obs)  # TODO encoder target? then "concept" not needed. or no target fr CL
-
-        if self.log_tensorboard:
-            logs['batch_reward'] = reward.mean().item()
-
-        # "Predict" / "Discern" / "Learn" / "Grow"
-
-        # Critic loss
-        critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
-                                                  obs, action, reward, discount, next_obs,
-                                                  self.step, ensemble_reduction='mean', logs=logs)
-
-        # Self supervision loss
-        self_supervision_loss = SelfSupervisedLearning.bootstrapYourOwnLatent(self.encoder, self.critic,
-                                                                              self.self_supervisor,
-                                                                              obs_orig, next_obs_orig)
-
-        # Update critic
-        Utils.optimize(critic_loss + self_supervision_loss,
-                       self.encoder,
-                       self.critic,
-                       self.self_supervisor)
-
-        self.encoder.update_target_params()  # note: should Utils.optimize optionally update target params as well?
-        self.critic.update_target_params()
-
-        # Actor loss
-        if not self.discrete:
-            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                                           self.step, logs=logs)
-
-            # Update actor
-            Utils.optimize(actor_loss + 0.000001 * self.actor.raw_mu.square().mean(),
-                           self.actor)
-
-        return logs
+    # def act(self, obs):
+    #     with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
+    #         obs = torch.as_tensor(obs, device=self.device).unsqueeze(0)
+    #
+    #         # "See"
+    #         obs = self.encoder(obs)
+    #         dist = self.actor(obs, self.step)
+    #
+    #         action = dist.sample() if self.training \
+    #             else dist.best if self.discrete \
+    #             else dist.mean
+    #
+    #         if self.training:
+    #             self.step += 1
+    #
+    #             # Explore phase
+    #             if self.step < self.explore_steps and self.training:
+    #                 action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
+    #                     else action.uniform_(-1, 1)
+    #
+    #         return action
+    #
+    # # "Dream"
+    # def update(self, replay):
+    #     logs = {'episode': self.episode, 'step': self.step} if self.log_tensorboard \
+    #         else None
+    #
+    #     # "Recollect"
+    #
+    #     batch = replay.sample()  # Can also write 'batch = next(replay)'
+    #     obs_orig, action, reward, discount, next_obs_orig, *traj = Utils.to_torch(
+    #         batch, self.device)
+    #     traj_o, traj_a, traj_r = traj
+    #
+    #     # "Imagine" / "Envision"
+    #
+    #     # Augment
+    #     obs_orig = self.aug(obs_orig)
+    #     next_obs = self.aug(next_obs_orig)
+    #
+    #     # Encode
+    #     obs = self.encoder(obs_orig)
+    #     with torch.no_grad():
+    #         next_obs = self.encoder(next_obs)  # TODO encoder target? then "concept" not needed. or no target fr CL
+    #
+    #     if self.log_tensorboard:
+    #         logs['batch_reward'] = reward.mean().item()
+    #
+    #     # "Predict" / "Discern" / "Learn" / "Grow"
+    #
+    #     # Critic loss
+    #     critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
+    #                                               obs, action, reward, discount, next_obs,
+    #                                               self.step, ensemble_reduction='mean', logs=logs)
+    #
+    #     # Self supervision loss
+    #     self_supervision_loss = SelfSupervisedLearning.bootstrapYourOwnLatent(self.encoder, self.critic,
+    #                                                                           self.self_supervisor,
+    #                                                                           obs_orig, next_obs_orig)
+    #
+    #     # Update critic
+    #     Utils.optimize(critic_loss + self_supervision_loss,
+    #                    self.encoder,
+    #                    self.critic,
+    #                    self.self_supervisor)
+    #
+    #     self.encoder.update_target_params()  # note: should Utils.optimize optionally update target params as well?
+    #     self.critic.update_target_params()
+    #
+    #     # Actor loss
+    #     if not self.discrete:
+    #         actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
+    #                                                        self.step, logs=logs)
+    #
+    #         # Update actor
+    #         Utils.optimize(actor_loss + 0.000001 * self.actor.raw_mu.square().mean(),
+    #                        self.actor)
+    #
+    #     return logs
