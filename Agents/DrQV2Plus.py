@@ -18,8 +18,6 @@ from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
 class DrQV2PlusAgent(torch.nn.Module):
-
-    print("LLLLLLL")
     """Variance-Reduced Data-Regularized Q-Network (https://openreview.net/pdf?id=9xhgmsNVHu)"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture

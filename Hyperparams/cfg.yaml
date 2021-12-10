@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - task@_global_: dmc/quadruped_walk
+  - task@_global_: atari/krull
   - override hydra/launcher: submitit_local
 
 # Environment
@@ -102,3 +102,6 @@ hydra:
     mem_gb: 160
     nodes: 1
     submitit_folder: ./exp/${now:%Y.%m.%d}/${now:%H%M%S}_${agent_cfg.experiment}/.slurm
+    job:
+      env_set:
+        HYDRA_FULL_ERROR: 1
