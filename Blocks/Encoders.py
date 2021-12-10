@@ -69,7 +69,6 @@ class _Encoder(nn.Module):
         if self.flatten:
             h = h.view(*shape[:-3], -1)
             assert h.shape[-1] == self.repr_dim
-            print(h.shape)
         else:
             h = h.view(*shape[:-3], *h.shape[-3:])
             assert tuple(h.shape[-3:]) == self.repr_shape
