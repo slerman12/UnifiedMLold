@@ -20,7 +20,7 @@ class _Critic(nn.Module):
         self.trunk = nn.Identity()
         self.Q_nets = None
 
-    def init(self, action_dim, ensemble_size=2, discrete=False, optim_lr=None, target_tau=None, **kwargs):
+    def init(self, action_dim, ensemble_size, discrete, optim_lr=None, target_tau=None, **kwargs):
 
         assert self.Q_nets is not None, 'Inheritor of Critic must define self.Q_nets'
 
@@ -92,6 +92,7 @@ class MLPEnsembleQCritic(_Critic):
         super().__init__()
 
         repr_dim = math.prod(repr_shape)
+        print(repr_dim)
 
         # Linear + LayerNorm
         self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
