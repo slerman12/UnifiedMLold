@@ -39,7 +39,7 @@ class LayerNormMLPBlock(nn.Module):
 
     Can also l2-normalize penultimate layer (https://openreview.net/pdf?id=9xhgmsNVHu)"""
 
-    def __init__(self, in_dim, out_dim, feature_dim, hidden_dim, depth=1,
+    def __init__(self, in_dim, out_dim, feature_dim=512, hidden_dim=512, depth=1,
                  layer_norm=True, batch_norm=False, batch_norm_last=False, l2_norm=False,
                  target_tau=None, optim_lr=None):
         super().__init__()
