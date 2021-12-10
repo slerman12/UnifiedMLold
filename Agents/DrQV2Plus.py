@@ -23,7 +23,7 @@ class DrQV2PlusAgent(torch.nn.Module):
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
-                 discrete, device, log_tensorboard  # On-boarding
+                 discrete, device, log_tensorboard, **kwargs  # On-boarding
                  ):
         super().__init__()
 
