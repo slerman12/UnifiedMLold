@@ -246,7 +246,7 @@ def cnn_output_shape(height, width, block):
     return output_shape
 
 
-# Multi-dimensional one-hot encoding
+# (Multi-dim) one-hot encoding
 def one_hot(x, num_classes):
     x = x.long()
     scatter_dim = len(x.shape)

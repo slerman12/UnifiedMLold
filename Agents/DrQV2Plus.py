@@ -9,9 +9,9 @@ import torch
 import Utils
 
 from Blocks.Augmentations import IntensityAug, RandomShiftsAug
-from Blocks.Encoders import BasicCNNEncoder
+from Blocks.Encoders import CNNEncoder
 from Blocks.Actors import TruncatedGaussianActor, CategoricalCriticActor
-from Blocks.Critics import EnsembleQCritic
+from Blocks.Critics import MLPEnsembleQCritic
 from Blocks.Architectures.MLP import MLP
 
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
@@ -36,11 +36,11 @@ class DrQV2PlusAgent(torch.nn.Module):
         self.explore_steps = explore_steps
 
         # Models
-        self.encoder = BasicCNNEncoder(obs_shape, target_tau=target_tau, optim_lr=lr).to(device)
+        self.encoder = CNNEncoder(obs_shape, target_tau=target_tau, optim_lr=lr).to(device)
 
-        self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-                                      critic_norm=True,
-                                      target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
+        self.critic = MLPEnsembleQCritic(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                         critic_norm=True,
+                                         target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],

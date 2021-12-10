@@ -2,6 +2,8 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import math
+
 import torch
 from torch import nn
 from torch.distributions import Categorical, Normal, TransformedDistribution
@@ -9,12 +11,15 @@ from torch.distributions import Categorical, Normal, TransformedDistribution
 import Utils
 
 
-class BaseActor(nn.Module):
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, policy_norm=False,
+class Actor(nn.Module):
+    """Base actor"""
+    def __init__(self, repr_shape, feature_dim, hidden_dim, action_dim, policy_norm=False,
                  target_tau=None, optim_lr=None, **kwargs):
         super().__init__()
 
         self.action_dim = action_dim
+
+        repr_dim = math.prod(repr_shape)
 
         self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
                                    nn.LayerNorm(feature_dim), nn.Tanh())
@@ -34,8 +39,8 @@ class BaseActor(nn.Module):
 
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(repr_dim=repr_dim, feature_dim=feature_dim,
-                                    hidden_dim=hidden_dim, action_dim=action_dim, **kwargs)
+            target = self.__class__(repr_shape=repr_shape, feature_dim=feature_dim, hidden_dim=hidden_dim,
+                                    action_dim=action_dim, policy_norm=policy_norm, **kwargs)
             target.load_state_dict(self.state_dict())
             self.target = target
 
@@ -49,15 +54,15 @@ class BaseActor(nn.Module):
         return Q
 
 
-class TruncatedGaussianActor(BaseActor):
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim,
+class TruncatedGaussianActor(Actor):
+    def __init__(self, repr_shape, feature_dim, hidden_dim, action_dim,
                  policy_norm=True, stddev_schedule=None, stddev_clip=None,
                  target_tau=None, optim_lr=None, **kwargs):  # note added kwargs todo check if ok
         dim = kwargs.get("dim", action_dim)  # (To make sure target has the same action_dim)
 
         num_outputs = 2 if stddev_schedule is None else 1
 
-        super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
+        super().__init__(repr_shape=repr_shape, feature_dim=feature_dim,
                          hidden_dim=hidden_dim, action_dim=dim * num_outputs, policy_norm=policy_norm,
                          stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
                          target_tau=target_tau, optim_lr=optim_lr, dim=dim)
@@ -82,50 +87,6 @@ class TruncatedGaussianActor(BaseActor):
         mu = torch.tanh(mu)
 
         dist = Utils.TruncatedNormal(mu, std, clip=self.stddev_clip)
-
-        return dist
-
-
-class DiagonalGaussianActor(BaseActor):
-    """torch.distributions implementation of an diagonal Gaussian policy."""
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim,
-                 stddev_schedule=None, log_std_bounds=None,
-                 target_tau=None, optim_lr=None, **kwargs):
-        dim = kwargs.get("dim", action_dim)  # (To make sure target has the same action_dim)
-
-        num_outputs = 2 if stddev_schedule is None else 1
-
-        super().__init__(repr_dim=repr_dim, feature_dim=feature_dim,
-                         hidden_dim=hidden_dim, action_dim=dim * num_outputs,
-                         stddev_schedule=stddev_schedule, log_std_bounds=log_std_bounds,
-                         target_tau=target_tau, optim_lr=optim_lr, dim=dim)
-
-        self.tanh_transform = Utils.TanhTransform()
-
-        self.discrete = False
-        self.action_dim = dim
-        self.stddev_schedule = stddev_schedule
-        self.log_std_bounds = log_std_bounds
-
-    def forward(self, obs, step=None):
-        h = self.trunk(obs)
-
-        if self.stddev_schedule is None or step is None:
-            mu, log_std = self.policy(h).chunk(2, dim=-1)
-
-            # Constrain log_std inside [log_std_min, log_std_max]
-            log_std = torch.tanh(log_std)
-            log_std_min, log_std_max = self.log_std_bounds
-            log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
-            std = log_std.exp()
-        else:
-            mu = self.policy(h)
-            std = Utils.schedule(self.stddev_schedule, step)
-            std = torch.full_like(mu, std)
-
-        dist = TransformedDistribution(Normal(mu, std), [self.tanh_transform])
-
-        setattr(dist, 'mean', self.tanh_transform(dist.mean))
 
         return dist
 

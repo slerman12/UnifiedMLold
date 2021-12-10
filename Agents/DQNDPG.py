@@ -9,9 +9,9 @@ import torch
 import Utils
 
 from Blocks.Augmentations import IntensityAug, RandomShiftsAug
-from Blocks.Encoders import BasicCNNEncoder
+from Blocks.Encoders import CNNEncoder
 from Blocks.Actors import TruncatedGaussianActor, CategoricalCriticActor
-from Blocks.Critics import EnsembleQCritic
+from Blocks.Critics import MLPEnsembleQCritic
 
 from Losses import QLearning, PolicyLearning
 
@@ -34,13 +34,13 @@ class DQNDPGAgent(torch.nn.Module):
         self.explore_steps = explore_steps
 
         # Models
-        self.encoder = BasicCNNEncoder(obs_shape, optim_lr=lr).to(device)
+        self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
 
-        self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-                                      target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
+        self.critic = MLPEnsembleQCritic(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                         target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
-            else TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
+            else TruncatedGaussianActor(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
                                         stddev_schedule, stddev_clip,
                                         optim_lr=lr).to(device)
 

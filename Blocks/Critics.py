@@ -2,47 +2,39 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import math
+
 import torch
 from torch import nn
+
 import Utils
 
+from Blocks.Architectures.MLP import MLP
+from Blocks.Architectures.Residual import ResidualBlock
 
-class EnsembleQCritic(nn.Module):
-    """Critic network, employs ensemble Q learning."""
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim, ensemble_size=2, critic_norm=False,
-                 target_tau=None, optim_lr=None, discrete=False, **kwargs):
+
+class _Critic(nn.Module):
+    """Base critic"""
+    def __init__(self):
         super().__init__()
+        self.trunk = nn.Identity()
+        self.Q_nets = None
 
-        self.action_dim = action_dim
-        self.ensemble_size = ensemble_size
-        self.discrete = discrete
+    def init(self, optim_lr=None, target_tau=None, **kwargs):
 
-        self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
-                                   nn.LayerNorm(feature_dim), nn.Tanh())
+        assert self.Q_nets is not None, 'Inheritor of Critic must define self.Q_nets'
 
-        in_dim = feature_dim if discrete else feature_dim + action_dim
-        Q_dim = action_dim if discrete else 1
-
-        self.Q_nets = nn.ModuleList([
-            nn.Sequential(
-                nn.Linear(in_dim, hidden_dim),
-                nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
-                nn.ReLU(inplace=True),
-                # See: https://openreview.net/pdf?id=9xhgmsNVHu
-                Utils.L2Norm() if critic_norm else nn.Identity(),
-                nn.Linear(hidden_dim, Q_dim)
-            )
-            for _ in range(ensemble_size)])
-
+        # Initialize weights
         self.apply(Utils.weight_init)
 
+        # Optimizer
         if optim_lr is not None:
             self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
 
+        # EMA target
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(repr_dim=repr_dim, feature_dim=feature_dim, hidden_dim=hidden_dim,
-                                    action_dim=action_dim, ensemble_size=ensemble_size, discrete=discrete, **kwargs)
+            target = self.__class__(**kwargs)
             target.load_state_dict(self.state_dict())
             self.target = target
 
@@ -50,113 +42,103 @@ class EnsembleQCritic(nn.Module):
         assert self.target_tau is not None
         Utils.soft_update_params(self, self.target, self.target_tau)
 
+    # Get action Q-value(s) for an observation
     def forward(self, obs=None, action=None, dist=None):
         if self.discrete:
-            assert obs is not None or dist is not None
-        else:
-            assert obs is not None and action is not None
-            dist = None  # dist precedes action in continuous, therefore redundant if action not None
+            assert obs is not None or dist is not None, 'Q-values require obs or existing dist'
 
-        if dist is None:  # Predict Qs from obs
-            h = self.trunk(obs)
-            if not self.discrete:
-                h = torch.cat([h, action], dim=-1)
-            # get Q1, Q2, ...
-            Qs = tuple(Q_net(h) for Q_net in self.Q_nets)
-        else:  # Recall Qs from discrete actor
-            # get dist.Q1, dist.Q2, ...
-            Qs = dist.Qs
-        if self.discrete and action is not None:  # Analogous to dist.log_probs(action) except w/ Qs and discrete action
-            # get Q1[action], Q2[action], ...
-            ind = action.long().view(*Qs[0].shape[:-1], 1)
-            Qs = tuple(torch.gather(Q, -1, ind) for Q in Qs)
-        return Qs
+            # All actions' Q-values
+            if dist is None:
+                h = self.trunk(obs)
+                Qs = tuple(Q_net(h) for Q_net in self.Q_nets)
+            else:
+                Qs = dist.Qs
 
-
-class EnsemblePROCritic(EnsembleQCritic):
-    def __init__(self, repr_dim, feature_dim, hidden_dim, action_dim=0, ensemble_size=2,
-                 target_tau=None, optim_lr=None, discrete=False, **kwargs):
-
-        size = kwargs.get("size", ensemble_size)  # so that self and target have consistent ensemble sizes
-        super().__init__(repr_dim, feature_dim, hidden_dim, action_dim if discrete else 0, size * 2,
-                         target_tau, optim_lr, discrete, size=size)
-
-        self.action_dim = action_dim
-        self.ensemble_size = size
-
-    def forward(self, obs=None, action=None, dist=None):
-        assert obs is not None and dist is not None
-
-        h = self.trunk(obs)
-
-        AV = tuple(mlp(h) for mlp in self.Q_nets)
-
-        A = AV[:self.ensemble_size]
-        V = AV[self.ensemble_size:]
-
-        # TODO consider clipping log_pi like in Munchausen
-        # TODO consider the log-sum-exp trick (for discrete only?) : log_pi = q - max_q - log clipped exp (q-max_q)/temp
-        # TODO I think above can be done in actor
-        # TODO torch.logsumexp !!
-        if self.discrete:
-            log_pi = dist.logits
-
-            # get Q1, Q2, ...
-            Qs = tuple((torch.abs(a) * log_pi + v) for a, v in zip(A, V))
-
+            # Q-value for discrete action
             if action is not None:
-                # get Q1[action], Q2[action], ...
                 ind = action.long().view(*Qs[0].shape[:-1], 1)
                 Qs = tuple(torch.gather(Q, -1, ind) for Q in Qs)
         else:
-            # todo consider scatter sampling, subtracting or adding |m|*mean, w/ or w/o b,
-            #  "dueling" Q=V(s)+A(s,a)-A(s).mean
-            log_pi = dist.log_prob(action)
+            assert obs is not None and action is not None, 'Action must be specified for continuous'
 
-            # get Q1, Q2, ...
-            Qs = tuple((torch.abs(a) * log_pi + v).mean(-1, keepdim=True) for a, v in zip(A, V))
+            # Q-value for continuous action
+            h = self.trunk(obs)
+            h_a = torch.cat([self.trunk(h), action], dim=-1)
+            Qs = tuple(Q_net(h_a) for Q_net in self.Q_nets)
 
+        # Ensemble of Q-value predictions
         return Qs
 
 
-# TODO
-class DuelingCritic(nn.Module):
-    """Critic network, employs dueling Q networks."""
-    def __init__(self, repr_dim, num_actions, feature_dim, hidden_dim, dueling):
+class MLPEnsembleQCritic(_Critic):
+    """
+    MLP-based Critic network, employs ensemble Q learning,
+    e.g. DrQV2 (https://arxiv.org/abs/2107.09645).
+    """
+
+    def __init__(self, repr_shape, feature_dim, hidden_dim, action_dim, ensemble_size=2, critic_norm=False,
+                 discrete=False, target_tau=None, optim_lr=None):
+
         super().__init__()
 
-        self.dueling = dueling
+        repr_dim = math.prod(repr_shape)
 
+        # Linear + LayerNorm
         self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
                                    nn.LayerNorm(feature_dim), nn.Tanh())
 
-        if dueling:  # todo hidden depth of 1 would suffice for Atari, can use MLP
-            #  todo = MLP(feature_dim, hidden_dim, num_actions, hidden_depth)
-            # todo drq paper noted two linears, not three
-            self.V = nn.Sequential(
-                nn.Linear(feature_dim, hidden_dim),
-                # nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
-                nn.ReLU(inplace=True), nn.Linear(hidden_dim, num_actions))  # TODO num_actions->1?
-            self.A = nn.Sequential(
-                nn.Linear(feature_dim, hidden_dim),
-                # nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
-                nn.ReLU(inplace=True), nn.Linear(hidden_dim, num_actions))
-        else:
-            self.Q = nn.Sequential(
-                nn.Linear(feature_dim, hidden_dim),
-                # nn.ReLU(inplace=True), nn.Linear(hidden_dim, hidden_dim),
-                nn.ReLU(inplace=True), nn.Linear(hidden_dim, num_actions))
+        # MLP dimensions
+        in_dim = feature_dim if discrete else feature_dim + action_dim
+        Q_dim = action_dim if discrete else 1
 
-        self.apply(Utils.weight_init)
+        # MLP
+        self.Q_nets = nn.ModuleList([MLP(in_dim=in_dim,
+                                         out_dim=Q_dim,
+                                         hidden_dim=hidden_dim,
+                                         depth=1,
+                                         l2_norm=critic_norm)
+                                     for _ in range(ensemble_size)])
 
-    def forward(self, obs):
-        h = self.trunk(obs)
+        self.init(optim_lr=optim_lr, target_tau=target_tau, repr_shape=repr_shape,
+                  feature_dim=feature_dim, hidden_dim=hidden_dim, action_dim=action_dim,
+                  ensemble_size=ensemble_size, critic_norm=critic_norm, discrete=discrete)
 
-        if self.dueling:
-            v = self.V(h)
-            a = self.A(h)
-            q = v + a - a.mean(1, keepdim=True)  # (s,a) = (s,a) + [(s,a) - (s)] ? shouldn't v then output dim=1?
-        else:
-            q = self.Q(h)
 
-        return q
+class CNNEnsembleQCritic(_Critic):
+    """
+    CNN-based Critic network, employs ensemble Q learning,
+    e.g. Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf) (except with ensembling).
+    """
+
+    def __init__(self, repr_shape, hidden_channels, out_channels, num_blocks,
+                 hidden_dim, action_dim, ensemble_size=2, critic_norm=False,
+                 discrete=False, target_tau=None, optim_lr=None):
+
+        super().__init__()
+
+        in_channels, height, width = repr_shape
+
+        # CNN
+        self.trunk = nn.Sequential(*[ResidualBlock(in_channels, hidden_channels)
+                                     for _ in range(num_blocks)],
+                                   nn.Conv2d(hidden_channels, out_channels, kernel_size=1),
+                                   nn.BatchNorm2d(out_channels),
+                                   nn.Flatten())
+
+        # CNN dimensions
+        trunk_h, trunk_w = Utils.cnn_output_shape(height, width, self.trunk)
+        feature_dim = out_channels * trunk_h * trunk_w
+
+        # MLP dimensions
+        in_dim = feature_dim if discrete else feature_dim + action_dim
+        Q_dim = action_dim if discrete else 1
+
+        # MLP
+        self.Q_nets = nn.ModuleList([MLP(in_dim, Q_dim, hidden_dim, 1)
+                                     for _ in range(ensemble_size)])
+
+        self.init(optim_lr=optim_lr, target_tau=target_tau, repr_shape=repr_shape,
+                  hidden_channels=hidden_channels, out_channels=out_channels, num_blocks=num_blocks,
+                  hidden_dim=hidden_dim, action_dim=action_dim, ensemble_size=ensemble_size,
+                  critic_norm=critic_norm, discrete=discrete)
+

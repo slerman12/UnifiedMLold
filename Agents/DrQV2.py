@@ -9,8 +9,8 @@ import torch
 import Utils
 
 from Blocks.Augmentations import IntensityAug, RandomShiftsAug
-from Blocks.Encoders import BasicCNNEncoder
-from Blocks.Critics import EnsembleQCritic
+from Blocks.Encoders import CNNEncoder
+from Blocks.Critics import MLPEnsembleQCritic
 from Blocks.Actors import TruncatedGaussianActor
 
 from Losses import PolicyLearning, QLearning
@@ -35,11 +35,11 @@ class DrQV2Agent(torch.nn.Module):
         self.explore_steps = explore_steps
 
         # Models
-        self.encoder = BasicCNNEncoder(obs_shape, optim_lr=lr).to(device)
+        self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
 
-        self.critic = EnsembleQCritic(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-                                      critic_norm=False,  # Disabled
-                                      target_tau=target_tau, optim_lr=lr).to(device)
+        self.critic = MLPEnsembleQCritic(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                         critic_norm=False,  # Disabled
+                                         target_tau=target_tau, optim_lr=lr).to(device)
 
         self.actor = TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
                                             policy_norm=False,  # Disabled

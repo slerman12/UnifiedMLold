@@ -10,7 +10,7 @@ from Agents import DQNDPGAgent
 from Blocks.Actors import CategoricalCriticActor, TruncatedGaussianActor
 
 from Blocks.Encoders import LayerNormMLPEncoder
-from Blocks.Critics import EnsembleQCritic
+from Blocks.Critics import MLPEnsembleQCritic
 from Blocks.Creators import SubPlanner
 
 from Losses import QLearning, PolicyLearning
@@ -50,8 +50,8 @@ class BVSAgent(DQNDPGAgent):
         # self.planner = LayerNormMLPEncoder(hidden_dim, hidden_dim, hidden_dim, hidden_dim,
         #                                    target_tau=target_tau, optim_lr=lr).to(device)
 
-        self.critic = EnsembleQCritic(hidden_dim, hidden_dim, hidden_dim, action_shape[-1],
-                                      target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
+        self.critic = MLPEnsembleQCritic(hidden_dim, hidden_dim, hidden_dim, action_shape[-1],
+                                         target_tau=target_tau, optim_lr=lr, discrete=discrete).to(device)
 
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
             else TruncatedGaussianActor(hidden_dim, hidden_dim, hidden_dim, action_shape[-1],

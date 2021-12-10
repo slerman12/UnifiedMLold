@@ -32,11 +32,24 @@ On a broader level:
   
 [comment]: <> (- *The earth and trees, mountains and brooks, deer and caribou before industrialization* )
 
+Politically:
+
+- *Environmentalism*
+- *Democratization*
+- *Equity*
+
+And going a step further:
+
+- *Anti-militarism*
+- *Anti-surveillance*
+
+The latter two are less frequently cited by other, leading institutions.
+
 ## Our Pledge
 
 We will always put humanity, nature, and Mother Earth first, ahead in the queue before money, bottom line, propriety, or even the art itself.
 
-We will make technology that frees humankind to pursue the passions and callings of the spirit, not further enslave it beneath illusory mists of technological luxury. 
+We will make technology that frees humankind to pursue the passions and callings of the spirit, not further enslave it beneath illusory mists of technological luxury, leaving no footprint of harm on the mental, physical, or spiritual spheres of biological existence. 
 
 [comment]: <> (We envision a world that is care-taken by AI, sustainably, efficiently, leaving no footprint of harm on the mental, physical, or spiritual spheres of biological existence. )
 
