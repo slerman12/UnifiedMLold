@@ -20,7 +20,7 @@ class _Critic(nn.Module):
         self.trunk = nn.Identity()
         self.Q_nets = None
 
-    def init(self, optim_lr=None, target_tau=None, **kwargs):
+    def init(self, discrete=False, optim_lr=None, target_tau=None, **kwargs):
 
         assert self.Q_nets is not None, 'Inheritor of Critic must define self.Q_nets'
 
@@ -37,6 +37,9 @@ class _Critic(nn.Module):
             target = self.__class__(**kwargs)
             target.load_state_dict(self.state_dict())
             self.target = target
+
+        # Discrete action space
+        self.discrete = discrete
 
     def update_target_params(self):
         assert self.target_tau is not None
@@ -103,8 +106,6 @@ class MLPEnsembleQCritic(_Critic):
                   feature_dim=feature_dim, hidden_dim=hidden_dim, action_dim=action_dim,
                   ensemble_size=ensemble_size, critic_norm=critic_norm, discrete=discrete)
 
-        self.discrete = discrete
-
 
 class CNNEnsembleQCritic(_Critic):
     """
@@ -143,6 +144,4 @@ class CNNEnsembleQCritic(_Critic):
                   hidden_channels=hidden_channels, out_channels=out_channels, num_blocks=num_blocks,
                   hidden_dim=hidden_dim, action_dim=action_dim, ensemble_size=ensemble_size,
                   critic_norm=critic_norm, discrete=discrete)
-
-        self.discrete = discrete
 
