@@ -9,7 +9,7 @@ from torch import nn
 
 import Utils
 
-from Blocks.Architectures.Residual import ResidualBlock, Residual
+from Architectures.Residual import ResidualBlock, Residual
 
 
 class _Encoder(nn.Module):
