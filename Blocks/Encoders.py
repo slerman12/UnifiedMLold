@@ -38,7 +38,7 @@ class _CNNEncoder(nn.Module):
 
         # CNN feature map sizes
         self.obs_shape = obs_shape
-        in_channels, height, width = obs_shape
+        _, height, width = obs_shape
         height, width = Utils.cnn_output_shape(height, width, self.CNN)
         self.repr_shape = (out_channels, height, width)  # Feature map shape
         self.repr_dim = math.prod(self.repr_shape)  # Flattened features dim
@@ -49,8 +49,8 @@ class _CNNEncoder(nn.Module):
 
     # Encodes
     def forward(self, obs, context=None):
-        shape = obs.shape  # Preserve leading dims
-        obs = obs.reshape(-1, *self.obs_shape)  # Encode last 3 dims 
+        obs_shape = obs.shape  # Preserve leading dims
+        obs = obs.reshape(-1, *self.obs_shape)  # Encode last 3 dims
 
         # Normalizes pixels
         if self.pixels:
@@ -58,21 +58,18 @@ class _CNNEncoder(nn.Module):
 
         # Optionally append context to channels assuming dimensions allow
         if context is not None:
-            assert len(context.shape) == 2 and \
-                    self.in_channels == obs.shape[1] + context.shape[1]
-
-            action = context.reshape(-1, context.shape[-1])[:, :, None, None].expand(-1, -1, *obs.shape[-2:])
-            obs = torch.cat([obs,  action], 1)
+            context = context.reshape(obs.shape[0], context.shape[-1], 1, 1).expand(-1, -1, *self.obs_shape[1:])
+            obs = torch.cat([obs,  context], 1)
 
         # CNN encode
         h = self.CNN(obs)
 
         # Optionally flatten output
         if self.flatten:
-            h = h.view(*shape[:-3], -1)
+            h = h.view(*obs_shape[:-3], -1)
             assert h.shape[-1] == self.repr_dim
         else:
-            h = h.view(*shape[:-3], *h.shape[-3:])
+            h = h.view(*obs_shape[:-3], *h.shape[-3:])
             assert tuple(h.shape[-3:]) == self.repr_shape
 
         return self.neck(h)
