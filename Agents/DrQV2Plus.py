@@ -15,6 +15,7 @@ from Blocks.Critics import MLPEnsembleQCritic
 from Blocks.Architectures.MLP import MLPBlock
 
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
+print("LLLLLLL")
 
 
 class DrQV2PlusAgent(torch.nn.Module):
@@ -25,7 +26,6 @@ class DrQV2PlusAgent(torch.nn.Module):
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
-        print("LLLLLLL")
         super().__init__()
 
         # ! Original only compatible with continuous spaces, both supported here
