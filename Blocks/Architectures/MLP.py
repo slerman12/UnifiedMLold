@@ -50,7 +50,9 @@ class MLPBlock(nn.Module):
                                    nn.LayerNorm(feature_dim), nn.Tanh()) if layer_norm \
             else None
 
-        self.net = MLP(feature_dim, out_dim, hidden_dim, depth=depth,
+        in_features = feature_dim if layer_norm else in_dim
+
+        self.mlp = MLP(in_features, out_dim, hidden_dim, depth=depth,
                        batch_norm=batch_norm, batch_norm_last=batch_norm_last, l2_norm=l2_norm)
 
         self.apply(Utils.weight_init)
@@ -76,4 +78,4 @@ class MLPBlock(nn.Module):
         if self.trunk is not None:
             h = self.trunk(h)
 
-        return self.net(h)
+        return self.mlp(h)
