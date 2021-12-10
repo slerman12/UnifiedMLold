@@ -4,6 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import torch
 import torch.nn.functional as F
+from torch.distributions import Categorical
 
 
 def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, ensemble_reduction='min',
@@ -12,7 +13,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
     with torch.no_grad():
         next_dist = actor(next_obs, step)  # Note: not using EMA target for actor
 
-        # TODO if num_actions = 1, can use mean for continuous, best for discrete I think
+        # If num_actions = 1
         # Would be great to test mean vs sample
         # next_actions = [next_dist.best if critic.discrete else next_dist.mean]
 
@@ -51,10 +52,11 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         # "Entropy maximization"
         # Future-action uncertainty maximization in reward
         # Entropy in future decisions means exploring the uncertain, the lesser-explored
-        next_entropy = next_dist.entropy().mean(-1, keepdim=True)
+        next_entropy = Categorical(next_log_probs).entropy().mean(-1, keepdim=True)  # Value-based entropy
+        # next_entropy = next_dist.entropy().mean(-1, keepdim=True)
         # next_action_log_proba = next_dist.log_prob(next_action).sum(-1, keepdim=True)  # Action-based entropy
         target_Q = reward + (discount * next_V) + (entropy_temp * next_entropy)
-        # TODO Q-value itself should be Gaussian, then next_V not needed
+        # TODO Q-value itself could be Gaussian, then next_V not needed
 
         # "Munchausen reward":
         # Current-action certainty maximization in reward, thereby increasing so-called "action-gap" w.r.t. above
@@ -65,6 +67,8 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
                 dist = actor(obs, step)
             # TODO logsumexp trick
             action_log_proba = dist.log_prob(action).mean(-1, keepdim=True)
+            # By PRO and trust region insights:
+            # action_log_proba = critic(obs, action, dist)
             lo = -1
             target_Q += munchausen_scaling * torch.clamp(entropy_temp * action_log_proba, min=lo, max=0)
 
