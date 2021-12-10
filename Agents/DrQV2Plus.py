@@ -25,8 +25,8 @@ class DrQV2PlusAgent(torch.nn.Module):
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
+        super().__init__()
         try:
-            super().__init__()
 
             # ! Original only compatible with continuous spaces, both supported here
             self.discrete = discrete  # Discrete (e.g. Atari) supported
