@@ -103,6 +103,8 @@ class MLPEnsembleQCritic(_Critic):
                   feature_dim=feature_dim, hidden_dim=hidden_dim, action_dim=action_dim,
                   ensemble_size=ensemble_size, critic_norm=critic_norm, discrete=discrete)
 
+        self.discrete = discrete
+
 
 class CNNEnsembleQCritic(_Critic):
     """
@@ -141,4 +143,6 @@ class CNNEnsembleQCritic(_Critic):
                   hidden_channels=hidden_channels, out_channels=out_channels, num_blocks=num_blocks,
                   hidden_dim=hidden_dim, action_dim=action_dim, ensemble_size=ensemble_size,
                   critic_norm=critic_norm, discrete=discrete)
+
+        self.discrete = discrete
 
