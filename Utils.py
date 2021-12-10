@@ -238,6 +238,7 @@ def cnn_output_shape(height, width, block):
     elif hasattr(block, 'output_shape'):
         height, width = block.output_shape(height, width)
     elif hasattr(block, 'modules'):
+        print([module for module in block.children()])
         for module in block.children():
             height, width = cnn_output_shape(height, width, module)
 
