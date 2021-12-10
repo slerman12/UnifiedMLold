@@ -73,7 +73,7 @@ class _Critic(nn.Module):
 
             # Q-value for continuous action
             h = self.trunk(obs)
-            h_a = torch.cat([self.trunk(h), action], dim=-1)
+            h_a = torch.cat([h, action], dim=-1)
             Qs = tuple(Q_net(h_a) for Q_net in self.Q_nets)
 
         # Ensemble of Q-value predictions
