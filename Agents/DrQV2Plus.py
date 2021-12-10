@@ -6,25 +6,17 @@ import time
 
 import torch
 
-print("LLLL")
-
 import Utils
-
-print("LLLL")
 
 from Blocks.Augmentations import IntensityAug, RandomShiftsAug
 from Blocks.Encoders import CNNEncoder
-
-print("LLLL")
 from Blocks.Actors import TruncatedGaussianActor, CategoricalCriticActor
 from Blocks.Critics import MLPEnsembleQCritic
-
-print("LLLL")
 from Blocks.Architectures.MLP import MLPBlock
 
-print("LLLL")
-
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
+
+print("LLLL")
 
 
 class DrQV2PlusAgent(torch.nn.Module):
@@ -36,6 +28,8 @@ class DrQV2PlusAgent(torch.nn.Module):
                  discrete, device, log_tensorboard  # On-boarding
                  ):
         super().__init__()
+
+        print("LLLL")
 
         # ! Original only compatible with continuous spaces, both supported here
         self.discrete = discrete  # Discrete (e.g. Atari) supported
