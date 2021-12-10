@@ -8,8 +8,8 @@ from torch.distributions import Categorical
 
 
 def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, ensemble_reduction='min',
-                      dist=None, entropy_temp=0,  # 0.03
-                      munchausen_scaling=0, logs=None):  # 0.9
+                      dist=None, entropy_temp=0.2,  # 0.03
+                      munchausen_temp=0.2, logs=None):  # 0.9
     with torch.no_grad():
         next_dist = actor(next_obs, step)  # Note: not using EMA target for actor
 
@@ -62,7 +62,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         # Current-action certainty maximization in reward, thereby increasing so-called "action-gap" w.r.t. above
         # Furthermore, off-policy sampling of outdated rewards might be mitigated to a degree by on-policy estimate
         # Another salient heuristic: "optimism in the face of uncertainty" (Brafman & Tennenholtz, 2002) literally
-        if munchausen_scaling != 0:
+        if munchausen_temp != 0:
             if dist is None:
                 dist = actor(obs, step)
             # TODO logsumexp trick
@@ -70,7 +70,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             # By PRO and trust region insights:
             # action_log_proba = critic(obs, action, dist)
             lo = -1
-            target_Q += munchausen_scaling * torch.clamp(entropy_temp * action_log_proba, min=lo, max=0)
+            target_Q += munchausen_temp * torch.clamp(entropy_temp * action_log_proba, min=lo, max=0)
 
     Q_ensemble = critic(obs, action, dist)
 
