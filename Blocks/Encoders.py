@@ -137,7 +137,7 @@ class IsotropicCNNEncoder(_CNNEncoder):
     """Isotropic (no bottleneck / dimensionality conserving) CNN encoder,
     e.g., SPR (https://arxiv.org/pdf/2007.05929.pdf)."""
 
-    def __init__(self, obs_shape, context_dim=0, out_channels=64, depth=0, pixels=False, flatten=True,
+    def __init__(self, obs_shape, context_dim=0, out_channels=None, depth=0, pixels=False, flatten=False,
                  optim_lr=None, target_tau=None):
 
         super().__init__()
@@ -146,6 +146,7 @@ class IsotropicCNNEncoder(_CNNEncoder):
 
         # Dimensions
         in_channels = obs_shape[0]
+        out_channels = in_channels if out_channels is None else out_channels
 
         # CNN
         self.CNN = nn.Sequential(nn.Conv2d(in_channels, out_channels, (3, 3), padding=1),
@@ -170,7 +171,7 @@ class IsotropicResidualBlockEncoder(_CNNEncoder):
     """Isotropic (no bottleneck / dimensionality conserving) residual block-based CNN encoder,
     e.g. Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)"""
 
-    def __init__(self, obs_shape, context_dim=0, out_channels=64, num_blocks=1, pixels=True, flatten=True,
+    def __init__(self, obs_shape, context_dim=0, out_channels=None, num_blocks=1, pixels=False, flatten=False,
                  optim_lr=None, target_tau=None):
         super().__init__()
 
@@ -178,6 +179,7 @@ class IsotropicResidualBlockEncoder(_CNNEncoder):
 
         # Dimensions
         in_channels = obs_shape[0]
+        out_channels = in_channels if out_channels is None else out_channels
 
         # CNN
         pre_residual = nn.Sequential(nn.Conv2d(in_channels, out_channels, 3, 2, 1, bias=False),
