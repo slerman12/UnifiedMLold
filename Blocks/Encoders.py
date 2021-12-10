@@ -36,6 +36,7 @@ class _Encoder(nn.Module):
             self.target = target
 
         # CNN feature map sizes
+        self.obs_shape = obs_shape
         in_channels, height, width = obs_shape
         height, width = Utils.cnn_output_shape(height, width, self.CNN)
         self.repr_shape = (out_channels, height, width)  # Feature map shape
