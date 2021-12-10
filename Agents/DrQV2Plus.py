@@ -12,7 +12,7 @@ from Blocks.Augmentations import IntensityAug, RandomShiftsAug
 from Blocks.Encoders import CNNEncoder
 from Blocks.Actors import TruncatedGaussianActor, CategoricalCriticActor
 from Blocks.Critics import MLPEnsembleQCritic
-from Blocks.Architectures.MLP import LayerNormMLPBlock
+from Blocks.Architectures.MLP import MLPBlock
 
 from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
@@ -48,7 +48,7 @@ class DrQV2PlusAgent(torch.nn.Module):
                                         stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
                                         optim_lr=lr).to(device)
 
-        self.self_supervisor = LayerNormMLPBlock(feature_dim, feature_dim, target_tau=target_tau, optim_lr=lr).to(device)
+        self.self_supervisor = MLPBlock(feature_dim, feature_dim, target_tau=target_tau, optim_lr=lr).to(device)
 
         # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)

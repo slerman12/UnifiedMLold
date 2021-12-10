@@ -28,8 +28,10 @@ class MLP(nn.Module):
         return self.mlp(x)
 
 
-class LayerNormMLPBlock(nn.Module):
-    """Layer-norm MLP block e.g., DrQV2 (https://arxiv.org/abs/2107.09645).
+class MLPBlock(nn.Module):
+    """MLP block:
+
+    With LayerNorm e.g., DrQV2 (https://arxiv.org/abs/2107.09645).
 
     Also optionally Batch-Norm MLP a la Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)
 
@@ -40,7 +42,7 @@ class LayerNormMLPBlock(nn.Module):
     Can also l2-normalize penultimate layer (https://openreview.net/pdf?id=9xhgmsNVHu)"""
 
     def __init__(self, in_dim, out_dim, feature_dim=512, hidden_dim=512, depth=1,
-                 layer_norm=True, batch_norm=False, batch_norm_last=False, l2_norm=False,
+                 layer_norm=False, batch_norm=False, batch_norm_last=False, l2_norm=False,
                  target_tau=None, optim_lr=None):
         super().__init__()
 
