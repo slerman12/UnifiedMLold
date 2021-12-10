@@ -19,7 +19,7 @@ class _CNNEncoder(nn.Module):
         self.CNN = None
         self.neck = nn.Identity()
 
-    def __post__(self, obs_shape, out_channels, optim_lr=None, target_tau=None, **kwargs):
+    def __post__(self, obs_shape, out_channels, pixels, flatten, optim_lr=None, target_tau=None, **kwargs):
         assert self.CNN is not None, 'Inheritor of Encoder must define self.CNN'
 
         # Initialize weights
@@ -32,7 +32,8 @@ class _CNNEncoder(nn.Module):
         # EMA
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(obs_shape=obs_shape, out_channels=out_channels, **kwargs)
+            target = self.__class__(obs_shape=obs_shape, out_channels=out_channels,
+                                    pixels=pixels, flatten=flatten, **kwargs)
             target.load_state_dict(self.state_dict())
             self.target = target
 
@@ -42,6 +43,9 @@ class _CNNEncoder(nn.Module):
         height, width = Utils.cnn_output_shape(height, width, self.CNN)
         self.repr_shape = (out_channels, height, width)  # Feature map shape
         self.repr_dim = math.prod(self.repr_shape)  # Flattened features dim
+
+        self.pixels = pixels
+        self.flatten = flatten
 
     def update_target_params(self):
         assert self.target_tau is not None
@@ -93,9 +97,6 @@ class CNNEncoder(_CNNEncoder):
                                  *sum([(nn.Conv2d(out_channels, out_channels, 3, stride=1), nn.ReLU())
                                        for _ in range(depth)], ()))
 
-        self.pixels = pixels
-        self.flatten = flatten
-
         self.__post__(obs_shape=obs_shape, out_channels=out_channels, depth=depth,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
 
@@ -120,9 +121,6 @@ class ResidualBlockEncoder(_CNNEncoder):
                                  nn.ReLU(),
                                  *[ResidualBlock(out_channels, out_channels)
                                    for _ in range(num_blocks)])
-
-        self.pixels = pixels
-        self.flatten = flatten
 
         self.__post__(obs_shape=obs_shape, out_channels=out_channels, num_blocks=num_blocks,
                       pixels=pixels, flatten=flatten, target_tau=target_tau, optim_lr=optim_lr)
@@ -161,9 +159,6 @@ class IsotropicCNNEncoder(_CNNEncoder):
                                  nn.Conv2d(out_channels, out_channels, (3, 3), padding=1),
                                  nn.ReLU())
 
-        self.pixels = pixels
-        self.flatten = flatten
-
         self.__post__(obs_shape=obs_shape, context_dim=context_dim, out_channels=out_channels, depth=depth,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
 
@@ -195,9 +190,6 @@ class IsotropicResidualBlockEncoder(_CNNEncoder):
                                  nn.ReLU(),
                                  *[ResidualBlock(out_channels, out_channels)
                                    for _ in range(num_blocks)])
-
-        self.pixels = pixels
-        self.flatten = flatten
 
         self.__post__(obs_shape=obs_shape, context_dim=context_dim, out_channels=out_channels, num_blocks=num_blocks,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
