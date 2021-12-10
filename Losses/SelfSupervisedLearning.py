@@ -6,45 +6,28 @@ import torch
 import torch.nn.functional as F
 
 
-# TODO can put into TemporalDifferenceLearning (TDLearning) file together with QLearning
-def bootstrapLearningBVS(actor, sub_planner, planner, obs, traj_o, plan_discount,
-                         traj_a=None, step=None, logs=None):
-    target_sub_plan = sub_planner(traj_o)
+def bootstrapYourOwnLatent(encoder, critic, predictor, anchor, positive, contrastive=False):
+    """
+    Bootstrap Your Own Latent (https://arxiv.org/abs/2006.07733),
+    self-supervision via EMA target
+    """
     with torch.no_grad():
-        next_obs = traj_o[:, -1]
+        positive = encoder.target(positive)
+        positive = F.normalize(critic.target.trunk[0](positive))  # Kind of presumptive to use Critic as projection
 
-        # if traj_a is None:
-        #     target_sub_plan = sub_planner.target(traj_o)  # State-based planner  TODO use target?
-        # else:
-        #     assert step is not None
-        #     dist = actor(next_obs, step)
-        #     next_action = dist.rsample()
-        #     traj_a = torch.cat([traj_a, next_action.unsqueeze(1)], dim=1)
-        #     target_sub_plan = sub_planner.target(traj_o, traj_a)  # State-action based planner
-        dist = actor(target_sub_plan[:, -1], step)
-        next_action = dist.mean
-        target_sub_plan[:, -1] = planner.target(target_sub_plan[:, -1], next_action).detach()
+    anchor = encoder(anchor)  # Redundant, can just pass in obs/concept
+    anchor = F.normalize(predictor(critic.trunk[0](anchor)))  # Can just yield cosine similarity of anchor / positive
 
-    plan_discount = plan_discount ** torch.arange(target_sub_plan.shape[1]).to(obs.device)
-    target_plan = torch.einsum('j,ijk->ik', plan_discount, target_sub_plan)
-        # target_plan = torch.layer_norm(target_plan, target_plan.shape)
+    if contrastive:
+        # Contrastive predictive coding (https://arxiv.org/pdf/1807.03748.pdf)
+        self_supervised_loss = 0
+        pass  # TODO use negative samples via uncorrelated batch samples
+    else:
+        # Bootstrap Your Own Latent (https://arxiv.org/abs/2006.07733)
+        self_supervised_loss = - (anchor * positive.detach())
+        self_supervised_loss = self_supervised_loss.sum(dim=-1).mean()
 
-    # if traj_a is None:
-    #     sub_plan = sub_planner(obs)  # state-based planner
-    # else:
-    #     action = traj_a[:, 0]
-    #     sub_plan = sub_planner(obs, action)  # state-action based planner
-    sub_plan = sub_planner(obs)
-    plan = planner(sub_plan, traj_a[:, 0])
-    # plan = torch.layer_norm(plan, plan.shape)  TODO NO, use L2 norm F.normalize
-
-    planner_loss = F.mse_loss(plan, target_plan)  # Bellman error
-
-    if logs is not None:
-        assert isinstance(logs, dict)
-        logs['planner_loss'] = planner_loss.item()
-
-    return planner_loss
+    return self_supervised_loss
 
 
 def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj_a, depth=1, cheaper=False, logs=None):
@@ -77,23 +60,3 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
         logs['dynamics_loss'] = dynamics_loss
 
     return dynamics_loss
-
-
-def bootstrapYourOwnLatent(encoder, critic, predictor, anchor, positive, contrastive=False):
-    with torch.no_grad():
-        positive = encoder.target(positive)
-        positive = F.normalize(critic.target.trunk[0](positive))  # Kind of presumptive to use Critic as projection
-
-    anchor = encoder(anchor)  # Redundant, can just pass in obs/concept
-    anchor = F.normalize(predictor(critic.trunk[0](anchor)))  # Can just yield cosine similarity of anchor / positive
-
-    if contrastive:
-        # Contrastive predictive coding (https://arxiv.org/pdf/1807.03748.pdf)
-        self_supervised_loss = 0
-        pass  # TODO use negative samples via uncorrelated batch samples
-    else:
-        # Bootstrap Your Own Latent (https://arxiv.org/abs/2006.07733)
-        self_supervised_loss = - (anchor * positive.detach())
-        self_supervised_loss = self_supervised_loss.sum(dim=-1).mean()
-
-    return self_supervised_loss

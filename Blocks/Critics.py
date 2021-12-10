@@ -18,18 +18,11 @@ class _EnsembleQCritic(nn.Module):
     def __init__(self):
         super().__init__()
         self.trunk = nn.Identity()
-        self.Q_nets = None
+        self.Q_head = None
 
-    def init(self, action_dim, ensemble_size, discrete, optim_lr=None, target_tau=None, **kwargs):
+    def __post__(self, action_dim, ensemble_size, discrete, optim_lr=None, target_tau=None, **kwargs):
 
-        assert self.Q_nets is not None, 'Inheritor of Critic must define self.Q_nets'
-
-        # Action space
-        self.discrete = discrete
-        self.action_dim = action_dim
-
-        # Ensemble size
-        self.ensemble_size = ensemble_size
+        assert self.Q_head is not None, 'Inheritor of Critic must define self.Q_head'
 
         # Initialize weights
         self.apply(Utils.weight_init)
@@ -38,7 +31,7 @@ class _EnsembleQCritic(nn.Module):
         if optim_lr is not None:
             self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
 
-        # EMA target
+        # EMA 
         if target_tau is not None:
             self.target_tau = target_tau
             target = self.__class__(action_dim=action_dim, ensemble_size=ensemble_size,
@@ -46,11 +39,15 @@ class _EnsembleQCritic(nn.Module):
             target.load_state_dict(self.state_dict())
             self.target = target
 
+        self.action_dim = action_dim
+        self.ensemble_size = ensemble_size
+        self.discrete = discrete
+
     def update_target_params(self):
         assert self.target_tau is not None
         Utils.soft_update_params(self, self.target, self.target_tau)
 
-    # Get action Q-value(s) for an observation
+    # Get action Q-values
     def forward(self, obs=None, action=None, dist=None):
         if self.discrete:
             assert obs is not None or dist is not None, 'Q-values require obs or existing dist'
@@ -58,23 +55,23 @@ class _EnsembleQCritic(nn.Module):
             # All actions' Q-values
             if dist is None:
                 h = self.trunk(obs)
-                Qs = tuple(Q_net(h) for Q_net in self.Q_nets)
+                Qs = tuple(Q_net(h) for Q_net in self.Q_head)
             else:
                 Qs = dist.Qs
 
-            # Q-value for discrete action
+            # Q-values for a discrete action
             if action is not None:
                 ind = action.long().view(*Qs[0].shape[:-1], 1)
                 Qs = tuple(torch.gather(Q, -1, ind) for Q in Qs)
         else:
             assert obs is not None and action is not None, 'Action must be specified for continuous'
 
-            # Q-value for continuous action
+            # Q-values for a continuous action
             h = self.trunk(obs)
             h_a = torch.cat([h, action], dim=-1)
-            Qs = tuple(Q_net(h_a) for Q_net in self.Q_nets)
+            Qs = tuple(Q_net(h_a) for Q_net in self.Q_head)
 
-        # Ensemble of Q-value predictions
+        # Ensemble of Q-values
         return Qs
 
 
@@ -100,16 +97,16 @@ class MLPEnsembleQCritic(_EnsembleQCritic):
         Q_dim = action_dim if discrete else 1
 
         # MLP
-        self.Q_nets = nn.ModuleList([MLP(in_dim=in_dim,
+        self.Q_head = nn.ModuleList([MLP(in_dim=in_dim,
                                          hidden_dim=hidden_dim,
                                          out_dim=Q_dim,
                                          depth=1,
                                          l2_norm=critic_norm)
                                      for _ in range(ensemble_size)])
 
-        self.init(optim_lr=optim_lr, target_tau=target_tau, repr_shape=repr_shape,
-                  feature_dim=feature_dim, hidden_dim=hidden_dim, action_dim=action_dim,
-                  ensemble_size=ensemble_size, critic_norm=critic_norm, discrete=discrete)
+        self.__post__(optim_lr=optim_lr, target_tau=target_tau, repr_shape=repr_shape,
+                      feature_dim=feature_dim, hidden_dim=hidden_dim, action_dim=action_dim,
+                      ensemble_size=ensemble_size, critic_norm=critic_norm, discrete=discrete)
 
 
 class CNNEnsembleQCritic(_EnsembleQCritic):
@@ -142,11 +139,11 @@ class CNNEnsembleQCritic(_EnsembleQCritic):
         Q_dim = action_dim if discrete else 1
 
         # MLP
-        self.Q_nets = nn.ModuleList([MLP(in_dim, Q_dim, hidden_dim, 1)
+        self.Q_head = nn.ModuleList([MLP(in_dim, Q_dim, hidden_dim, 1)
                                      for _ in range(ensemble_size)])
 
-        self.init(optim_lr=optim_lr, target_tau=target_tau, repr_shape=repr_shape,
-                  hidden_channels=hidden_channels, out_channels=out_channels, num_blocks=num_blocks,
-                  hidden_dim=hidden_dim, action_dim=action_dim, ensemble_size=ensemble_size,
-                  critic_norm=critic_norm, discrete=discrete)
+        self.__post__(optim_lr=optim_lr, target_tau=target_tau, repr_shape=repr_shape,
+                      hidden_channels=hidden_channels, out_channels=out_channels, num_blocks=num_blocks,
+                      hidden_dim=hidden_dim, action_dim=action_dim, ensemble_size=ensemble_size,
+                      critic_norm=critic_norm, discrete=discrete)
 
