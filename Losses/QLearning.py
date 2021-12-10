@@ -8,8 +8,8 @@ from torch.distributions import Categorical
 
 
 def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, ensemble_reduction='min',
-                      dist=None, entropy_temp=0.2,  # 0.03
-                      munchausen_temp=0.2, logs=None):  # 0.9
+                      dist=None, entropy_temp=0.03,  # 0.03
+                      munchausen_temp=0.4, logs=None):  # 0.9
     with torch.no_grad():
         next_dist = actor(next_obs, step)  # Note: not using EMA target for actor
 

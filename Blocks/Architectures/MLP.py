@@ -31,7 +31,7 @@ class MLP(nn.Module):
 class MLPBlock(nn.Module):
     """MLP block:
 
-    With LayerNorm, depth 1 e.g., DrQV2 (https://arxiv.org/abs/2107.09645).
+    With LayerNorm
 
     Also optionally Batch-Norm MLP a la Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)
 
