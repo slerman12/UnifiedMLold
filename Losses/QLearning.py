@@ -52,7 +52,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
         # "Entropy maximization"
         # Future-action uncertainty maximization in reward
         # Entropy in future decisions means exploring the uncertain, the lesser-explored
-        next_entropy = Categorical(next_log_probs).entropy().mean(-1, keepdim=True)  # Value-based entropy
+        next_entropy = Categorical(next_probs).entropy().mean(-1, keepdim=True)  # Value-based entropy
         # next_entropy = next_dist.entropy().mean(-1, keepdim=True)
         # next_action_log_proba = next_dist.log_prob(next_action).sum(-1, keepdim=True)  # Action-based entropy
         target_Q = reward + (discount * next_V) + (entropy_temp * next_entropy)
