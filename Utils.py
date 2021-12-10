@@ -223,9 +223,12 @@ class TanhTransform(pyd.transforms.Transform):
 def conv_output_shape(in_height, in_width, kernel_size=1, stride=1, padding=0, dilation=1):
     if type(kernel_size) is not tuple:
         kernel_size = (kernel_size, kernel_size)
-    print(kernel_size, padding, in_height, in_width, stride, dilation)
-    out_height = math.floor(((in_height + (2 * padding) - (dilation * (kernel_size[0] - 1)) - 1) / stride) + 1)
-    out_width = math.floor(((in_width + (2 * padding) - (dilation * (kernel_size[1] - 1)) - 1) / stride) + 1)
+    if type(stride) is not tuple:
+        stride = (stride, stride)
+    if type(padding) is not tuple:
+        padding = (padding, padding)
+    out_height = math.floor(((in_height + (2 * padding[0]) - (dilation * (kernel_size[0] - 1)) - 1) / stride[0]) + 1)
+    out_width = math.floor(((in_width + (2 * padding[1]) - (dilation * (kernel_size[1] - 1)) - 1) / stride[1]) + 1)
     return out_height, out_width
 
 
