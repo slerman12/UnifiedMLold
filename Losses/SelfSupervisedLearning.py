@@ -82,6 +82,8 @@ def dynamicsLearning(dynamics, projection_g, prediction_q, encoder, traj_o, traj
 def bootstrapYourOwnLatent(encoder, critic, predictor, anchor, positive, contrastive=False):
     with torch.no_grad():
         positive = encoder.target(positive)
+        print(positive.shape)
+        print(critic.target.trunk[0])
         positive = F.normalize(critic.target.trunk[0](positive))  # Kind of presumptive to use Critic as projection
 
     anchor = encoder(anchor)  # Redundant, can just pass in obs/concept

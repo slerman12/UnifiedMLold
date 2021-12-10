@@ -12,7 +12,7 @@ import Utils
 from Blocks.Architectures.Residual import ResidualBlock, Residual
 
 
-class _Encoder(nn.Module):
+class _CNNEncoder(nn.Module):
     """Base CNN encoder."""
     def __init__(self):
         super().__init__()
@@ -76,7 +76,7 @@ class _Encoder(nn.Module):
         return h
 
 
-class CNNEncoder(_Encoder):
+class CNNEncoder(_CNNEncoder):
     """Basic CNN encoder, e.g., DrQV2 (https://arxiv.org/abs/2107.09645)."""
 
     def __init__(self, obs_shape, out_channels=32, depth=3, pixels=True, flatten=True,
@@ -101,7 +101,7 @@ class CNNEncoder(_Encoder):
                   pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
 
 
-class ResidualBlockEncoder(_Encoder):
+class ResidualBlockEncoder(_CNNEncoder):
     """Residual block-based CNN encoder, e.g., Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)."""
 
     def __init__(self, obs_shape, out_channels=64, pixels=True, flatten=True, num_blocks=1,
@@ -133,7 +133,7 @@ Generative models that plan, forecast, and imagine.
 """
 
 
-class IsotropicCNNEncoder(_Encoder):
+class IsotropicCNNEncoder(_CNNEncoder):
     """Isotropic (no bottleneck / dimensionality conserving) CNN encoder,
     e.g., SPR (https://arxiv.org/pdf/2007.05929.pdf)."""
 
@@ -166,7 +166,7 @@ class IsotropicCNNEncoder(_Encoder):
         assert obs_shape[-1] == self.repr_shape[2]
 
 
-class IsotropicResidualBlockEncoder(_Encoder):
+class IsotropicResidualBlockEncoder(_CNNEncoder):
     """Isotropic (no bottleneck / dimensionality conserving) residual block-based CNN encoder,
     e.g. Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)"""
 

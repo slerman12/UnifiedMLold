@@ -13,7 +13,7 @@ from Blocks.Architectures.MLP import MLP
 from Blocks.Architectures.Residual import ResidualBlock
 
 
-class _Critic(nn.Module):
+class _EnsembleQCritic(nn.Module):
     """Base critic"""
     def __init__(self):
         super().__init__()
@@ -24,10 +24,8 @@ class _Critic(nn.Module):
 
         assert self.Q_nets is not None, 'Inheritor of Critic must define self.Q_nets'
 
-        # Discrete action space
+        # Action space
         self.discrete = discrete
-
-        # Action dim
         self.action_dim = action_dim
 
         # Ensemble size
@@ -80,7 +78,7 @@ class _Critic(nn.Module):
         return Qs
 
 
-class MLPEnsembleQCritic(_Critic):
+class MLPEnsembleQCritic(_EnsembleQCritic):
     """
     MLP-based Critic network, employs ensemble Q learning,
     e.g. DrQV2 (https://arxiv.org/abs/2107.09645).
@@ -114,7 +112,7 @@ class MLPEnsembleQCritic(_Critic):
                   ensemble_size=ensemble_size, critic_norm=critic_norm, discrete=discrete)
 
 
-class CNNEnsembleQCritic(_Critic):
+class CNNEnsembleQCritic(_EnsembleQCritic):
     """
     CNN-based Critic network, employs ensemble Q learning,
     e.g. Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf) (except with ensembling).
