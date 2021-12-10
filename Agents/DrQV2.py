@@ -11,7 +11,7 @@ import Utils
 from Blocks.Augmentations import IntensityAug, RandomShiftsAug
 from Blocks.Encoders import CNNEncoder
 from Blocks.Critics import MLPEnsembleQCritic
-from Blocks.Actors import TruncatedGaussianActor
+from Blocks.Actors import TruncatedGaussianActor, CategoricalCriticActor
 
 from Losses import PolicyLearning, QLearning
 
@@ -41,10 +41,11 @@ class DrQV2Agent(torch.nn.Module):
                                          critic_norm=False,  # Disabled
                                          target_tau=target_tau, optim_lr=lr).to(device)
 
-        self.actor = TruncatedGaussianActor(self.encoder.repr_dim, feature_dim, hidden_dim, action_shape[-1],
-                                            policy_norm=False,  # Disabled
-                                            stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
-                                            optim_lr=lr).to(device)
+        self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
+            else TruncatedGaussianActor(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                        policy_norm=False,  # Disabled
+                                        stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
+                                        optim_lr=lr).to(device)
 
         # Data augmentation
         self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
