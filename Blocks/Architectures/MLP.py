@@ -63,7 +63,7 @@ class MLPBlock(nn.Module):
         if target_tau is not None:
             self.target_tau = target_tau
             target = self.__class__(in_dim=in_dim, out_dim=out_dim,
-                                    feature_dim=feature_dim, hidden_dim=hidden_dim, depth=depth,
+                                    feature_dim=feature_dim, hidden_dim=hidden_dim, depth=depth, layer_norm=layer_norm,
                                     batch_norm=batch_norm, batch_norm_last=batch_norm_last, l2_norm=l2_norm)
             target.load_state_dict(self.state_dict())
             self.target = target
