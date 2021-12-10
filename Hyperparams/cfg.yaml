@@ -104,4 +104,4 @@ hydra:
     submitit_folder: ./exp/${now:%Y.%m.%d}/${now:%H%M%S}_${agent_cfg.experiment}/.slurm
   job:
     env_set:
-      HYDRA_FULL_ERROR: '1'
+      HYDRA_FULL_ERROR: true
