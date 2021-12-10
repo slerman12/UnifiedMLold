@@ -9,8 +9,8 @@ from torch import nn
 
 import Utils
 
-from Architectures.MLP import MLP
-from Architectures.Residual import ResidualBlock
+from Blocks.Architectures.MLP import MLP
+from Blocks.Architectures.Residual import ResidualBlock
 
 
 class _Critic(nn.Module):

@@ -25,35 +25,38 @@ class DrQV2PlusAgent(torch.nn.Module):
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
                  discrete, device, log_tensorboard  # On-boarding
                  ):
-        super().__init__()
+        try:
+            super().__init__()
 
-        # ! Original only compatible with continuous spaces, both supported here
-        self.discrete = discrete  # Discrete (e.g. Atari) supported
-        self.device = device
-        self.log_tensorboard = log_tensorboard
-        self.birthday = time.time()
-        self.step = self.episode = 0
-        self.explore_steps = explore_steps
+            # ! Original only compatible with continuous spaces, both supported here
+            self.discrete = discrete  # Discrete (e.g. Atari) supported
+            self.device = device
+            self.log_tensorboard = log_tensorboard
+            self.birthday = time.time()
+            self.step = self.episode = 0
+            self.explore_steps = explore_steps
 
-        # Models
-        self.encoder = CNNEncoder(obs_shape, optim_lr=lr, target_tau=target_tau).to(device)
+            # Models
+            self.encoder = CNNEncoder(obs_shape, optim_lr=lr, target_tau=target_tau).to(device)
 
-        self.critic = MLPEnsembleQCritic(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
-                                         critic_norm=True,
-                                         optim_lr=lr, target_tau=target_tau, discrete=discrete).to(device)
+            self.critic = MLPEnsembleQCritic(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                             critic_norm=True,
+                                             optim_lr=lr, target_tau=target_tau, discrete=discrete).to(device)
 
-        self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
-            else TruncatedGaussianActor(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
-                                        policy_norm=True,
-                                        stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
-                                        optim_lr=lr).to(device)
+            self.actor = CategoricalCriticActor(self.critic, stddev_schedule) if discrete \
+                else TruncatedGaussianActor(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                            policy_norm=True,
+                                            stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
+                                            optim_lr=lr).to(device)
 
-        self.self_supervisor = MLPBlock(feature_dim, feature_dim, optim_lr=lr, target_tau=target_tau).to(device)
+            self.self_supervisor = MLPBlock(feature_dim, feature_dim, optim_lr=lr, target_tau=target_tau).to(device)
 
-        # Data augmentation
-        self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
+            # Data augmentation
+            self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
 
-        # Birth
+            # Birth
+        except Exception as e:
+            print(e)
 
     # "Play"
     def act(self, obs):
