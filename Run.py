@@ -58,6 +58,7 @@ def reinforce(args, root_path):
             setattr(args, arg, getattr(env, arg))
 
         # Agent
+        print(args.agent)
         agent = instantiate(args.agent)  # An instance of DQNDPGAgent, for example
 
         # Experience replay
