@@ -9,7 +9,7 @@ from torch import nn
 
 import Utils
 
-from Architectures.Residual import ResidualBlock, Residual
+from Blocks.Architectures.Residual import ResidualBlock, Residual
 
 
 class _Encoder(nn.Module):
@@ -31,7 +31,7 @@ class _Encoder(nn.Module):
         # EMA target
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(**kwargs)
+            target = self.__class__(obs_shape=obs_shape, out_channels=out_channels, **kwargs)
             target.load_state_dict(self.state_dict())
             self.target = target
 
@@ -79,7 +79,7 @@ class CNNEncoder(_Encoder):
     """Basic CNN encoder, e.g., DrQV2 (https://arxiv.org/abs/2107.09645)."""
 
     def __init__(self, obs_shape, out_channels=32, depth=3, pixels=True, flatten=True,
-                 target_tau=None, optim_lr=None):
+                 optim_lr=None, target_tau=None):
 
         super().__init__()
 
@@ -104,7 +104,7 @@ class ResidualBlockEncoder(_Encoder):
     """Residual block-based CNN encoder, e.g., Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)."""
 
     def __init__(self, obs_shape, out_channels=64, pixels=True, flatten=True, num_blocks=1,
-                 target_tau=None, optim_lr=None):
+                 optim_lr=None, target_tau=None):
 
         super().__init__()
 
@@ -137,7 +137,7 @@ class IsotropicCNNEncoder(_Encoder):
     e.g., SPR (https://arxiv.org/pdf/2007.05929.pdf)."""
 
     def __init__(self, obs_shape, context_dim=0, out_channels=64, depth=0, pixels=False, flatten=True,
-                 target_tau=None, optim_lr=None):
+                 optim_lr=None, target_tau=None):
 
         super().__init__()
 
@@ -170,7 +170,7 @@ class IsotropicResidualBlockEncoder(_Encoder):
     e.g. Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)"""
 
     def __init__(self, obs_shape, context_dim=0, out_channels=64, num_blocks=1, pixels=True, flatten=True,
-                 target_tau=None, optim_lr=None):
+                 optim_lr=None, target_tau=None):
         super().__init__()
 
         assert len(obs_shape) == 3, 'image observation shape must have 3 dimensions'
