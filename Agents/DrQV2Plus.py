@@ -28,12 +28,12 @@ class DrQV2PlusAgent(torch.nn.Module):
         super().__init__()
 
         # ! Original only compatible with continuous spaces, both supported here
-        self.discrete = discrete  # Discrete (e.g. Atari) supported
-        self.device = device
-        self.log_tensorboard = log_tensorboard
-        self.birthday = time.time()
-        self.step = self.episode = 0
-        self.explore_steps = explore_steps
+        # self.discrete = discrete  # Discrete (e.g. Atari) supported
+        # self.device = device
+        # self.log_tensorboard = log_tensorboard
+        # self.birthday = time.time()
+        # self.step = self.episode = 0
+        # self.explore_steps = explore_steps
 
         # Models
         # self.encoder = CNNEncoder(obs_shape, optim_lr=lr, target_tau=target_tau).to(device)
