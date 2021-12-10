@@ -24,13 +24,13 @@ class Actor(nn.Module):
         self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
                                    nn.LayerNorm(feature_dim), nn.Tanh())
 
-        self.policy = nn.Sequential(*[nn.Linear(feature_dim, hidden_dim),
-                                      nn.ReLU(inplace=True),
-                                      nn.Linear(hidden_dim, hidden_dim),
-                                      nn.ReLU(inplace=True),
-                                      # See: https://openreview.net/pdf?id=9xhgmsNVHu
-                                      Utils.L2Norm() if policy_norm else nn.Identity(),
-                                      nn.Linear(hidden_dim, action_dim)])
+        self.Pi_head = nn.Sequential(*[nn.Linear(feature_dim, hidden_dim),
+                                       nn.ReLU(inplace=True),
+                                       nn.Linear(hidden_dim, hidden_dim),
+                                       nn.ReLU(inplace=True),
+                                       # See: https://openreview.net/pdf?id=9xhgmsNVHu
+                                       Utils.L2Norm() if policy_norm else nn.Identity(),
+                                       nn.Linear(hidden_dim, action_dim)])
 
         self.apply(Utils.weight_init)
 
@@ -50,7 +50,7 @@ class Actor(nn.Module):
 
     def forward(self, obs, step=None):
         h = self.trunk(obs)
-        Q = self.policy(h)
+        Q = self.Pi_head(h)
         return Q
 
 
@@ -76,10 +76,10 @@ class TruncatedGaussianActor(Actor):
         h = self.trunk(obs)
 
         if self.stddev_schedule is None or step is None:
-            mu, log_std = self.policy(h).chunk(2, dim=-1)
+            mu, log_std = self.Pi_head(h).chunk(2, dim=-1)
             std = log_std.exp()
         else:
-            mu = self.policy(h)
+            mu = self.Pi_head(h)
             std = Utils.schedule(self.stddev_schedule, step)
             std = torch.full_like(mu, std)
 
@@ -116,7 +116,7 @@ class DiagonalGaussianActor(Actor):
         h = self.trunk(obs)
 
         if self.stddev_schedule is None or step is None:
-            mu, log_std = self.policy(h).chunk(2, dim=-1)
+            mu, log_std = self.Pi_head(h).chunk(2, dim=-1)
 
             # Constrain log_std inside [log_std_min, log_std_max]
             log_std = torch.tanh(log_std)
@@ -124,7 +124,7 @@ class DiagonalGaussianActor(Actor):
             log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
             std = log_std.exp()
         else:
-            mu = self.policy(h)
+            mu = self.Pi_head(h)
             std = Utils.schedule(self.stddev_schedule, step)
             std = torch.full_like(mu, std)
 

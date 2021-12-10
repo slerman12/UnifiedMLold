@@ -17,6 +17,7 @@ class _CNNEncoder(nn.Module):
     def __init__(self):
         super().__init__()
         self.CNN = None
+        self.neck = nn.Identity()
 
     def __post__(self, obs_shape, out_channels, optim_lr=None, target_tau=None, **kwargs):
         assert self.CNN is not None, 'Inheritor of Encoder must define self.CNN'
@@ -28,7 +29,7 @@ class _CNNEncoder(nn.Module):
         if optim_lr is not None:
             self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
 
-        # EMA target
+        # EMA
         if target_tau is not None:
             self.target_tau = target_tau
             target = self.__class__(obs_shape=obs_shape, out_channels=out_channels, **kwargs)
@@ -73,7 +74,7 @@ class _CNNEncoder(nn.Module):
             h = h.view(*shape[:-3], *h.shape[-3:])
             assert tuple(h.shape[-3:]) == self.repr_shape
 
-        return h
+        return self.neck(h)
 
 
 class CNNEncoder(_CNNEncoder):
@@ -122,6 +123,9 @@ class ResidualBlockEncoder(_CNNEncoder):
                                  *[ResidualBlock(out_channels, out_channels)
                                    for _ in range(num_blocks)])
 
+        self.pixels = pixels
+        self.flatten = flatten
+
         self.__post__(obs_shape=obs_shape, out_channels=out_channels, num_blocks=num_blocks,
                       pixels=pixels, flatten=flatten, target_tau=target_tau, optim_lr=optim_lr)
 
@@ -159,6 +163,9 @@ class IsotropicCNNEncoder(_CNNEncoder):
                                  nn.Conv2d(out_channels, out_channels, (3, 3), padding=1),
                                  nn.ReLU())
 
+        self.pixels = pixels
+        self.flatten = flatten
+
         self.__post__(obs_shape=obs_shape, context_dim=context_dim, out_channels=out_channels, depth=depth,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
 
@@ -190,6 +197,9 @@ class IsotropicResidualBlockEncoder(_CNNEncoder):
                                  nn.ReLU(),
                                  *[ResidualBlock(out_channels, out_channels)
                                    for _ in range(num_blocks)])
+
+        self.pixels = pixels
+        self.flatten = flatten
 
         self.__post__(obs_shape=obs_shape, context_dim=context_dim, out_channels=out_channels, num_blocks=num_blocks,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)

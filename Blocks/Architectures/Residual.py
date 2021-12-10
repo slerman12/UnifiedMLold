@@ -31,12 +31,12 @@ class ResidualBlock(nn.Module):
                                                kernel_size=3, padding=1, bias=False),
                                      nn.BatchNorm2d(out_channels))
 
-        self.residual_block = nn.Sequential(Residual(pre_residual, down_sample), nn.ReLU())
+        self.Residual_block = nn.Sequential(Residual(pre_residual, down_sample), nn.ReLU())
 
     def forward(self, x):
-        return self.residual_block(x)
+        return self.Residual_block(x)
 
     def output_shape(self, height, width):
-        return Utils.cnn_output_shape(height, width, self.residual_block)
+        return Utils.cnn_output_shape(height, width, self.Residual_block)
 
 

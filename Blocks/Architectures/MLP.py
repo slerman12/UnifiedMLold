@@ -9,7 +9,7 @@ class MLP(nn.Module):
                  batch_norm=False, batch_norm_last=False, l2_norm=False):
         super().__init__()
 
-        self.mlp = nn.Sequential(nn.Linear(in_dim, hidden_dim),
+        self.MLP = nn.Sequential(nn.Linear(in_dim, hidden_dim),
                                  nn.BatchNorm1d(hidden_dim) if batch_norm else nn.Identity(),
                                  nn.ReLU(inplace=True),
                                  *sum([[nn.Linear(hidden_dim, hidden_dim),
@@ -25,7 +25,7 @@ class MLP(nn.Module):
         self.apply(Utils.weight_init)
 
     def forward(self, x):
-        return self.mlp(x)
+        return self.MLP(x)
 
 
 class MLPBlock(nn.Module):
@@ -52,7 +52,7 @@ class MLPBlock(nn.Module):
 
         in_features = feature_dim if layer_norm else in_dim
 
-        self.mlp = MLP(in_features, out_dim, hidden_dim, depth=depth,
+        self.MLP = MLP(in_features, out_dim, hidden_dim, depth=depth,
                        batch_norm=batch_norm, batch_norm_last=batch_norm_last, l2_norm=l2_norm)
 
         self.apply(Utils.weight_init)
@@ -78,4 +78,4 @@ class MLPBlock(nn.Module):
         if self.trunk is not None:
             h = self.trunk(h)
 
-        return self.mlp(h)
+        return self.MLP(h)
