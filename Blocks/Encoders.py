@@ -146,7 +146,7 @@ class IsotropicCNNEncoder(_CNNEncoder):
 
         # Dimensions
         in_channels = obs_shape[0] + context_dim
-        out_channels = in_channels if out_channels is None else out_channels
+        out_channels = obs_shape[0] if out_channels is None else out_channels
 
         # CNN
         self.CNN = nn.Sequential(nn.Conv2d(in_channels, out_channels, (3, 3), padding=1),
@@ -179,7 +179,7 @@ class IsotropicResidualBlockEncoder(_CNNEncoder):
 
         # Dimensions
         in_channels = obs_shape[0] + context_dim
-        out_channels = in_channels if out_channels is None else out_channels
+        out_channels = obs_shape[0] if out_channels is None else out_channels
 
         # CNN
         pre_residual = nn.Sequential(nn.Conv2d(in_channels, out_channels, 3, 2, 1, bias=False),
