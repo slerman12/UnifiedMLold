@@ -147,11 +147,11 @@ class IsotropicCNNEncoder(_CNNEncoder):
         assert len(obs_shape) == 3, 'image observation shape must have 3 dimensions'
 
         # Dimensions
-        self.in_channels = obs_shape[0] + context_dim
-        out_channels = self.in_channels if out_channels is None else out_channels
+        in_channels = obs_shape[0] + context_dim
+        out_channels = in_channels if out_channels is None else out_channels
 
         # CNN
-        self.CNN = nn.Sequential(nn.Conv2d(self.in_channels, out_channels, (3, 3), padding=1),
+        self.CNN = nn.Sequential(nn.Conv2d(in_channels, out_channels, (3, 3), padding=1),
                                  nn.BatchNorm2d(out_channels),
                                  nn.ReLU(),
                                  *sum([(nn.Conv2d(out_channels, out_channels, (3, 3), padding=1),
@@ -183,11 +183,11 @@ class IsotropicResidualBlockEncoder(_CNNEncoder):
         assert len(obs_shape) == 3, 'image observation shape must have 3 dimensions'
 
         # Dimensions
-        self.in_channels = obs_shape[0] + context_dim
-        out_channels = self.in_channels if out_channels is None else out_channels
+        in_channels = obs_shape[0] + context_dim
+        out_channels = in_channels if out_channels is None else out_channels
 
         # CNN
-        pre_residual = nn.Sequential(nn.Conv2d(self.in_channels, out_channels, 3, 2, 1, bias=False),
+        pre_residual = nn.Sequential(nn.Conv2d(in_channels, out_channels, 3, 2, 1, bias=False),
                                      nn.BatchNorm2d(out_channels - 1))
 
         # CNN
