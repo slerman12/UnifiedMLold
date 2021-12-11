@@ -16,7 +16,7 @@ plt.rcParams['legend.loc'] = 'lower right'
 
 
 # List of benchmarks to plot
-experiment_names = ['humanoid']
+experiment_names = ['humanoid', '_munch_trust_ent']
 path = Path.cwd()
 files_to_plot = sum([glob.glob(f'{str(path)}/**/Eval*{name}.csv', recursive=True) for name in experiment_names], [])
 also_files_to_plot = ['humanoid_walk']
