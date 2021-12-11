@@ -41,10 +41,12 @@ class SPRAgent(torch.nn.Module):
         self.dynamics = IsotropicCNNEncoder(self.encoder.repr_shape, context_dim=action_shape[-1],
                                             optim_lr=lr).to(device)
 
+        # TODO encoder 'neck'
         self.projection_g = MLPBlock(self.encoder.repr_dim, hidden_dim, hidden_dim, hidden_dim,
                                      depth=1, layer_norm=True,
                                      target_tau=target_tau, optim_lr=lr).to(device)
 
+        # TODO self.self_supervisor
         self.prediction_q = MLPBlock(hidden_dim, hidden_dim, hidden_dim, hidden_dim,
                                      depth=1, layer_norm=True,
                                      optim_lr=lr).to(device)

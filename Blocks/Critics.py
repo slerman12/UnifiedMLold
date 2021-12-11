@@ -13,6 +13,7 @@ from Blocks.Architectures.MLP import MLP
 from Blocks.Architectures.Residual import ResidualBlock
 
 
+# TODO Pick one and don't inherit
 class _EnsembleQCritic(nn.Module):
     """Base critic"""
     def __init__(self):

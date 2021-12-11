@@ -70,7 +70,7 @@ def standardize_header(name):
 
 
 i = 0
-n = ['-state-action' if 'action' in file else '-state' if 'state' in file else '' for file in files_to_plot]
+n = ['-munch_trust_ent' if '_munch_trust_ent' in file else '' for file in files_to_plot]
 to_c = []
 for file in files_to_plot:
     bla = pd.read_csv(file).rename(standardize_header, axis='columns')

@@ -7,7 +7,7 @@ from torch.distributions import Categorical
 from torch.nn import functional as F
 
 
-def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0.1, trust_region_temp=0.1, dist=None, logs=None):
+def deepPolicyGradient(actor, critic, obs, step, entropy_temp=0, trust_region_temp=0, dist=None, logs=None):
     if dist is None:
         dist = actor(obs, step)
 

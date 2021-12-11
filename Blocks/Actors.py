@@ -163,8 +163,10 @@ class CategoricalCriticActor(nn.Module):
         Q_min = torch.min(*Qs)  # Min-reduced
         Q = sum(*Qs) / self.ensemble_size  # Mean-reduced
 
-        # TODO Clip with Munchausen-style lo for stability? (otherwise, exp vanishes with high logits I think)
+        # TODO Clip with Munchausen-style lo for stability? (otherwise, exp vanishes with big logits I think)
+        #  (^logits too low)
         # TODO Logits/logprob via subtracting max_q first for stability? (otherwise, exp explodes for low temps I think)
+        #  (^logits too high)
         # TODO torch.logsumexp !! example of both: https://github.com/BY571/Munchausen-RL/blob/master/M-DQN.ipynb
         logits = (Q - Q.max(dim=-1, keepdim=True)[0])
         dist = Categorical(logits=logits / temp)

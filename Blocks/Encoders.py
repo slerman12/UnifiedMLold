@@ -12,6 +12,7 @@ import Utils
 from Blocks.Architectures.Residual import ResidualBlock, Residual
 
 
+# TODO '_BaseEncoder'
 class _CNNEncoder(nn.Module):
     """Base CNN encoder."""
     def __init__(self):
