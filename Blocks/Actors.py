@@ -12,7 +12,10 @@ import Utils
 
 
 class Actor(nn.Module):
-    """Base actor"""
+    """
+    Base actor
+    """
+
     def __init__(self, repr_shape, feature_dim, hidden_dim, action_dim, policy_norm=False,
                  target_tau=None, optim_lr=None, **kwargs):
         super().__init__()
@@ -92,7 +95,10 @@ class TruncatedGaussianActor(Actor):
 
 
 class DiagonalGaussianActor(Actor):
-    """torch.distributions implementation of an diagonal Gaussian policy."""
+    """
+    torch.distributions implementation of an diagonal Gaussian policy.
+    """
+
     def __init__(self, repr_shape, feature_dim, hidden_dim, action_dim,
                  stddev_schedule=None, log_std_bounds=None,
                  target_tau=None, optim_lr=None, **kwargs):

@@ -12,16 +12,18 @@ import Utils
 from Blocks.Architectures.Residual import ResidualBlock, Residual
 
 
-# TODO '_BaseEncoder'
-class _CNNEncoder(nn.Module):
-    """Base CNN encoder."""
+class _BaseCNNEncoder(nn.Module):
+    """
+    Base CNN encoder.
+    """
+
     def __init__(self):
         super().__init__()
         self.CNN = None
         self.neck = nn.Identity()
 
     def __post__(self, obs_shape, out_channels, pixels, flatten, optim_lr=None, target_tau=None, **kwargs):
-        assert self.CNN is not None, 'Inheritor of Encoder must define self.CNN'
+        assert self.CNN is not None, 'Inheritor of _BaseCNNEncoder must define self.CNN'
 
         # Initialize weights
         self.apply(Utils.weight_init)
@@ -80,8 +82,10 @@ class _CNNEncoder(nn.Module):
         return self.neck(h)
 
 
-class CNNEncoder(_CNNEncoder):
-    """Basic CNN encoder, e.g., DrQV2 (https://arxiv.org/abs/2107.09645)."""
+class CNNEncoder(_BaseCNNEncoder):
+    """
+    Basic CNN encoder, e.g., DrQV2 (https://arxiv.org/abs/2107.09645).
+    """
 
     def __init__(self, obs_shape, out_channels=32, depth=3, pixels=True, flatten=True,
                  optim_lr=None, target_tau=None):
@@ -102,8 +106,11 @@ class CNNEncoder(_CNNEncoder):
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
 
 
-class ResidualBlockEncoder(_CNNEncoder):
-    """Residual block-based CNN encoder, e.g., Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)."""
+class ResidualBlockEncoder(_BaseCNNEncoder):
+    """
+    Residual block-based CNN encoder,
+    e.g., Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf).
+    """
 
     def __init__(self, obs_shape, out_channels=64, pixels=True, flatten=True, num_blocks=1,
                  optim_lr=None, target_tau=None):
@@ -134,9 +141,11 @@ Generative models that plan, forecast, and imagine.
 """
 
 
-class IsotropicCNNEncoder(_CNNEncoder):
-    """Isotropic (no bottleneck / dimensionality conserving) CNN encoder,
-    e.g., SPR (https://arxiv.org/pdf/2007.05929.pdf)."""
+class IsotropicCNNEncoder(_BaseCNNEncoder):
+    """
+    Isotropic (no bottleneck / dimensionality conserving) CNN encoder,
+    e.g., SPR (https://arxiv.org/pdf/2007.05929.pdf).
+    """
 
     def __init__(self, obs_shape, context_dim=0, out_channels=None, depth=0, pixels=False, flatten=False,
                  optim_lr=None, target_tau=None):
@@ -168,9 +177,11 @@ class IsotropicCNNEncoder(_CNNEncoder):
         assert obs_shape[-1] == self.repr_shape[2]
 
 
-class IsotropicResidualBlockEncoder(_CNNEncoder):
-    """Isotropic (no bottleneck / dimensionality conserving) residual block-based CNN encoder,
-    e.g. Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)"""
+class IsotropicResidualBlockEncoder(_BaseCNNEncoder):
+    """
+    Isotropic (no bottleneck / dimensionality conserving) residual block-based CNN encoder,
+    e.g. Efficient-Zero (https://arxiv.org/pdf/2111.00210.pdf)
+    """
 
     def __init__(self, obs_shape, context_dim=0, out_channels=None, num_blocks=1, pixels=False, flatten=False,
                  optim_lr=None, target_tau=None):

@@ -26,10 +26,6 @@ def main(args):
 
     Utils.set_seed_everywhere(args.seed)
 
-    # if args.device is None:
-    #     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    torch.device(args.device)
-
     args.root_path, root_path = os.getcwd(), Path.cwd()  # Hydra doesn't support Path types
 
     # All agents can convert seamlessly between RL or classification
