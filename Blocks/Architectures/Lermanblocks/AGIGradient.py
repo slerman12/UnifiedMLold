@@ -178,11 +178,11 @@ class AGIGradient(nn.Module):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
 
 
-AGIGradient(in_dim=10, out_dim=1, depth=6,
-            steps=100000, meta_learn_steps=16,
-            num_dists=2, num_samples=2,
-            forget_proba=0.1, teleport_proba=0.1,
-            optim_lr=0.001)
+# AGIGradient(in_dim=10, out_dim=1, depth=6,
+#             steps=100000, meta_learn_steps=16,
+#             num_dists=2, num_samples=2,
+#             forget_proba=0.1, teleport_proba=0.1,
+#             optim_lr=0.001)
 
 # # Capacity
 # AGIGradient(in_dim=10, out_dim=1, depth=18,
