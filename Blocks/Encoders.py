@@ -7,7 +7,7 @@ import math
 import torch
 from torch import nn
 
-from Blocks.Architectures.Lermanblocks import agiUtils
+import Utils
 
 from Blocks.Architectures.Residual import ResidualBlock, Residual
 
@@ -28,7 +28,7 @@ class _BaseCNNEncoder(nn.Module):
         assert self.CNN is not None, 'Inheritor of _BaseCNNEncoder must define self.CNN'
 
         # Initialize weights
-        self.apply(agiUtils.weight_init)
+        self.apply(Utils.weight_init)
 
         # Optimizer
         if optim_lr is not None:
@@ -45,7 +45,7 @@ class _BaseCNNEncoder(nn.Module):
         # CNN feature map sizes
         self.obs_shape = obs_shape
         _, height, width = obs_shape
-        height, width = agiUtils.cnn_output_shape(height, width, self.CNN)
+        height, width = Utils.cnn_output_shape(height, width, self.CNN)
         self.repr_shape = (out_channels, height, width)  # Feature map shape
         self.repr_dim = math.prod(self.repr_shape)  # Flattened features dim
 
@@ -54,7 +54,7 @@ class _BaseCNNEncoder(nn.Module):
 
     def update_target_params(self):
         assert self.target_tau is not None
-        agiUtils.soft_update_params(self, self.target, self.target_tau)
+        Utils.soft_update_params(self, self.target, self.target_tau)
 
     # Encodes
     def forward(self, obs, context=None):

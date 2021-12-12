@@ -7,7 +7,7 @@ import math
 import torch
 from torch import nn
 
-from Blocks.Architectures.Lermanblocks import agiUtils
+import Utils
 
 from Blocks.Architectures.MLP import MLP
 from Blocks.Architectures.Residual import ResidualBlock
@@ -47,7 +47,7 @@ class EnsembleQCritic(nn.Module):
     def __post__(self, action_dim, ensemble_size, discrete, optim_lr=None, target_tau=None, **kwargs):
 
         # Initialize weights
-        self.apply(agiUtils.weight_init)
+        self.apply(Utils.weight_init)
 
         # Optimizer  TODO try AdamW instead universally
         if optim_lr is not None:
@@ -67,7 +67,7 @@ class EnsembleQCritic(nn.Module):
 
     def update_target_params(self):
         assert self.target_tau is not None
-        agiUtils.soft_update_params(self, self.target, self.target_tau)
+        Utils.soft_update_params(self, self.target, self.target_tau)
 
     # Get action Q-values
     def forward(self, obs=None, action=None, dist=None):
@@ -120,7 +120,7 @@ class CNNEnsembleQCritic(EnsembleQCritic):
                                    nn.Flatten())
 
         # CNN dimensions
-        trunk_h, trunk_w = agiUtils.cnn_output_shape(height, width, self.trunk)
+        trunk_h, trunk_w = Utils.cnn_output_shape(height, width, self.trunk)
         feature_dim = out_channels * trunk_h * trunk_w
 
         # MLP dimensions
