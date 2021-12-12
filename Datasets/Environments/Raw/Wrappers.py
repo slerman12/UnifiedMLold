@@ -69,7 +69,7 @@ class ActionSpecWrapper(dm_env.Environment):
         return time_step
 
     def reset(self):
-        time_step = self.env.reset()
+        time_step = self.env.reset_tensors()
         return time_step
 
     def observation_spec(self):
@@ -107,7 +107,7 @@ class ActionRepeatWrapper(dm_env.Environment):
         return self.env.action_spec()
 
     def reset(self):
-        time_step = self.env.reset()
+        time_step = self.env.reset_tensors()
         return time_step
 
     def __getattr__(self, name):
@@ -150,7 +150,7 @@ class FrameStackWrapper(dm_env.Environment):
         return pixels.transpose(2, 0, 1).copy()
 
     def reset(self):
-        time_step = self.env.reset()
+        time_step = self.env.reset_tensors()
         pixels = self._extract_pixels(time_step)
         for _ in range(self._num_frames):
             self._frames.append(pixels)
@@ -204,7 +204,7 @@ class TruncateWrapper(dm_env.Environment):
     def reset(self):
         # Truncate and resume, or reset
         if self.was_not_truncated:
-            self.time_step = self.env.reset()
+            self.time_step = self.env.reset_tensors()
         self.elapsed_steps = 0
         return self.time_step
 
@@ -242,7 +242,7 @@ class AugmentAttributesWrapper(dm_env.Environment):
         return self.to_attr_dict(self.time_step)
 
     def reset(self):
-        time_step = self.env.reset()
+        time_step = self.env.reset_tensors()
         # Augment time_step (experience) with extra functionality
         self.time_step = self.augment_time_step(time_step)
         return self.to_attr_dict(self.time_step)

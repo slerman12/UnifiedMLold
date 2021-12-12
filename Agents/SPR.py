@@ -43,12 +43,12 @@ class SPRAgent(torch.nn.Module):
 
         # TODO encoder 'neck'
         self.projection_g = MLPBlock(self.encoder.repr_dim, hidden_dim, hidden_dim, hidden_dim,
-                                     depth=1, layer_norm=True,
+                                     depth=2, layer_norm=True,
                                      target_tau=target_tau, optim_lr=lr).to(device)
 
         # TODO self.self_supervisor
         self.prediction_q = MLPBlock(hidden_dim, hidden_dim, hidden_dim, hidden_dim,
-                                     depth=1, layer_norm=True,
+                                     depth=2, layer_norm=True,
                                      optim_lr=lr).to(device)
 
         self.critic = EnsembleQCritic(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],

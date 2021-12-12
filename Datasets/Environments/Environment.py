@@ -16,7 +16,7 @@ class Environment:
         self.env = self.raw_env.make(task_name, frame_stack, action_repeat, max_episode_frames,
                                      truncate_episode_frames, train, seed)
 
-        self.env.reset()
+        self.env.reset_tensors()
 
         self.episode_step = self.last_episode_len = self.episode_reward = self.last_episode_reward = 0
         self.daybreak = None
@@ -67,7 +67,7 @@ class Environment:
         if self.episode_done:
             if agent.training:
                 agent.episode += 1
-            self.env.reset()
+            self.env.reset_tensors()
 
             self.last_episode_len = self.episode_step
             self.last_episode_reward = self.episode_reward

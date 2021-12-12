@@ -8,7 +8,7 @@ import torch
 from torch import nn
 from torch.distributions import Categorical, Normal, TransformedDistribution
 
-import Utils
+from Blocks.Architectures.Lermanblocks import agiUtils
 
 
 class Actor(nn.Module):
@@ -32,10 +32,10 @@ class Actor(nn.Module):
                                        nn.Linear(hidden_dim, hidden_dim),
                                        nn.ReLU(inplace=True),
                                        # See: https://openreview.net/pdf?id=9xhgmsNVHu
-                                       Utils.L2Norm() if policy_norm else nn.Identity(),
+                                       agiUtils.L2Norm() if policy_norm else nn.Identity(),
                                        nn.Linear(hidden_dim, action_dim)])
 
-        self.apply(Utils.weight_init)
+        self.apply(agiUtils.weight_init)
 
         if optim_lr is not None:
             self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
@@ -49,7 +49,7 @@ class Actor(nn.Module):
 
     def update_target_params(self):
         assert self.target_tau is not None
-        Utils.soft_update_params(self, self.target, self.target_tau)
+        agiUtils.soft_update_params(self, self.target, self.target_tau)
 
     def forward(self, obs, step=None):
         h = self.trunk(obs)
@@ -83,13 +83,13 @@ class TruncatedGaussianActor(Actor):
             std = log_std.exp()
         else:
             mu = self.Pi_head(h)
-            std = Utils.schedule(self.stddev_schedule, step)
+            std = agiUtils.schedule(self.stddev_schedule, step)
             std = torch.full_like(mu, std)
 
         self.raw_mu = mu
         mu = torch.tanh(mu)
 
-        dist = Utils.TruncatedNormal(mu, std, clip=self.stddev_clip)
+        dist = agiUtils.TruncatedNormal(mu, std, clip=self.stddev_clip)
 
         return dist
 
@@ -111,7 +111,7 @@ class DiagonalGaussianActor(Actor):
                          stddev_schedule=stddev_schedule, log_std_bounds=log_std_bounds,
                          optim_lr=optim_lr, target_tau=target_tau, dim=dim)
 
-        self.tanh_transform = Utils.TanhTransform()
+        self.tanh_transform = agiUtils.TanhTransform()
 
         self.discrete = False
         self.action_dim = dim
@@ -131,7 +131,7 @@ class DiagonalGaussianActor(Actor):
             std = log_std.exp()
         else:
             mu = self.Pi_head(h)
-            std = Utils.schedule(self.stddev_schedule, step)
+            std = agiUtils.schedule(self.stddev_schedule, step)
             std = torch.full_like(mu, std)
 
         dist = TransformedDistribution(Normal(mu, std), [self.tanh_transform])
@@ -163,7 +163,7 @@ class CategoricalCriticActor(nn.Module):
 
     def forward(self, obs, step=None):
         # TODO Learnable temp
-        temp = 1 if step is None else Utils.schedule(self.stddev_schedule, step)
+        temp = 1 if step is None else agiUtils.schedule(self.stddev_schedule, step)
 
         Qs = self.critic(obs)
         Q_min = torch.min(*Qs)  # Min-reduced

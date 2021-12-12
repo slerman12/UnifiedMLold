@@ -62,7 +62,7 @@ def soft_update_params(net, target_net, tau):
 
 # Basic L2 normalization
 class L2Norm(nn.Module):
-    def __init__(self, eps=1e-10):
+    def __init__(self, eps=1e-12):
         super().__init__()
         self.eps = eps
 
@@ -259,13 +259,26 @@ def one_hot(x, num_classes):
     return zeros.scatter(scatter_dim, inds, 1)
 
 
+# Helps contain learnable meta coefficients like temperatures, etc.
+class Meta(nn.Module):
+    def __init__(self, optim_lr=None, **metas):
+        super().__init__()
+
+        for name, meta in metas.items():
+            meta = nn.Parameter(torch.full((1,), meta))
+            setattr(self, name, meta)
+
+        if optim_lr is not None:
+            self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
+
+
 # Converts an agent to a classifier
 def to_classifier(agent):
     assert agent.discrete, "Only agents initialized as discrete\n" \
                            "can be converted to classifiers.\n" \
                            "Simply re-initialize your agent with\n" \
                            "the 'discrete' hyper-parameter set to True;\n" \
-                           "all agents support discrete actions.\n"
+                           "all agents support discrete.\n"
 
     def update(replay):
 

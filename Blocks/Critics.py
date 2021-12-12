@@ -7,7 +7,7 @@ import math
 import torch
 from torch import nn
 
-import Utils
+from Blocks.Architectures.Lermanblocks import agiUtils
 
 from Blocks.Architectures.MLP import MLP
 from Blocks.Architectures.Residual import ResidualBlock
@@ -26,11 +26,9 @@ class EnsembleQCritic(nn.Module):
 
         repr_dim = math.prod(repr_shape)
 
-        # Linear + LayerNorm
         self.trunk = nn.Sequential(nn.Linear(repr_dim, feature_dim),
                                    nn.LayerNorm(feature_dim), nn.Tanh())
 
-        # MLP dimensions
         in_dim = feature_dim if discrete else feature_dim + action_dim
         Q_dim = action_dim if discrete else 1
 
@@ -49,9 +47,9 @@ class EnsembleQCritic(nn.Module):
     def __post__(self, action_dim, ensemble_size, discrete, optim_lr=None, target_tau=None, **kwargs):
 
         # Initialize weights
-        self.apply(Utils.weight_init)
+        self.apply(agiUtils.weight_init)
 
-        # Optimizer
+        # Optimizer  TODO try AdamW instead universally
         if optim_lr is not None:
             self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
 
@@ -69,13 +67,13 @@ class EnsembleQCritic(nn.Module):
 
     def update_target_params(self):
         assert self.target_tau is not None
-        Utils.soft_update_params(self, self.target, self.target_tau)
+        agiUtils.soft_update_params(self, self.target, self.target_tau)
 
     # Get action Q-values
     def forward(self, obs=None, action=None, dist=None):
         if self.discrete:
             assert obs is not None or dist is not None, 'Q-value computation requires an observation or ' \
-                                                        'discrete distribution'
+                                                        'an existing discrete distribution'
 
             # All actions' Q-values
             if dist is None:
@@ -122,7 +120,7 @@ class CNNEnsembleQCritic(EnsembleQCritic):
                                    nn.Flatten())
 
         # CNN dimensions
-        trunk_h, trunk_w = Utils.cnn_output_shape(height, width, self.trunk)
+        trunk_h, trunk_w = agiUtils.cnn_output_shape(height, width, self.trunk)
         feature_dim = out_channels * trunk_h * trunk_w
 
         # MLP dimensions
@@ -130,7 +128,7 @@ class CNNEnsembleQCritic(EnsembleQCritic):
         Q_dim = action_dim if discrete else 1
 
         # MLP
-        self.Q_head = nn.ModuleList([MLP(in_dim, Q_dim, hidden_dim, 1)
+        self.Q_head = nn.ModuleList([MLP(in_dim, Q_dim, hidden_dim, 2)
                                      for _ in range(ensemble_size)])
 
         self.__post__(optim_lr=optim_lr, target_tau=target_tau, repr_shape=repr_shape,

@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 def shorthand(log_name):
-    return ''.join([s[0].upper() for s in log_name.split('_')] if len(log_name) > 3 else log_name.upper())
+    return ''.join([s[0].upper() for s in log_name.split(' ')] if len(log_name) > 3 else log_name.upper())
 
 
 def format(log, log_name):
@@ -112,16 +112,18 @@ class Logger:
     def dump_to_csv(self, logs, name):
         logs = dict(logs)
 
-        logs['agent'] = self.agent
-        logs['task'] = self.task
-        logs['seed'] = self.seed
-        logs['experiment'] = self.experiment
+        assert 'step' in logs
+        for log_name in ['agent', 'task', 'seed', 'experiment']:
+            logs[log_name] = getattr(self, log_name)
 
         file_name = self.log_path / f'{name}_{self.task}_{self.seed}_{self.experiment}.csv'
         write_header = True
         if file_name.exists():
-            self.remove_old_entries(logs, file_name)
-            write_header = False
+            try:
+                self.remove_old_entries(logs, file_name)
+                write_header = False
+            except Exception:
+                print(f'Header mismatch: overwriting old entries of {file_name}')
 
         file = file_name.open('a')
         writer = csv.DictWriter(file,

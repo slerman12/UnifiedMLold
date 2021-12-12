@@ -7,7 +7,7 @@ import math
 import torch
 from torch import nn
 
-import Utils
+from Blocks.Architectures.Lermanblocks import agiUtils
 
 from Blocks.Architectures.Residual import ResidualBlock, Residual
 
@@ -18,7 +18,9 @@ class _BaseCNNEncoder(nn.Module):
     """
 
     def __init__(self):
+
         super().__init__()
+
         self.CNN = None
         self.neck = nn.Identity()
 
@@ -26,7 +28,7 @@ class _BaseCNNEncoder(nn.Module):
         assert self.CNN is not None, 'Inheritor of _BaseCNNEncoder must define self.CNN'
 
         # Initialize weights
-        self.apply(Utils.weight_init)
+        self.apply(agiUtils.weight_init)
 
         # Optimizer
         if optim_lr is not None:
@@ -43,7 +45,7 @@ class _BaseCNNEncoder(nn.Module):
         # CNN feature map sizes
         self.obs_shape = obs_shape
         _, height, width = obs_shape
-        height, width = Utils.cnn_output_shape(height, width, self.CNN)
+        height, width = agiUtils.cnn_output_shape(height, width, self.CNN)
         self.repr_shape = (out_channels, height, width)  # Feature map shape
         self.repr_dim = math.prod(self.repr_shape)  # Flattened features dim
 
@@ -52,7 +54,7 @@ class _BaseCNNEncoder(nn.Module):
 
     def update_target_params(self):
         assert self.target_tau is not None
-        Utils.soft_update_params(self, self.target, self.target_tau)
+        agiUtils.soft_update_params(self, self.target, self.target_tau)
 
     # Encodes
     def forward(self, obs, context=None):
@@ -98,8 +100,10 @@ class CNNEncoder(_BaseCNNEncoder):
         in_channels = obs_shape[0]
 
         # CNN
-        self.CNN = nn.Sequential(nn.Conv2d(in_channels, out_channels, 3, stride=2), nn.ReLU(),
-                                 *sum([(nn.Conv2d(out_channels, out_channels, 3, stride=1), nn.ReLU())
+        self.CNN = nn.Sequential(nn.Conv2d(in_channels, out_channels, 3, stride=2),
+                                 nn.ReLU(),
+                                 *sum([(nn.Conv2d(out_channels, out_channels, 3, stride=1),
+                                        nn.ReLU())
                                        for _ in range(depth)], ()))
 
         self.__post__(obs_shape=obs_shape, out_channels=out_channels, depth=depth,
@@ -144,7 +148,7 @@ Generative models that plan, forecast, and imagine.
 class IsotropicCNNEncoder(_BaseCNNEncoder):
     """
     Isotropic (no bottleneck / dimensionality conserving) CNN encoder,
-    e.g., SPR (https://arxiv.org/pdf/2007.05929.pdf).
+    e.g., SPR(?) (https://arxiv.org/pdf/2007.05929.pdf).
     """
 
     def __init__(self, obs_shape, context_dim=0, out_channels=None, depth=0, pixels=False, flatten=False,
@@ -193,9 +197,9 @@ class IsotropicResidualBlockEncoder(_BaseCNNEncoder):
         in_channels = obs_shape[0] + context_dim
         out_channels = obs_shape[0] if out_channels is None else out_channels
 
-        # CNN
+        # CNN  TODO this is the only difference with ResidualBlockEncoder
         pre_residual = nn.Sequential(nn.Conv2d(in_channels, out_channels, 3, 2, 1, bias=False),
-                                     nn.BatchNorm2d(out_channels - 1))
+                                     nn.BatchNorm2d(out_channels))
 
         # CNN
         self.CNN = nn.Sequential(Residual(pre_residual),

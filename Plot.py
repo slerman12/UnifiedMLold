@@ -70,6 +70,7 @@ def standardize_header(name):
 
 
 i = 0
+# TODO automatically append experiment name if same agent from different experiment already encountered
 n = ['-munch_trust_ent' if '_munch_trust_ent' in file else '' for file in files_to_plot]
 to_c = []
 for file in files_to_plot:
