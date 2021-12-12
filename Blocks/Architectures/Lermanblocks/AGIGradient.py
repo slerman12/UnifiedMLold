@@ -15,9 +15,10 @@ from torch.distributions import Normal
 
 import Utils
 
+from Logger import Logger
+
 from Blocks.Architectures.MLP import MLP
 from Blocks.Architectures.ParameterFree import ParameterFreeMLP
-from Logger import Logger
 
 
 class AGIGradient(nn.Module):
