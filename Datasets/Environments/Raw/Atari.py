@@ -102,7 +102,7 @@ class AtariPreprocessing(dm_env.Environment):
           observation: numpy array, the initial observation emitted by the
             environment.
         """
-        self.gym_env.reset_tensors()
+        self.gym_env.reset()
         self.lives = self.gym_env.ale.lives()
         self._fetch_grayscale_observation(self.screen_buffer[0])
         self.screen_buffer[1].fill(0)
