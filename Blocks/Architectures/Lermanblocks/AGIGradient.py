@@ -119,7 +119,7 @@ class AGIGradient(nn.Module):
             Utils.save(path,
                        nerves=self.nerves,
                        hippocampus=self.hippocampus,
-                       # memories=self.memories_detach(),
+                       # memories=self.memories,
                        crown=self.crown)
 
             print("Saved.")
@@ -173,6 +173,10 @@ class AGIGradient(nn.Module):
 
     def forward(self, sense, label=None):
         with torch.no_grad():
+            assert isinstance(sense, torch.Tensor)
+            if label is not None:
+                assert isinstance(label, torch.Tensor)
+                label = (label,) if len(label) else None
             return self.AGI((sense,), label)[0]
 
     def memories_detach(self):
