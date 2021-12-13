@@ -158,7 +158,7 @@ class AGIGradient(nn.Module):
             mem_size = self.memories[ith][0].shape[1]
 
             if sense_size < mem_size:
-                self.memories[ith] = tuple(m[:, :sense_size] for m in self.memories[ith])
+                self.memories[ith] = tuple(m[:, :sense_size].contiguous() for m in self.memories[ith])
             elif sense_size > mem_size:
                 self.memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1).contiguous() for m in self.memories[ith])
                 nulls = self.null_memory.repeat(1, sense_size % mem_size, 1).contiguous()
