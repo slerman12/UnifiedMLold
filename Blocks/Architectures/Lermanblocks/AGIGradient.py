@@ -70,13 +70,14 @@ class AGIGradient(nn.Module):
                     self.MLP.reset_tensors()
 
                 def __call__(self, num_samples):
-                    x = torch.rand(num_samples, in_dim).to(device)
-                    x = F.normalize(x)
-                    mu = self.MLP(x)
-                    dist = Normal(mu, self.stddev)
-                    # y_label = dist.sample()
-                    y_label = dist.mean
-                    return x, y_label
+                    with torch.no_grad():
+                        x = torch.rand(num_samples, in_dim).to(device)
+                        x = F.normalize(x)
+                        mu = self.MLP(x)
+                        dist = Normal(mu, self.stddev)
+                        # y_label = dist.sample()
+                        y_label = dist.mean
+                        return x, y_label
 
             self.distributions = [Distribution() for _ in range(num_dists)]
             self.memories = [null_memory for _ in range(num_dists)]
@@ -113,7 +114,6 @@ class AGIGradient(nn.Module):
                     self.memories[forget_ind] = null_memory
 
             self.memories = [null_memory for _ in range(num_dists)]
-            self.target.memories = self.memories
 
             print('Initialized.\n'
                   'Saving...')

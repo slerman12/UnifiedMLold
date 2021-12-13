@@ -74,10 +74,9 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             lo = -1
             target_Q += munchausen_temp * torch.clamp(entropy_temp * action_log_proba, min=lo, max=0)
 
-    _dist = actor(obs)
-
     context = torch.empty(0)
     if meta_learn:
+        _dist = actor(obs)
         context = Utils.one_hot(action, actor.action_dim)
         context = (1 - context) * torch.min(*_dist.Qs) + context * target_Q
 
