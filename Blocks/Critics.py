@@ -79,6 +79,7 @@ class EnsembleQCritic(nn.Module):
             if dist is None:
                 h = self.trunk(obs)
                 Qs = tuple(Q_net(h) for Q_net in self.Q_head)
+                print(Qs[0])
             else:
                 Qs = dist.Qs
 
