@@ -63,7 +63,7 @@ class AGIGradient(nn.Module):
 
             class Distribution:
                 def __init__(self, stddev=1):
-                    self.MLP = ParameterFreeMLP(in_dim, out_dim, hidden_dim=64, depth=0)
+                    self.MLP = ParameterFreeMLP(in_dim, out_dim, hidden_dim=64, depth=0).to(device)
                     self.stddev = stddev
 
                 def reset(self):
