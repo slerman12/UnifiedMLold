@@ -112,12 +112,17 @@ class AGIGradient(nn.Module):
                     forget_ind = random.randint(num_dists)
                     self.memories[forget_ind] = null_memory
 
+            print('Initialized.\n'
+                  'Saving...')
+
             # Save
             Utils.save(path,
                        nerves=self.nerves,
                        hippocampus=self.hippocampus,
                        memories=self.memories_detach(),
                        crown=self.crown)
+
+            print("Saved.")
 
         # Optimizer (if parametric training is desired)
         if not hasattr(self, 'optim') and optim_lr is not None:
@@ -244,5 +249,9 @@ class AGIGradient(nn.Module):
 # MNIST generalization? CartPole?  (vertical axes left and right, loss and reward, CartPole line has cart cartoon)
 # Would also need horizontal step / episode
 # Mountain car?
+
+# 1. Synthetic via classification 18-way "to determine best"
+# 2. RL Atari discrete 18-way
+# 3. MNIST, Cifar-10 CNN encoding
 
 
