@@ -113,6 +113,7 @@ class AGIGradient(nn.Module):
                     self.memories[forget_ind] = null_memory
 
             self.memories = [null_memory for _ in range(num_dists)]
+            self.target.memories = self.memories
 
             print('Initialized.\n'
                   'Saving...')
