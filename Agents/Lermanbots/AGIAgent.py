@@ -135,6 +135,7 @@ class AGIAgent(torch.nn.Module):
         self.critic.update_target_params()
         for Q_head in self.critic.Q_head:
             Q_head.update_target()
+            Q_head.optim.clear_grads()
 
         # Actor loss
         if not self.discrete:
