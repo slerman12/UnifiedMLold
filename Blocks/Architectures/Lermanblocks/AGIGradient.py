@@ -130,20 +130,18 @@ class AGIGradient(nn.Module):
         # EMA (w.r.t. memories rather than parameters)
         if target_tau is not None:
             self.target_tau = target_tau
-            target = self.__class__(in_dim=in_dim, out_dim=out_dim,
-                                    feature_dim=feature_dim, memory_dim=memory_dim, depth=depth)
-            target.load_state_dict(self.state_dict())
-            target.memories = self.memories
-            self.target = target
+            self.target_memories = self.memories
 
     def update_target(self):
         assert self.target_tau is not None
-        self.target.memories = tuple(self.target_tau * self.memories[i]
-                                     + (1 - self.target_tau) * self.target.memories[i]
+        self.target_memories = tuple(self.target_tau * self.memories[i]
+                                     + (1 - self.target_tau) * self.target_memories[i]
                                      for i in [0, 1])
 
-    def AGI(self, senses, label=None):
-        update_memory = self.training and label is not None
+    def AGI(self, senses, label=None, target=False):
+        update_memory = self.training and label is not None and not target
+
+        memories = self.target_memories if target else self.memories
 
         if label is None:
             label = [self.null_label.expand(sense.shape[0], -1) for sense in senses]
@@ -154,11 +152,11 @@ class AGIGradient(nn.Module):
             mem_size = self.memories[ith][0].shape[1]
 
             if sense_size < mem_size:
-                self.memories[ith] = tuple(m[:, :sense_size].contiguous() for m in self.memories[ith])
+                memories[ith] = tuple(m[:, :sense_size].contiguous() for m in self.memories[ith])
             elif sense_size > mem_size:
-                self.memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1) for m in self.memories[ith])
+                memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1) for m in self.memories[ith])
                 nulls = self.null_memory.repeat(1, sense_size % mem_size, 1)
-                self.memories[ith] = tuple(torch.cat([m, nulls], 1) for m in self.memories[ith])
+                memories[ith] = tuple(torch.cat([m, nulls], 1) for m in self.memories[ith])
 
             # sight = self.eyes(sense)
 
@@ -174,6 +172,11 @@ class AGIGradient(nn.Module):
         with torch.no_grad():
             assert isinstance(sense, torch.Tensor) and isinstance(label, torch.Tensor)
             return self.AGI((sense,), (label,) if len(label) > 0 else None)[0]
+
+    def target(self, sense, label=None):
+        with torch.no_grad():
+            assert isinstance(sense, torch.Tensor)
+            return self.AGI((sense,), target=True)
 
     def memories_detach(self):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
