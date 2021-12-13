@@ -52,10 +52,7 @@ class EnsembleQCritic(nn.Module):
         # Optimizer  TODO try AdamW instead universally
         if optim_lr is not None:
             if hasattr(self, 'target'):
-                print(self.parameters())
-                print(self.target.parameters())
-                self.optim = torch.optim.Adam([p for p in self.parameters()
-                                               if p not in self.target.parameters()], lr=optim_lr)
+                self.optim = torch.optim.Adam(set(self.parameters()) ^ set(self.target.parameters()), lr=optim_lr)
             else:
                 self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
 
@@ -97,8 +94,7 @@ class EnsembleQCritic(nn.Module):
 
             # Q-values for a continuous action
             h = self.trunk(obs)
-            h_a = torch.cat([h, action], dim=-1)
-            Qs = tuple(Q_net(h_a, context) for Q_net in self.Q_head)
+            Qs = tuple(Q_net(h, action, context) for Q_net in self.Q_head)
 
         # Ensemble of Q-values
         return Qs
