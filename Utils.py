@@ -157,36 +157,46 @@ def schedule(sched, step):
 
 # A Normal distribution with its variance clipped
 class TruncatedNormal(pyd.Normal):
-    def __init__(self, loc, scale, low=-1.0, high=1.0, eps=1e-6, clip=None):
+    def __init__(self, loc, scale, low=-1.0, high=1.0, eps=1e-6, clip=None, one_hot=False):
         super().__init__(loc, scale, validate_args=False)
         self.low = low
         self.high = high
         self.eps = eps
         self.clip = clip
+        self.one_hot = one_hot
 
     def _clamp(self, x, min, max):
         clamped_x = torch.clamp(x, min, max)
-        x = x - x.detach() + clamped_x.detach()
+        x = x - (x - clamped_x).detach()
+        return x
+
+    def _round_one_hot(self, x):
+        hot1 = one_hot(torch.argmax(x, -1), x.shape[-1])
+        x = x - (x - hot1).detach()
         return x
 
     # Defaults to no clip, no grad
     def sample(self, clip=False, sample_shape=torch.Size()):
         return self.rsample(clip=clip, sample_shape=sample_shape).detach()
 
-    # Defaults to clip, grad
+    # Differentiable
     def rsample(self, clip=True, sample_shape=torch.Size()):
-        clip = self.clip if clip else None
         shape = self._extended_shape(sample_shape)
         eps = _standard_normal(shape,
                                dtype=self.loc.dtype,
                                device=self.loc.device)
         eps = eps * self.scale
-        if clip is not None:
-            eps = torch.clamp(eps, -clip, clip)  # Don't explore /too/ much
-            # eps = self._clamp(eps, -clip, clip)  # Don't explore /too/ much
+        if clip:
+            eps = torch.clamp(eps, -self.clip, self.clip)  # Don't explore /too/ much
+            # eps = self._clamp(eps, -clip, clip)  # Differentiable
         x = self.loc + eps
 
-        return self._clamp(x, self.low + self.eps, self.high - self.eps)
+        if self.one_hot:
+            return self._round_one_hot(x)
+        elif self.low is not None and self.high is not None:
+            return self._clamp(x, self.low + self.eps, self.high - self.eps)
+        else:
+            return x
 
 
 class TanhTransform(pyd.transforms.Transform):
@@ -273,13 +283,7 @@ class Meta(nn.Module):
 
 
 # Converts an agent to a classifier
-def to_classifier(agent):
-    assert agent.discrete, "Only agents initialized as discrete\n" \
-                           "can be converted to classifiers.\n" \
-                           "Simply re-initialize your agent with\n" \
-                           "the 'discrete' hyper-parameter set to True;\n" \
-                           "all agents support discrete.\n"
-
+def to_classifier(agent, regression=False):
     def update(replay):
 
         if agent.training:
@@ -301,17 +305,29 @@ def to_classifier(agent):
 
         # "Predict" / "Learn" / "Grow"
 
-        y_pred = agent.actor(obs).probs
-        loss = nn.CrossEntropyLoss()(y_pred, y_label)
+        dist = agent.actor(obs)
 
-        # Update critic
+        y_pred = dist.logits if hasattr(dist, 'logits') \
+            else dist.mean
+
+        # Regression or classification
+        loss = nn.MSELoss()(y_pred, y_label) if regression \
+            else nn.CrossEntropyLoss()(y_pred, y_label)
+
+        # Update
         if agent.training:
-            optimize(loss, agent.encoder, agent.critic)
+            optimize(loss, agent.encoder, agent.actor)
 
-        logs = {'step': agent.step,
-                'loss': loss.item(),
+        logs = {
+            'step': agent.step,
+            'loss': loss.item()
+        }
+
+        if not regression:
+            logs.update({
                 'accuracy': torch.sum(torch.argmax(y_pred, -1)
-                                      == y_label, -1) / y_pred.shape[0]}
+                                      == y_label, -1) / y_pred.shape[0]
+            })
 
         return logs
 

@@ -59,7 +59,7 @@ class Actor(nn.Module):
 
 class TruncatedGaussianActor(Actor):
     def __init__(self, repr_shape, feature_dim, hidden_dim, action_dim,
-                 policy_norm=True, stddev_schedule=None, stddev_clip=None,
+                 stddev_schedule=None, stddev_clip=None, policy_norm=True, discrete=False,
                  target_tau=None, optim_lr=None, **kwargs):  # note added kwargs todo check if ok
         dim = kwargs.get("dim", action_dim)  # (To make sure target has the same action_dim)
 
@@ -70,7 +70,7 @@ class TruncatedGaussianActor(Actor):
                          stddev_schedule=stddev_schedule, stddev_clip=stddev_clip,
                          target_tau=target_tau, optim_lr=optim_lr, dim=dim)
 
-        self.discrete = False
+        self.discrete = discrete
         self.action_dim = dim
         self.stddev_schedule = stddev_schedule
         self.stddev_clip = stddev_clip
@@ -89,7 +89,7 @@ class TruncatedGaussianActor(Actor):
         self.raw_mu = mu
         mu = torch.tanh(mu)
 
-        dist = Utils.TruncatedNormal(mu, std, clip=self.stddev_clip)
+        dist = Utils.TruncatedNormal(mu, std, clip=self.stddev_clip, one_hot=self.discrete)
 
         return dist
 
@@ -156,8 +156,9 @@ class CategoricalCriticActor(nn.Module):
         self.ensemble_size = self.critic.ensemble_size
 
         if hasattr(critic, "target"):
-            self.target = critic.target
+            self.target = critic.target  # TODO this doesn't work
 
+        # TODO trainable entropy
         if hasattr(critic, "optim"):
             self.optim = critic.optim
 

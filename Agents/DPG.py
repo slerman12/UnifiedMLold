@@ -8,57 +8,43 @@ import torch
 
 import Utils
 
-from Blocks.Augmentations import IntensityAug
+from Blocks.Augmentations import IntensityAug, RandomShiftsAug
 from Blocks.Encoders import CNNEncoder
-from Blocks.Actors import CategoricalCriticActor
+from Blocks.Actors import TruncatedGaussianActor, CategoricalCriticActor
 from Blocks.Critics import EnsembleQCritic
-from Blocks.Architectures.Lermanblocks.AGIGradient import AGIGradient
 
 from Losses import QLearning, PolicyLearning
 
 
-class AGIAgent(torch.nn.Module):
-    """Deep Q-Network, Deep Policy Gradient"""
+class DQNDPGAgent(torch.nn.Module):
+    """Deep Policy Gradient"""
     def __init__(self,
                  obs_shape, action_shape, feature_dim, hidden_dim,  # Architecture
                  lr, target_tau,  # Optimization
                  explore_steps, stddev_schedule, stddev_clip,  # Exploration
-                 device, log_tensorboard, load=False,  # On-boarding
-                 **kwargs):
+                 discrete, device, log_tensorboard, one_hot=False  # On-boarding
+                 ):
         super().__init__()
 
-        self.discrete = True
+        self.discrete = discrete  # Discrete supported!
         self.device = device
         self.log_tensorboard = log_tensorboard
         self.birthday = time.time()
         self.step = self.episode = 0
         self.explore_steps = explore_steps
 
-        # Encoder
+        # Models
         self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
 
-        # Critic
-        args = dict(repr_shape=self.encoder.repr_shape,
-                    feature_dim=feature_dim, hidden_dim=hidden_dim,
-                    discrete=True, action_dim=action_shape[-1], ensemble_size=2,
-                    optim_lr=lr, target_tau=target_tau)
-        self.critic = EnsembleQCritic(**args).to(device)
+        self.critic = EnsembleQCritic(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                      target_tau=target_tau, optim_lr=lr).to(device)
 
-        # AGI Gradient as critic Q ensemble
-        self.critic.trunk[1] = self.critic.target.trunk[1] = Utils.L2Norm()
-        self.critic.Q_head = torch.nn.ModuleList([AGIGradient(in_dim=args['feature_dim'],
-                                                              out_dim=args['action_dim'], depth=6,
-                                                              steps=2, meta_learn_steps=512,
-                                                              num_dists=32, num_samples=32,
-                                                              forget_proba=0.1, teleport_proba=0.1,
-                                                              optim_lr=0.001)
-                                                  for _ in range(args['ensemble_size'])])
-
-        # Critic as actor
-        self.actor = CategoricalCriticActor(self.critic, stddev_schedule)
+        self.actor = TruncatedGaussianActor(self.encoder.repr_shape, feature_dim, hidden_dim, action_shape[-1],
+                                            stddev_schedule, stddev_clip, discrete=one_hot,
+                                            optim_lr=lr).to(device)
 
         # Data augmentation
-        self.aug = IntensityAug(0.05)
+        self.aug = IntensityAug(0.05) if self.discrete else RandomShiftsAug(pad=4)
 
         # Birth
 
@@ -72,7 +58,6 @@ class AGIAgent(torch.nn.Module):
             dist = self.actor(obs, self.step)
 
             action = dist.sample() if self.training \
-                else dist.best if self.discrete \
                 else dist.mean
 
             if self.training:
@@ -80,8 +65,10 @@ class AGIAgent(torch.nn.Module):
 
                 # Explore phase
                 if self.step < self.explore_steps and self.training:
-                    action = torch.randint(self.actor.action_dim, size=action.shape) if self.discrete \
-                        else action.uniform_(-1, 1)
+                    action = action.uniform_(-1, 1)
+
+            if self.discrete:
+                action = torch.argmax(action, -1)
 
             return action
 
@@ -126,12 +113,11 @@ class AGIAgent(torch.nn.Module):
         self.critic.update_target_params()
 
         # Actor loss
-        if not self.discrete:
-            actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
-                                                           self.step, logs=logs)
+        actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(),
+                                                       self.step, logs=logs)
 
-            # Update actor
-            Utils.optimize(actor_loss,
-                           self.actor)
+        # Update actor
+        Utils.optimize(actor_loss,
+                       self.actor)
 
         return logs
