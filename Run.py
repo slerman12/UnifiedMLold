@@ -50,13 +50,13 @@ def reinforce(args, root_path):
     if (root_path / 'Saved.pt').exists():
         agent, replay = Utils.load(root_path, 'agent', 'replay')
 
-        agent = Utils.to_agent(agent)
+        agent = Utils.to_agent(agent).to(args.device)
     else:
         for arg in ('obs_shape', 'action_shape', 'discrete', 'obs_spec', 'action_spec'):
             setattr(args, arg, getattr(env, arg))
 
         # Agent
-        agent = instantiate(args.agent)  # An instance of DQNDPGAgent, for example
+        agent = instantiate(args.agent).to(args.device)  # An instance of DQNDPGAgent, for example
 
         # Experience replay
         replay = instantiate(args.replay)  # An instance of PrioritizedExperienceReplay, for example
