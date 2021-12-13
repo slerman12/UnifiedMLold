@@ -38,21 +38,22 @@ class AGIAgent(torch.nn.Module):
         self.encoder = CNNEncoder(obs_shape, optim_lr=lr).to(device)
 
         # Critic
-        self.critic = EnsembleQCritic(repr_shape=self.encoder.repr_shape,
-                                      feature_dim=feature_dim, hidden_dim=hidden_dim,
-                                      discrete=True, action_dim=action_shape[-1], ensemble_size=2,
-                                      optim_lr=lr, target_tau=target_tau).to(device)
+        args = dict(repr_shape=self.encoder.repr_shape,
+                    feature_dim=feature_dim, hidden_dim=hidden_dim,
+                    discrete=True, action_dim=action_shape[-1], ensemble_size=2)
+        self.critic = EnsembleQCritic(**args).to(device)
 
         # AGI Gradient as critic Q ensemble
         self.critic.trunk[1] = self.critic.target.trunk[1] = Utils.L2Norm()
-        ensemble_size = self.critic.ensemble_size
-        self.critic.Q_head = torch.nn.ModuleList([AGIGradient(in_dim=feature_dim,
-                                                              out_dim=action_shape[-1], depth=6,
+        self.critic.Q_head = torch.nn.ModuleList([AGIGradient(in_dim=args['feature_dim'],
+                                                              out_dim=args['action_dim'], depth=6,
                                                               steps=2, meta_learn_steps=512,
                                                               num_dists=32, num_samples=32,
                                                               forget_proba=0.1, teleport_proba=0.1,
-                                                              optim_lr=0.001, device=device)
-                                                  for _ in range(ensemble_size)])
+                                                              optim_lr=0.001,  target_tau=target_tau,
+                                                              device=device)
+                                                  for _ in range(args['ensemble_size'])])
+        self.critic.__post__(**args, optim_lr=lr, target_tau=target_tau)
 
         # Critic as actor
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule)
@@ -124,7 +125,8 @@ class AGIAgent(torch.nn.Module):
                        self.critic)
 
         self.critic.update_target_params()
-        self.critic.Q_head.update_target()
+        for Q_head in self.critic.Q_head:
+            Q_head.update_target()
 
         # Actor loss
         if not self.discrete:
