@@ -160,14 +160,14 @@ class AGIGradient(nn.Module):
             if sense_size < mem_size:
                 self.memories[ith] = tuple(m[:, :sense_size] for m in self.memories[ith])
             elif sense_size > mem_size:
-                self.memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1) for m in self.memories[ith])
-                nulls = self.null_memory.repeat(1, sense_size % mem_size, 1)
+                self.memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1).contiguous() for m in self.memories[ith])
+                nulls = self.null_memory.repeat(1, sense_size % mem_size, 1).contiguous()
                 self.memories[ith] = tuple(torch.cat([m, nulls], 1) for m in self.memories[ith])
 
             # sight = self.eyes(sense)
 
             thought = self.nerves(sense, label[ith])
-            recollection, memories = self.hippocampus(thought.unsqueeze(1).contiguous(), self.memories[ith])
+            recollection, memories = self.hippocampus(thought.unsqueeze(1), self.memories[ith])
             if update_memory:
                 self.memories[ith] = memories
             transmits.append(self.crown(recollection.squeeze(1)))
