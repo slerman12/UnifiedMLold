@@ -40,24 +40,28 @@ class AGIAgent(torch.nn.Module):
         # Critic
         args = dict(repr_shape=self.encoder.repr_shape,
                     feature_dim=feature_dim, hidden_dim=hidden_dim,
-                    discrete=True, action_dim=action_shape[-1], ensemble_size=2)
-        self.critic = EnsembleQCritic(**args, target_tau=target_tau).to(device)
+                    discrete=True, action_dim=action_shape[-1], ensemble_size=2,
+                    optim_lr=lr, target_tau=target_tau)
+        self.critic = EnsembleQCritic(**args).to(device)
 
-        # AGI Gradient as critic Q ensemble
-        self.critic.Q_head = torch.nn.ModuleList([AGIGradient(in_dim=args['feature_dim'],
-                                                              out_dim=args['action_dim'], depth=6,
-                                                              steps=2, meta_learn_steps=512,
-                                                              num_dists=32, num_samples=32,
-                                                              forget_proba=0.1, teleport_proba=0.1,
-                                                              optim_lr=0.001,  target_tau=target_tau,
-                                                              device=device)
-                                                  for _ in range(args['ensemble_size'])])
-        for param in self.critic.Q_head.parameters():
-            param.requires_grad = False  # Disable gradients
         self.critic.trunk[1] = self.critic.target.trunk[1] = Utils.L2Norm()
         self.critic.trunk[2] = self.critic.target.trunk[2] = torch.nn.Identity()
+
+        AGIGradientEnsemble = torch.nn.ModuleList([AGIGradient(in_dim=args['feature_dim'],
+                                                               out_dim=args['action_dim'], depth=6,
+                                                               steps=2, meta_learn_steps=512,
+                                                               num_dists=32, num_samples=32,
+                                                               forget_proba=0.1, teleport_proba=0.1,
+                                                               optim_lr=0.001,  target_tau=target_tau,
+                                                               device=device)
+                                                   for _ in range(args['ensemble_size'])])
+        for param in AGIGradientEnsemble.parameters():
+            param.requires_grad = False
+
+        # AGI Gradient as critic Q ensemble
+        self.critic.Q_head = AGIGradientEnsemble
         for i in range(args['ensemble_size']):
-            self.critic.target.Q_head[i] = self.critic.Q_head[i].target
+            self.critic.target.Q_head[i] = AGIGradientEnsemble[i].target
 
         # Critic as actor
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule)
