@@ -54,6 +54,7 @@ class AGIAgent(torch.nn.Module):
                                                               device=device)
                                                   for _ in range(args['ensemble_size'])])
         self.critic.__post__(**args, optim_lr=lr)
+        print(self.critic)
 
         # Critic as actor
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule)
