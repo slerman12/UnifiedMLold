@@ -14,13 +14,13 @@ class ParameterFreeLinear(nn.Module):
     out_features: int
     weight: torch.Tensor
 
-    def __init__(self, in_features: int, out_features: int, bias: bool = True, device='cpu') -> None:
+    def __init__(self, in_features: int, out_features: int, bias: bool = True) -> None:
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
 
-        self.weight = torch.Tensor(out_features, in_features).to(device)
-        self.bias = torch.Tensor(out_features).to(device) if bias else None
+        self.weight = torch.Tensor(out_features, in_features)
+        self.bias = torch.Tensor(out_features) if bias else None
 
         self.reset_tensors()
 
