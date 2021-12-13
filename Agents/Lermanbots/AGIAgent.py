@@ -52,7 +52,7 @@ class AGIAgent(torch.nn.Module):
                                                               optim_lr=0.001,  target_tau=target_tau,
                                                               device=device)
                                                   for _ in range(args['ensemble_size'])])
-        for param in self.critic.Q_head.features.parameters():
+        for param in self.critic.Q_head.parameters():
             param.requires_grad = False  # Disable gradients
         self.critic.trunk[1] = self.critic.target.trunk[1] = Utils.L2Norm()
         self.critic.trunk[2] = self.critic.target.trunk[2] = torch.nn.Identity()
