@@ -46,7 +46,6 @@ class AGIAgent(torch.nn.Module):
 
         # AGI Gradient as critic Q ensemble
         self.critic.trunk[1] = Utils.L2Norm()
-        print(self.critic)
         self.critic.Q_head = torch.nn.ModuleList([AGIGradient(in_dim=args['feature_dim'],
                                                               out_dim=args['action_dim'], depth=6,
                                                               steps=100000, meta_learn_steps=512,
@@ -55,6 +54,8 @@ class AGIAgent(torch.nn.Module):
                                                               optim_lr=0.001)
                                                   for _ in range(args['ensemble_size'])])
         self.critic.__post__(**args)
+        self.critic.target.trunk[1] = Utils.L2Norm()
+        print(self.critic)
 
         # Critic as actor
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule)
