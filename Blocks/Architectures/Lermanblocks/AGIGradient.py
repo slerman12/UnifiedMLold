@@ -171,13 +171,9 @@ class AGIGradient(nn.Module):
 
         return transmits
 
-    def forward(self, sense, label=None):
+    def forward(self, sense, label=torch.empty(0)):
         with torch.no_grad():
-            assert isinstance(sense, torch.Tensor)
-            if label is not None:
-                assert isinstance(label, torch.Tensor)
-                label = (label,) if len(label) else None
-            return self.AGI((sense,), label)[0]
+            return self.AGI((sense,), (label,) if len(label) > 0 else None)[0]
 
     def memories_detach(self):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
