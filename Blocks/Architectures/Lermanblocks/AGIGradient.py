@@ -132,6 +132,17 @@ class AGIGradient(nn.Module):
             self.target_tau = target_tau
             self.target_memories = self.memories
 
+            class Target(nn.Module):
+                def __init__(other):
+                    super().__init__()
+
+                def forward(other, sense, label=None):
+                    with torch.no_grad():
+                        assert isinstance(sense, torch.Tensor)
+                        return self.AGI((sense,), target=True)
+
+            self.target = Target()
+
     def update_target(self):
         assert self.target_tau is not None
         self.target_memories = [tuple(self.target_tau * self.memories[i][j]
@@ -175,11 +186,6 @@ class AGIGradient(nn.Module):
         with torch.no_grad():
             assert isinstance(sense, torch.Tensor) and isinstance(label, torch.Tensor)
             return self.AGI((sense,), (label,) if len(label) > 0 else None)[0]
-
-    def target(self, sense, label=None):
-        with torch.no_grad():
-            assert isinstance(sense, torch.Tensor)
-            return self.AGI((sense,), target=True)
 
     def memories_detach(self):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
