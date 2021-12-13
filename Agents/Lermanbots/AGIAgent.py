@@ -55,7 +55,7 @@ class AGIAgent(torch.nn.Module):
         self.critic.trunk[1] = self.critic.target.trunk[1] = Utils.L2Norm()
         self.critic.trunk[2] = self.critic.target.trunk[2] = torch.nn.Identity()
         for i in range(args['ensemble_size']):
-            self.critic.target.Q_head[i] = self.critic.Q_head.target[i]
+            self.critic.target.Q_head[i] = self.critic.Q_head[i].target
         self.critic.__post__(**args, optim_lr=lr)
         print(self.critic)
 
