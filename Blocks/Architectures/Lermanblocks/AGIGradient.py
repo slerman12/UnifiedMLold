@@ -167,7 +167,7 @@ class AGIGradient(nn.Module):
             # sight = self.eyes(sense)
 
             thought = self.nerves(sense, label[ith])
-            recollection, memories = self.hippocampus(thought.unsqueeze(1), self.memories[ith])
+            recollection, memories = self.hippocampus(thought.unsqueeze(1).contiguous(), self.memories[ith])
             if update_memory:
                 self.memories[ith] = memories
             transmits.append(self.crown(recollection.squeeze(1)))
