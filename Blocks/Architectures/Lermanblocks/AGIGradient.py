@@ -176,7 +176,7 @@ class AGIGradient(nn.Module):
 
     def forward(self, senses, label=None):
         with torch.no_grad():
-            self.AGI(senses, label)
+            return self.AGI(senses, label)
 
     def memories_detach(self):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
