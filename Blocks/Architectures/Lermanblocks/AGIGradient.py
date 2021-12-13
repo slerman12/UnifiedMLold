@@ -24,7 +24,7 @@ from Blocks.Architectures.ParameterFree import ParameterFreeMLP
 class AGIGradient(nn.Module):
     def __init__(self, in_dim, out_dim, feature_dim=512, memory_dim=512, depth=0,
                  steps=0, meta_learn_steps=0, num_dists=0, num_samples=0, forget_proba=0., teleport_proba=0.,
-                 target_tau=None, optim_lr=0.001):
+                 target_tau=None, optim_lr=0.001, device='cuda'):
 
         super().__init__()
 
@@ -49,9 +49,9 @@ class AGIGradient(nn.Module):
 
             self.num_dists = num_dists
 
-            self.null_memory = torch.zeros(depth // 3, 1, memory_dim)
+            self.null_memory = torch.zeros(depth // 3, 1, memory_dim).to(device)
             null_memory = (self.null_memory, self.null_memory)
-            self.null_label = torch.zeros(1, out_dim)
+            self.null_label = torch.zeros(1, out_dim).to(device)
 
             # Initial body weights
             self.apply(Utils.weight_init)
@@ -70,7 +70,7 @@ class AGIGradient(nn.Module):
                     self.MLP.reset_tensors()
 
                 def __call__(self, num_samples):
-                    x = torch.rand(num_samples, in_dim)
+                    x = torch.rand(num_samples, in_dim).to(device)
                     x = F.normalize(x)
                     mu = self.MLP(x)
                     dist = Normal(mu, self.stddev)
