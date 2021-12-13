@@ -12,6 +12,7 @@ import Utils
 from Blocks.Architectures.Residual import ResidualBlock, Residual
 
 
+# TODO no need for inheritance
 class _BaseCNNEncoder(nn.Module):
     """
     Base CNN encoder.
@@ -24,7 +25,7 @@ class _BaseCNNEncoder(nn.Module):
         self.CNN = None
         self.neck = nn.Identity()
 
-    def __post__(self, obs_shape, out_channels, pixels, flatten, optim_lr=None, target_tau=None, **kwargs):
+    def __post__(self, obs_shape, out_channels, pixels, optim_lr=None, target_tau=None, **kwargs):
         assert self.CNN is not None, 'Inheritor of _BaseCNNEncoder must define self.CNN'
 
         # Initialize weights
@@ -38,19 +39,17 @@ class _BaseCNNEncoder(nn.Module):
         if target_tau is not None:
             self.target_tau = target_tau
             target = self.__class__(obs_shape=obs_shape, out_channels=out_channels,
-                                    pixels=pixels, flatten=flatten, **kwargs)
+                                    pixels=pixels, **kwargs)
             target.load_state_dict(self.state_dict())
             self.target = target
 
         # CNN feature map sizes
         self.obs_shape = obs_shape
+        self.pixels = pixels
         _, height, width = obs_shape
         height, width = Utils.cnn_output_shape(height, width, self.CNN)
         self.repr_shape = (out_channels, height, width)  # Feature map shape
         self.repr_dim = math.prod(self.repr_shape)  # Flattened features dim
-
-        self.pixels = pixels
-        self.flatten = flatten
 
     def update_target_params(self):
         assert self.target_tau is not None
@@ -73,13 +72,8 @@ class _BaseCNNEncoder(nn.Module):
         # CNN encode
         h = self.CNN(obs)
 
-        # Optionally flatten output
-        if self.flatten:
-            h = h.view(*obs_shape[:-3], -1)
-            assert h.shape[-1] == self.repr_dim
-        else:
-            h = h.view(*obs_shape[:-3], *h.shape[-3:])
-            assert tuple(h.shape[-3:]) == self.repr_shape
+        h = h.view(*obs_shape[:-3], *h.shape[-3:])
+        assert tuple(h.shape[-3:]) == self.repr_shape
 
         return self.neck(h)
 
@@ -105,6 +99,9 @@ class CNNEncoder(_BaseCNNEncoder):
                                  *sum([(nn.Conv2d(out_channels, out_channels, 3, stride=1),
                                         nn.ReLU())
                                        for _ in range(depth)], ()))
+
+        if flatten:
+            self.neck = nn.Flatten(-3)
 
         self.__post__(obs_shape=obs_shape, out_channels=out_channels, depth=depth,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
@@ -133,6 +130,9 @@ class ResidualBlockEncoder(_BaseCNNEncoder):
                                  nn.ReLU(),
                                  *[ResidualBlock(out_channels, out_channels)
                                    for _ in range(num_blocks)])
+
+        if flatten:
+            self.neck = nn.Flatten(-3)
 
         self.__post__(obs_shape=obs_shape, out_channels=out_channels, num_blocks=num_blocks,
                       pixels=pixels, flatten=flatten, target_tau=target_tau, optim_lr=optim_lr)
@@ -173,6 +173,9 @@ class IsotropicCNNEncoder(_BaseCNNEncoder):
                                  nn.Conv2d(out_channels, out_channels, (3, 3), padding=1),
                                  nn.ReLU())
 
+        if flatten:
+            self.neck = nn.Flatten(-3)
+
         self.__post__(obs_shape=obs_shape, context_dim=context_dim, out_channels=out_channels, depth=depth,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
 
@@ -206,6 +209,9 @@ class IsotropicResidualBlockEncoder(_BaseCNNEncoder):
                                  nn.ReLU(),
                                  *[ResidualBlock(out_channels, out_channels)
                                    for _ in range(num_blocks)])
+
+        if flatten:
+            self.neck = nn.Flatten(-3)
 
         self.__post__(obs_shape=obs_shape, context_dim=context_dim, out_channels=out_channels, num_blocks=num_blocks,
                       pixels=pixels, flatten=flatten, optim_lr=optim_lr, target_tau=target_tau)
