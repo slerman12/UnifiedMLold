@@ -113,6 +113,7 @@ class AGIGradient(nn.Module):
                     forget_ind = random.randint(num_dists)
                     self.memories[forget_ind] = null_memory
 
+            self.optim.zero_grad(set_to_none=True)
             self.memories = [null_memory for _ in range(num_dists)]
 
             print('Initialized.\n'
