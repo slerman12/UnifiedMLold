@@ -146,9 +146,6 @@ class AGIGradient(nn.Module):
     def AGI(self, senses, label=None):
         update_memory = self.training and label is not None
 
-        if not isinstance(senses, (list, tuple)):
-            senses = [senses]
-
         if label is None:
             label = [self.null_label.expand(sense.shape[0], -1) for sense in senses]
 
@@ -174,9 +171,9 @@ class AGIGradient(nn.Module):
 
         return transmits
 
-    def forward(self, senses, label=None):
+    def forward(self, sense, label=None):
         with torch.no_grad():
-            return self.AGI(senses, label)
+            return self.AGI([sense], label)
 
     def memories_detach(self):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
