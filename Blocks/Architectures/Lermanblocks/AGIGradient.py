@@ -30,7 +30,7 @@ class AGIGradient(nn.Module):
 
         path = Path.cwd()
 
-        if (path / 'Saved.pt').exists():
+        if (path / 'Saved.pt').exists() and False:
             self.nerves, self.hippocampus, self.crown = Utils.load(
                 path, 'nerves', 'hippocampus', 'crown')
         else:
