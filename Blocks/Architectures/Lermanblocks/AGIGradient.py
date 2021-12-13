@@ -45,7 +45,7 @@ class AGIGradient(nn.Module):
 
             self.nerves = MLP(in_dim + out_dim, feature_dim, feature_dim, depth // 3).to(device)
             self.hippocampus = nn.LSTM(feature_dim, memory_dim, depth // 3, batch_first=True).to(device)
-            self.crown = MLP(memory_dim, out_dim, memory_dim // 2, depth // 3).to(device)
+            self.crown = MLP(in_dim + memory_dim, out_dim, memory_dim // 2, depth // 3).to(device)
 
             self.num_dists = num_dists
 
@@ -167,7 +167,7 @@ class AGIGradient(nn.Module):
             recollection, memories = self.hippocampus(thought.unsqueeze(1), self.memories[ith])
             if update_memory:
                 self.memories[ith] = memories
-            transmits.append(self.crown(recollection.squeeze(1)))
+            transmits.append(self.crown(sense, recollection.squeeze(1)))
 
         return transmits
 

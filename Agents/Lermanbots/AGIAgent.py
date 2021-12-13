@@ -14,7 +14,7 @@ from Blocks.Actors import CategoricalCriticActor
 from Blocks.Critics import EnsembleQCritic
 from Blocks.Architectures.Lermanblocks.AGIGradient import AGIGradient
 
-from Losses import QLearning, PolicyLearning
+from Losses import PolicyLearning, AGIQLearning
 
 
 class AGIAgent(torch.nn.Module):
@@ -114,9 +114,9 @@ class AGIAgent(torch.nn.Module):
         # "Predict" / "Discern" / "Learn" / "Grow"
 
         # Critic loss
-        critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
-                                                  obs, action, reward, discount, next_obs,
-                                                  self.step, meta_learn=True, logs=logs)
+        critic_loss = AGIQLearning.ensembleQLearning(self.actor, self.critic,
+                                                     obs, action, reward, discount, next_obs,
+                                                     self.step, meta_learn=True, logs=logs)
 
         # Update critic
         Utils.optimize(critic_loss,
