@@ -150,7 +150,7 @@ class AGIGradient(nn.Module):
             senses = [senses]
 
         if label is None:
-            label = [self.null_label.expand(sense.shape[0], -1) for sense in senses]
+            label = [self.null_label.expand(sense.shape[0], -1).contiguous() for sense in senses]
 
         transmits = []
         for ith, sense in enumerate(senses):
@@ -158,18 +158,18 @@ class AGIGradient(nn.Module):
             mem_size = self.memories[ith][0].shape[1]
 
             if sense_size < mem_size:
-                self.memories[ith] = tuple(m[:, :sense_size] for m in self.memories[ith])
+                self.memories[ith] = tuple(m[:, :sense_size].contiguous() for m in self.memories[ith])
             elif mem_size == 1:
                 self.memories[ith] = tuple(m.expand(-1, sense_size, -1).contiguous() for m in self.memories[ith])
             elif sense_size > mem_size:
                 self.memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1) for m in self.memories[ith])
                 nulls = self.null_memory.expand(-1, sense_size % mem_size, -1).contiguous()
-                self.memories[ith] = tuple(torch.cat([m, nulls], 1) for m in self.memories[ith])
+                self.memories[ith] = tuple(torch.cat([m, nulls], 1).contiguous() for m in self.memories[ith])
 
             # sight = self.eyes(sense)
 
             thought = self.nerves(sense, label[ith])
-            recollection, memories = self.hippocampus(thought.unsqueeze(1), self.memories[ith])
+            recollection, memories = self.hippocampus(thought.unsqueeze(1).contiguous(), self.memories[ith])
             if update_memory:
                 self.memories[ith] = memories
             transmits.append(self.crown(recollection.squeeze(1)))
