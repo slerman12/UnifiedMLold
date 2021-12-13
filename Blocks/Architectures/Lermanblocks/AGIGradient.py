@@ -134,9 +134,10 @@ class AGIGradient(nn.Module):
 
     def update_target(self):
         assert self.target_tau is not None
-        self.target_memories = tuple(self.target_tau * self.memories[i]
-                                     + (1 - self.target_tau) * self.target_memories[i]
-                                     for i in [0, 1])
+        self.target_memories = [tuple(self.target_tau * self.memories[i][j]
+                                      + (1 - self.target_tau) * self.target_memories[i][j]
+                                      for j in [0, 1])
+                                for i in range(len(self.memories))]
 
     def AGI(self, senses, label=None, target=False):
         update_memory = self.training and label is not None and not target
@@ -148,22 +149,24 @@ class AGIGradient(nn.Module):
 
         transmits = []
         for ith, sense in enumerate(senses):
+            mem = memories[ith]
+
             sense_size = sense.shape[0]
-            mem_size = self.memories[ith][0].shape[1]
+            mem_size = memories[ith][0].shape[1]
 
             if sense_size < mem_size:
-                memories[ith] = tuple(m[:, :sense_size].contiguous() for m in self.memories[ith])
+                mem = tuple(m[:, :sense_size].contiguous() for m in mem)
             elif sense_size > mem_size:
-                memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1) for m in self.memories[ith])
+                mem = tuple(m.repeat(1, sense_size // mem_size, 1) for m in mem)
                 nulls = self.null_memory.repeat(1, sense_size % mem_size, 1)
-                memories[ith] = tuple(torch.cat([m, nulls], 1) for m in self.memories[ith])
+                mem = tuple(torch.cat([m, nulls], 1) for m in mem)
 
             # sight = self.eyes(sense)
 
             thought = self.nerves(sense, label[ith])
-            recollection, memories = self.hippocampus(thought.unsqueeze(1), self.memories[ith])
+            recollection, mem = self.hippocampus(thought.unsqueeze(1), mem)
             if update_memory:
-                self.memories[ith] = memories
+                self.memories[ith] = mem
             transmits.append(self.crown(sense, recollection.squeeze(1)))
 
         return transmits
