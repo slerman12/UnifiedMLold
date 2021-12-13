@@ -48,8 +48,8 @@ class AGIAgent(torch.nn.Module):
         self.critic.trunk[2] = self.critic.target.trunk[2] = torch.nn.Identity()
 
         AGIGradientEnsemble = torch.nn.ModuleList([AGIGradient(in_dim=args['feature_dim'],
-                                                               out_dim=args['action_dim'], depth=6,
-                                                               steps=2, meta_learn_steps=512,
+                                                               out_dim=args['action_dim'], depth=12,
+                                                               steps=100000, meta_learn_steps=32,
                                                                num_dists=32, num_samples=32,
                                                                forget_proba=0.1, teleport_proba=0.1,
                                                                optim_lr=0.001, target_tau=args['target_tau'],

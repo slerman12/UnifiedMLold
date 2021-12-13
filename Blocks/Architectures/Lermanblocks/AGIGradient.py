@@ -180,15 +180,30 @@ class AGIGradient(nn.Module):
     def forward(self, sense, label=torch.empty(0)):
         # TODO if label, do batch one at a time
         assert isinstance(sense, torch.Tensor) and isinstance(label, torch.Tensor)
+
+        # Learns from batch, backprops sequentially
+        if len(label) > 0:
+            transmit = torch.cat([self.AGI((sense[i].unsqueeze(0),),
+                                           (label[i].unsqueeze(0),))[0]
+                                  for i in range(sense.shape[0])])
+            self.memories = self.memories_detach()
+        else:
+            transmit = self.AGI((sense,))[0]
+
+        # Learns from batch, backprops through last
         # if len(label) > 0:
-        #     transmit = torch.cat([self.AGI((sense[i].unsqueeze(0),),
-        #                                    (label[i].unsqueeze(0),))[0]
-        #                           for i in range(sense.shape[0])])
-        #     self.memories = self.memories_detach()
+        #     transmit = []
+        #     for i in range(sense.shape[0]):
+        #         transmit.append(self.AGI((sense[i].unsqueeze(0),), (label[i].unsqueeze(0),))[0])
+        #         self.memories = self.memories_detach()
+        #     transmit = torch.cat(transmit)
         # else:
         #     transmit = self.AGI((sense,))[0]
-        transmit = self.AGI((sense,), (label,) if len(label) > 0 else None)[0]
-        self.memories = self.memories_detach()
+
+        # Backprops through all, learns from first
+        # transmit = self.AGI((sense,), (label,) if len(label) > 0 else None)[0]
+        # self.memories = self.memories_detach()
+
         return transmit
 
     def memories_detach(self):
