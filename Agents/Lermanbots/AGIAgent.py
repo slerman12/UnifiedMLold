@@ -41,7 +41,7 @@ class AGIAgent(torch.nn.Module):
         args = dict(repr_shape=self.encoder.repr_shape,
                     feature_dim=feature_dim, hidden_dim=hidden_dim,
                     discrete=True, action_dim=action_shape[-1], ensemble_size=2)
-        self.critic = EnsembleQCritic(**args).to(device)
+        self.critic = EnsembleQCritic(**args, target_tau=target_tau).to(device)
 
         # AGI Gradient as critic Q ensemble
         self.critic.trunk[1] = self.critic.target.trunk[1] = Utils.L2Norm()
@@ -53,7 +53,7 @@ class AGIAgent(torch.nn.Module):
                                                               optim_lr=0.001,  target_tau=target_tau,
                                                               device=device)
                                                   for _ in range(args['ensemble_size'])])
-        self.critic.__post__(**args, optim_lr=lr, target_tau=target_tau)
+        self.critic.__post__(**args, optim_lr=lr)
 
         # Critic as actor
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule)
