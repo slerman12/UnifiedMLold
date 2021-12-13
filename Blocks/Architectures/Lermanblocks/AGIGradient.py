@@ -180,15 +180,17 @@ class AGIGradient(nn.Module):
     def forward(self, sense, label=torch.empty(0)):
         # TODO if label, do batch one at a time
         assert isinstance(sense, torch.Tensor) and isinstance(label, torch.Tensor)
-        transmit = torch.stack([self.AGI((sense[i].unsqueeze(0),),
-                                         (label[i].unsqueeze(0),) if len(label) > 0 else None)[0]
-                                for i in range(sense.shape[0])])
-        self.memories = self.memories_detach()
+        if len(label) > 0:
+            transmit = torch.cat([self.AGI((sense[i].unsqueeze(0),),
+                                           (label[i].unsqueeze(0),))[0]
+                                  for i in range(sense.shape[0])])
+            self.memories = self.memories_detach()
+        else:
+            transmit = self.AGI((sense,))[0]
         return transmit
 
     def memories_detach(self):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
-
 
 # AGIGradient(in_dim=10, out_dim=1, depth=6,
 #             steps=100000, meta_learn_steps=16,
@@ -259,5 +261,3 @@ class AGIGradient(nn.Module):
 # 1. Synthetic via classification 18-way "to determine best"
 # 2. RL Atari discrete 18-way
 # 3. MNIST, Cifar-10 CNN encoding
-
-
