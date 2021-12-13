@@ -178,8 +178,10 @@ class AGIGradient(nn.Module):
         return transmits
 
     def forward(self, sense, label=torch.empty(0)):
+        # TODO if label, do batch one at a time
         assert isinstance(sense, torch.Tensor) and isinstance(label, torch.Tensor)
-        return self.AGI((sense,), (label,) if len(label) > 0 else None)[0]
+        return torch.stack([self.AGI((sense[i],), (label[i],) if len(label) > 0 else None)[0]
+                            for i in range(sense.shape[0])])
 
     def memories_detach(self):
         return [tuple(m.detach() for m in mem) for mem in self.memories]
