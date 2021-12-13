@@ -119,7 +119,7 @@ class AGIGradient(nn.Module):
             Utils.save(path,
                        nerves=self.nerves,
                        hippocampus=self.hippocampus,
-                       memories=self.memories_detach(),
+                       # memories=self.memories_detach(),
                        crown=self.crown)
 
             print("Saved.")
