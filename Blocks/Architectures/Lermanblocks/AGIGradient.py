@@ -162,7 +162,7 @@ class AGIGradient(nn.Module):
             elif sense_size > mem_size:
                 self.memories[ith] = tuple(m.repeat(1, sense_size // mem_size, 1).contiguous() for m in self.memories[ith])
                 nulls = self.null_memory.repeat(1, sense_size % mem_size, 1).contiguous()
-                self.memories[ith] = tuple(torch.cat([m, nulls], 1) for m in self.memories[ith])
+                self.memories[ith] = tuple(torch.cat([m, nulls], 1).contiguous() for m in self.memories[ith])
 
             # sight = self.eyes(sense)
 
