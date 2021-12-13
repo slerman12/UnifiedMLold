@@ -79,7 +79,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
     context = torch.empty(0)
     if meta_learn:
         context = Utils.one_hot(action, actor.action_dim)
-        context = (1 - context) * dist.Qs[context == 0] + context * target_Q
+        context = (1 - context) * torch.min(*dist.Qs)[context == 0] + context * target_Q
 
     Q_ensemble = critic(obs, action, dist, context.detach())
 
