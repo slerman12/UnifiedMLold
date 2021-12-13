@@ -14,13 +14,13 @@ class ParameterFreeLinear(nn.Module):
     out_features: int
     weight: torch.Tensor
 
-    def __init__(self, in_features: int, out_features: int, bias: bool = True) -> None:
+    def __init__(self, in_features: int, out_features: int, bias: bool = True, device='cpu') -> None:
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
 
-        self.weight = torch.Tensor(out_features, in_features)
-        self.bias = torch.Tensor(out_features) if bias else None
+        self.weight = torch.Tensor(out_features, in_features).to(device)
+        self.bias = torch.Tensor(out_features).to(device) if bias else None
 
         self.reset_tensors()
 
@@ -41,7 +41,7 @@ class ParameterFreeLinear(nn.Module):
 
 
 class ParameterFreeMLP(nn.Module):
-    def __init__(self, in_dim, out_dim, hidden_dim=512, depth=0, l2_norm_1st=False, l2_norm_pen=False):
+    def __init__(self, in_dim, out_dim, hidden_dim=512, depth=0, l2_norm_1st=False, l2_norm_pen=False, device='cpu'):
         super().__init__()
 
         self.MLP = nn.Sequential(
@@ -51,7 +51,8 @@ class ParameterFreeMLP(nn.Module):
                 Utils.L2Norm() if (l2_norm_1st and i == 0) or
                                   (l2_norm_pen and i == depth) else nn.Identity(),
                 ParameterFreeLinear(in_dim if i == 0 else hidden_dim,
-                                    hidden_dim if i < depth else out_dim),
+                                    hidden_dim if i < depth else out_dim,
+                                    device=device),
                 nn.ReLU(inplace=True) if i < depth else nn.Identity()
             ]
                 for i in range(depth + 1)], [])
