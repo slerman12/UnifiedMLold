@@ -150,7 +150,7 @@ class AGIGradient(nn.Module):
             senses = [senses]
 
         if label is None:
-            label = [self.null_label.expand(sense.shape[0], -1).contiguous() for sense in senses]
+            label = [self.null_label.expand(sense.shape[0], -1) for sense in senses]
 
         transmits = []
         for ith, sense in enumerate(senses):
