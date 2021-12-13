@@ -130,40 +130,31 @@ class AGIGradient(nn.Module):
         # EMA (w.r.t. memories rather than parameters)
         if target_tau is not None:
             self.target_tau = target_tau
-            self.target_memories = self.memories
-
-            class Target(nn.Module):
-                def __init__(other):
-                    super().__init__()
-
-                def forward(other, sense, label=None):
-                    with torch.no_grad():
-                        assert isinstance(sense, torch.Tensor)
-                        return self.AGI((sense,), target=True)
-
-            self.target = Target()
+            target = self.__class__(in_dim=in_dim, out_dim=out_dim,
+                                    feature_dim=feature_dim, memory_dim=memory_dim, depth=depth)
+            target.load_state_dict(self.state_dict())
+            target.memories = self.memories
+            self.target = target
 
     def update_target(self):
         assert self.target_tau is not None
-        self.target_memories = [tuple(self.target_tau * self.memories[i][j]
-                                      + (1 - self.target_tau) * self.target_memories[i][j]
+        self.target.memories = [tuple(self.target_tau * self.memories[i][j]
+                                      + (1 - self.target_tau) * self.target.memories[i][j]
                                       for j in [0, 1])
                                 for i in range(len(self.memories))]
 
-    def AGI(self, senses, label=None, target=False):
-        update_memory = self.training and label is not None and not target
-
-        memories = self.target_memories if target else self.memories
+    def AGI(self, senses, label=None):
+        update_memory = self.training and label is not None
 
         if label is None:
             label = [self.null_label.expand(sense.shape[0], -1) for sense in senses]
 
         transmits = []
         for ith, sense in enumerate(senses):
-            mem = memories[ith]
+            mem = self.memories[ith]
 
             sense_size = sense.shape[0]
-            mem_size = memories[ith][0].shape[1]
+            mem_size = mem[0].shape[1]
 
             if sense_size < mem_size:
                 mem = tuple(m[:, :sense_size].contiguous() for m in mem)
