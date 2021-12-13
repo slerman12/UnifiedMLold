@@ -70,7 +70,7 @@ class EnsembleQCritic(nn.Module):
         Utils.soft_update_params(self, self.target, self.target_tau)
 
     # Get action Q-values
-    def forward(self, obs=None, action=None, dist=None):
+    def forward(self, obs=None, action=None, dist=None, context=torch.empty(0)):
         if self.discrete:
             assert obs is not None or dist is not None, 'Q-value computation requires an observation or ' \
                                                         'an existing discrete distribution'
@@ -78,7 +78,7 @@ class EnsembleQCritic(nn.Module):
             # All actions' Q-values
             if dist is None:
                 h = self.trunk(obs)
-                Qs = tuple(Q_net(h) for Q_net in self.Q_head)
+                Qs = tuple(Q_net(h, context) for Q_net in self.Q_head)
             else:
                 Qs = dist.Qs
 
@@ -92,7 +92,7 @@ class EnsembleQCritic(nn.Module):
             # Q-values for a continuous action
             h = self.trunk(obs)
             h_a = torch.cat([h, action], dim=-1)
-            Qs = tuple(Q_net(h_a) for Q_net in self.Q_head)
+            Qs = tuple(Q_net(h_a, context) for Q_net in self.Q_head)
 
         # Ensemble of Q-values
         return Qs

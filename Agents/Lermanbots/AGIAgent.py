@@ -116,7 +116,7 @@ class AGIAgent(torch.nn.Module):
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.actor, self.critic,
                                                   obs, action, reward, discount, next_obs,
-                                                  self.step, logs=logs)
+                                                  self.step, meta_learn=True, logs=logs)
 
         # Update critic
         Utils.optimize(critic_loss,

@@ -9,7 +9,7 @@ from torch.distributions import Categorical
 
 def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, step, ensemble_reduction='min',
                       dist=None, entropy_temp=0,  # 0.03
-                      munchausen_temp=0, logs=None):  # 0.9
+                      munchausen_temp=0, meta_learn=False, logs=None):  # 0.9
     with torch.no_grad():
         next_dist = actor(next_obs, step)  # Note: not using EMA target for actor
 
@@ -72,7 +72,7 @@ def ensembleQLearning(actor, critic, obs, action, reward, discount, next_obs, st
             lo = -1
             target_Q += munchausen_temp * torch.clamp(entropy_temp * action_log_proba, min=lo, max=0)
 
-    Q_ensemble = critic(obs, action, dist)
+    Q_ensemble = critic(obs, action, dist, context=target_Q if meta_learn else torch.empty(0))
 
     # Temporal difference error (via MSE, but could also use Huber)
     td_error = sum([F.mse_loss(Q, target_Q) for Q in Q_ensemble])
