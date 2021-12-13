@@ -55,7 +55,6 @@ class AGIAgent(torch.nn.Module):
                                                   for _ in range(args['ensemble_size'])])
         self.critic.__post__(**args)
         self.critic.target.trunk[1] = Utils.L2Norm()
-        print(self.critic)
 
         # Critic as actor
         self.actor = CategoricalCriticActor(self.critic, stddev_schedule)
