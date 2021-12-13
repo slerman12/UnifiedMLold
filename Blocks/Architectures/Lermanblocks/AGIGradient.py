@@ -31,8 +31,8 @@ class AGIGradient(nn.Module):
         path = Path.cwd()
 
         if (path / 'Saved.pt').exists():
-            self.nerves, self.hippocampus, self.memories, self.crown = Utils.load(
-                path, 'nerves', 'hippocampus', 'memories', 'crown')
+            self.nerves, self.hippocampus, self.crown = Utils.load(
+                path, 'nerves', 'hippocampus', 'crown')
         else:
             print('Saved checkpoint not found\n'
                   'Initializing new AGI...\n'
