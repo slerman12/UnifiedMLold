@@ -44,8 +44,8 @@ class AGIGradient(nn.Module):
             # self.eyes = CNN()
 
             self.nerves = MLP(in_dim + out_dim, feature_dim, feature_dim, depth // 3).to(device)
-            self.hippocampus = nn.LSTM(feature_dim, memory_dim, depth // 3, batch_first=True)
-            self.crown = MLP(memory_dim, out_dim, memory_dim // 2, depth // 3)
+            self.hippocampus = nn.LSTM(feature_dim, memory_dim, depth // 3, batch_first=True).to(device)
+            self.crown = MLP(memory_dim, out_dim, memory_dim // 2, depth // 3).to(device)
 
             self.num_dists = num_dists
 
