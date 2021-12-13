@@ -173,6 +173,7 @@ class AGIGradient(nn.Module):
 
     def forward(self, sense, label=torch.empty(0)):
         with torch.no_grad():
+            assert isinstance(sense, torch.Tensor) and isinstance(label, torch.Tensor)
             return self.AGI((sense,), (label,) if len(label) > 0 else None)[0]
 
     def memories_detach(self):
