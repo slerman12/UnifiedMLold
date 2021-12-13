@@ -52,7 +52,7 @@ class AGIAgent(torch.nn.Module):
                                                                steps=2, meta_learn_steps=512,
                                                                num_dists=32, num_samples=32,
                                                                forget_proba=0.1, teleport_proba=0.1,
-                                                               optim_lr=0.001, target_tau=target_tau,
+                                                               optim_lr=0.001, target_tau=args['target_tau'],
                                                                device=device)
                                                    for _ in range(args['ensemble_size'])])
         for param in AGIGradientEnsemble.parameters():

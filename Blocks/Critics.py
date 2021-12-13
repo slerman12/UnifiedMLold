@@ -51,7 +51,7 @@ class EnsembleQCritic(nn.Module):
 
         # Optimizer  TODO try AdamW instead universally
         if optim_lr is not None:
-            self.optim = torch.optim.Adam(set(self.trunk.parameters()) | set(self.Q_head.parameters()), lr=optim_lr)
+            self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
 
         # EMA
         if target_tau is not None:
