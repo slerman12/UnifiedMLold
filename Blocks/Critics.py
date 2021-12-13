@@ -51,8 +51,11 @@ class EnsembleQCritic(nn.Module):
 
         # Optimizer  TODO try AdamW instead universally
         if optim_lr is not None:
-            assert not hasattr(self, 'target')
-            self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
+            if hasattr(self, 'target'):
+                self.optim = torch.optim.Adam([p for p in self.parameters()
+                                               if p not in self.target.parameters()], lr=optim_lr)
+            else:
+                self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
 
         # EMA
         if target_tau is not None:
