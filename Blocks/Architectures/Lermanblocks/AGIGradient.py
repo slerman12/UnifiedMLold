@@ -116,7 +116,7 @@ class AGIGradient(nn.Module):
             Utils.save(path,
                        nerves=self.nerves,
                        hippocampus=self.hippocampus,
-                       memories=self.memories,
+                       memories=self.memories_detach(),
                        crown=self.crown)
 
         # Optimizer (if parametric training is desired)
@@ -132,7 +132,7 @@ class AGIGradient(nn.Module):
             target.memories = self.memories
             self.target = target
 
-    def update_target_params(self):
+    def update_target(self):
         assert self.target_tau is not None
         self.target.memories = tuple(self.target_tau * self.memories[i]
                                      + (1 - self.target_tau) * self.target.memories[i]
