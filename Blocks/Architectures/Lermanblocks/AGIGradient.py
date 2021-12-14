@@ -58,7 +58,7 @@ class AGIGradient(nn.Module):
             self.apply(Utils.weight_init)
 
             self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
-            scheduler = ExponentialLR(self.optim, gamma=0.95)
+            scheduler = ExponentialLR(self.optim, gamma=0.999)
 
             # "Batches" consist of distributions, which each generate x,y_label samples
             # AGI has a unique memory state (RNN hidden state) w.r.t. each distribution
@@ -106,7 +106,7 @@ class AGIGradient(nn.Module):
                 else:
                     self.AGI(x, label=y_label)
 
-                # Randomly switch distributions
+                # Randomly switch distributions  TODO only at start of sequence?
                 if random.rand() < teleport_proba:
                     teleport_ind = random.randint(num_dists)
                     self.distributions[teleport_ind].reset()
