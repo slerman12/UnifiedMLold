@@ -4,6 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from pathlib import Path
 
+from torch.optim.lr_scheduler import ExponentialLR
 from tqdm import tqdm
 
 from numpy import random
@@ -57,6 +58,7 @@ class AGIGradient(nn.Module):
             self.apply(Utils.weight_init)
 
             self.optim = torch.optim.Adam(self.parameters(), lr=optim_lr)
+            scheduler = ExponentialLR(self.optim, gamma=0.95)
 
             # "Batches" consist of distributions, which each generate x,y_label samples
             # AGI has a unique memory state (RNN hidden state) w.r.t. each distribution
@@ -98,6 +100,7 @@ class AGIGradient(nn.Module):
                                 'loss': loss.data}, dump=True)
 
                     Utils.optimize(loss, self)
+                    scheduler.step()
 
                     self.memories = self.memories_detach()
                 else:
